@@ -1,0 +1,15 @@
+{
+    "name": "k7zz/humhub-bbb",
+    "description": "kompetenzZ BigBlueButton Module for HumHub",
+    "type": "library",
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
+    "require": {
+        "bigbluebutton/bigbluebutton-api-php": "^2.0.0",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
