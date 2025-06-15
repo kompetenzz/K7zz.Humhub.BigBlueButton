@@ -1,6 +1,6 @@
 <?php
 
-namespace humhub\modules\bbb;
+namespace k7zz\humhub\bbb;
 
 use Yii;
 

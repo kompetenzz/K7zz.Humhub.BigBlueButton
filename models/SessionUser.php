@@ -1,5 +1,5 @@
 <?php
-namespace humhub\modules\bbb\models;
+namespace k7zz\humhub\bbb\models;
 
 use yii\db\ActiveRecord;
 use yii\db\ActiveQuery;

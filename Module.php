@@ -7,21 +7,21 @@
  * and permissions for starting and joining meetings.
  */
 
-namespace humhub\modules\bbb;
+namespace k7zz\humhub\bbb;
 
 use Yii;
 use humhub\components\Module as BaseModule;
-use humhub\modules\bbb\permissions\{
+use k7zz\humhub\bbb\permissions\{
     Admin,
     StartSession,
     JoinSession
 };
-use \humhub\modules\bbb\services\SessionService;
+use k7zz\humhub\bbb\services\SessionService;
 use yii\helpers\Url;
 
 class Module extends BaseModule
 {
-    public $controllerNamespace = 'humhub\\modules\\bbb\\controllers';
+    public $controllerNamespace = 'k7zz\\humhub\\bbb\\controllers';
 
     public function init()
     {

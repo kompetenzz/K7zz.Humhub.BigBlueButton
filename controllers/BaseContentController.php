@@ -1,9 +1,9 @@
 <?php
 
-namespace humhub\modules\bbb\controllers;
+namespace k7zz\humhub\bbb\controllers;
 
 use humhub\modules\content\components\ContentContainerController;
-use humhub\modules\bbb\services\SessionService;
+use k7zz\humhub\bbb\services\SessionService;
 use Yii;
 
 abstract class BaseContentController extends ContentContainerController

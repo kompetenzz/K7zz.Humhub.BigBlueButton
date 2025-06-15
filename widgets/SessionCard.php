@@ -1,7 +1,7 @@
 <?php
-namespace humhub\modules\bbb\widgets;
+namespace k7zz\humhub\bbb\widgets;
 use humhub\components\Widget;
-use humhub\modules\bbb\models\Session;
+use k7zz\humhub\bbb\models\Session;
 
 class SessionCard extends Widget
 {

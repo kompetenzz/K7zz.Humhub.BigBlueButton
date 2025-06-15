@@ -2,7 +2,7 @@
 /**
  * Formular zum Anlegen / Bearbeiten einer BBB-Session
  *
- * @var \humhub\modules\bbb\models\forms\SessionForm $model
+ * @var k7zz\humhub\bbb\models\forms\SessionForm $model
  */
 
 use humhub\modules\user\widgets\UserPickerField;

@@ -1,6 +1,6 @@
 <?php
 /**
- * @var humhub\modules\bbb\models\Session $model
+ * @var k7zz\humhub\bbb\models\Session $model
  * @var bool   $running
  * @var string $scope  'container' | 'global'
  * @var int    $highlightId

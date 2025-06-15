@@ -1,8 +1,8 @@
 <?php
 
-namespace humhub\modules\bbb\controllers;
+namespace k7zz\humhub\bbb\controllers;
 
-use humhub\modules\bbb\controllers\BaseContentController;
+use k7zz\humhub\bbb\controllers\BaseContentController;
 use Yii;
 
 class SessionsController extends BaseContentController

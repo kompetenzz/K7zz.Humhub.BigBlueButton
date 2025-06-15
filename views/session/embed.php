@@ -1,6 +1,6 @@
 <?php
 /**
- * @var \humhub\modules\bbb\models\JoinInfo $joinInfo  Vollständige Join-URL
+ * @var k7zz\humhub\bbb\models\JoinInfo $joinInfo  Vollständige Join-URL
  * @var string $title  Titel der Sessuin
  */
 

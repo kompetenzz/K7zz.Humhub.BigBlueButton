@@ -1,7 +1,7 @@
 <?php
 use humhub\libs\Html;
-use humhub\modules\bbb\widgets\SessionCard;
-use humhub\modules\bbb\permissions\Admin;
+use k7zz\humhub\bbb\widgets\SessionCard;
+use k7zz\humhub\bbb\permissions\Admin;
 use humhub\modules\ui\icon\widgets\Icon;
 $containerId = $this->context->contentContainer
     ? $this->context->contentContainer->guid
@@ -54,3 +54,10 @@ $canCreate = $scope === 'container'
         </div>
     </div>
 </div>
+<?php
+
+/* JS, um den User-Picker live ein- und auszublenden */
+$this->registerJs("
+    if (top != self) top.location.href = location.href;    
+", \yii\web\View::POS_HEAD);
+?>

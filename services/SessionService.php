@@ -1,7 +1,7 @@
 <?php
-namespace humhub\modules\bbb\services;
+namespace k7zz\humhub\bbb\services;
 
-use humhub\modules\bbb\models\Session;
+use k7zz\humhub\bbb\models\Session;
 use Yii;
 use BigBlueButton\BigBlueButton;
 use BigBlueButton\Parameters\{
@@ -54,21 +54,20 @@ class SessionService
     /** Holt exakt eine Session (oder null) – optional Container-Check */
     public function get(?int $id = null, ?string $slug = null, ?int $containerId = null): ?Session
     {
-        $q = Session::find()->where(['deleted_at' => null]);
+        $c = [
+            'deleted_at' => null, // nur nicht gelöschte Sessions
+        ];
+        if ($containerId !== null) {
+            $c['contentcontainer_id'] = $containerId; // optional Container-Filter
+        }
         if ($id !== null) {
-            // Suche nach ID
-            $q = Session::find()->addWhere(['id' => $id]);
+            $c['id'] = $id; // Suche nach ID
         } elseif ($slug !== null) {
-            // Suche nach Slug
-            $q = Session::find()->addWhere(['name' => $slug]);
+            $c['name'] = $slug; // Suche nach Slug
         } else {
             return null; // Keine ID oder Slug angegeben
         }
-
-        if ($containerId !== null) {
-            $q->andWhere(['contentcontainer_id' => $containerId]);
-        }
-        return $q->one();
+        return Session::findOne($c);
     }
 
     /** Prüft, ob ein Raum bereits auf BBB läuft */
@@ -92,6 +91,7 @@ class SessionService
         $p->setAttendeePassword($s->attendee_pw);
         $p->setAllowStartStopRecording(true);
         $p->setWelcomeMessage($s->description ?? '');
+        $p->setLogoutUrl(Yii::$app->urlManager->createAbsoluteUrl(['/bbb/session/quit/' . $s->name]));
         //$p->setLogo(Yii::$app->getModule('bbb')->settings->get('bbbLogo') ?? null);
 
         $r = $this->bbb->createMeeting($p);          // mehrfach aufrufbar

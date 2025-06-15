@@ -1,13 +1,13 @@
 <?php
-namespace humhub\modules\bbb\models\forms;
+namespace k7zz\humhub\bbb\models\forms;
 
-use humhub\modules\bbb\models\SessionUser;
+use k7zz\humhub\bbb\models\SessionUser;
 use humhub\modules\file\converter\PreviewImage;
 use humhub\modules\file\models\File;
 use yii\web\UploadedFile;
 use yii\base\Model;
 use Yii;
-use humhub\modules\bbb\models\Session;
+use k7zz\humhub\bbb\models\Session;
 use humhub\modules\user\models\User;
 use yii\helpers\Inflector;
 use yii\web\NotFoundHttpException;
@@ -73,31 +73,30 @@ class SessionForm extends Model
     }
 
     /** Formular zum Bearbeiten */
-    public static function edit(?int $id = null, ?string $slug = null, ?int $containerId = null): self
+    public static function edit(Session $session): self
     {
-        if ($id === null && $slug === null) {
-            return self::create($containerId);
+        if ($session === null) {
+            throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session not found.'));
         }
-        $record = $id !== null ? Session::findOne($id)
-            : Session::find()->where(['name' => $slug, 'deleted_at' => null])->one()
-            ?? throw new NotFoundHttpException();
-
-        if ($containerId !== null && $record->contentcontainer_id != $containerId) {
-            throw new NotFoundHttpException();          // fremder Container
+        if ($session->deleted_at !== null) {
+            throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $session->id]));
+        }
+        if (!$session->canAdminister()) {
+            throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $session->id]));
         }
 
         $userQ = SessionUser::find()
             ->join('JOIN', User::tableName(), 'user_id = user.id')
-            ->where(['session_id' => $record->id]);
+            ->where(['session_id' => $session->id]);
 
         $model = new self();
-        $model->record = $record;
-        $model->id = $record->id;
-        $model->name = $record->name;
-        $model->title = $record->title;
-        $model->description = $record->description;
-        $model->moderator_pw = $record->moderator_pw;
-        $model->attendee_pw = $record->attendee_pw;
+        $model->record = $session;
+        $model->id = $session->id;
+        $model->name = $session->name;
+        $model->title = $session->title;
+        $model->description = $session->description;
+        $model->moderator_pw = $session->moderator_pw;
+        $model->attendee_pw = $session->attendee_pw;
         $model->attendeeRefs = $userQ
             ->andWhere(['role' => 'attendee'])
             ->select('user.guid')
@@ -106,13 +105,13 @@ class SessionForm extends Model
             ->andWhere(['role' => 'moderator'])
             ->select('user.guid')
             ->column();
-        $model->publicJoin = $record->getAttendeeUsers() === null;
-        $model->publicModerate = $record->getModeratorUsers() === null;
-        $model->containerId = $record->contentcontainer_id ?? 0;
-        $model->creatorId = $record->creator_user_id;
-        if ($record->image_file_id !== null) {
-            $model->image_file_id = $record->image_file_id;
-            $model->image = $record->getImageFile()->one(); // Lazy-Loading des Bildes
+        $model->publicJoin = $session->getAttendeeUsers() === null || count($model->attendeeRefs) === 0;
+        $model->publicModerate = $session->getModeratorUsers() === null || count($model->moderatorRefs) === 0;
+        $model->containerId = $session->contentcontainer_id ?? 0;
+        $model->creatorId = $session->creator_user_id;
+        if ($session->image_file_id !== null) {
+            $model->image_file_id = $session->image_file_id;
+            $model->image = $session->getImageFile()->one(); // Lazy-Loading des Bildes
             $previewImage = new PreviewImage();
             if ($previewImage->applyFile($model->image)) {
                 $model->previewImage = $previewImage; // Vorschau-Bild für die Thumbnail-Anzeige
@@ -146,12 +145,12 @@ class SessionForm extends Model
 
     public function load($data, $formName = null): bool
     {
-        $r = parent::load($data, $formName);
+        $result = parent::load($data, $formName);
         $file = UploadedFile::getInstance($this, 'image');
         if ($file) {
             $this->imageUpload = $file;
         }
-        return $r;
+        return $result;
     }
 
     /* ---------- Speichern ---------- */
@@ -167,6 +166,8 @@ class SessionForm extends Model
             'contentcontainer_id' => $this->containerId ?: null,
             'created_at' => time(),
         ]);
+
+        echo "Saving session with Image: {$session->image_file_id}\n"; // Debug-Ausgabe
 
         $session->id = $this->id;
         $session->name = $this->name;

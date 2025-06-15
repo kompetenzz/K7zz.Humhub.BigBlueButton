@@ -1,6 +1,6 @@
 <?php
 
-namespace humhub\modules\bbb\helpers;
+namespace k7zz\humhub\bbb\helpers;
 
 use humhub\components\ActiveRecord;
 use humhub\modules\content\components\ContentContainerActiveRecord;

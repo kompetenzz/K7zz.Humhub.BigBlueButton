@@ -1,5 +1,5 @@
 <?php
-namespace humhub\modules\bbb\helpers;
+namespace k7zz\humhub\bbb\helpers;
 
 class GreenlightRooms
 {

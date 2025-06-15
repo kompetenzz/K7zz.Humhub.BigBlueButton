@@ -1,5 +1,5 @@
 <?php
-namespace humhub\modules\bbb\models\forms;
+namespace k7zz\humhub\bbb\models\forms;
 
 use yii\base\Model;
 use Yii;

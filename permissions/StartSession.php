@@ -1,6 +1,6 @@
 <?php
 
-namespace humhub\modules\bbb\permissions;
+namespace k7zz\humhub\bbb\permissions;
 
 use humhub\modules\space\models\Space;
 use humhub\modules\user\models\Group;

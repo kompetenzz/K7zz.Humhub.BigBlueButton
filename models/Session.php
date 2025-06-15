@@ -1,12 +1,12 @@
 <?php
-namespace humhub\modules\bbb\models;
+namespace k7zz\humhub\bbb\models;
 use Yii;
 use yii\db\ActiveRecord;
 use yii\db\ActiveQuery;
 use humhub\modules\file\converter\PreviewImage;
 use humhub\modules\file\models\File;
 use humhub\modules\user\models\User;
-use humhub\modules\bbb\permissions\{
+use k7zz\humhub\bbb\permissions\{
     Admin,
     StartSession,
     JoinSession

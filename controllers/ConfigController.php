@@ -1,10 +1,10 @@
 <?php
 
-namespace humhub\modules\bbb\controllers;
+namespace k7zz\humhub\bbb\controllers;
 
 use Yii;
 use humhub\modules\admin\components\Controller;
-use humhub\modules\bbb\models\forms\SettingsForm;
+use k7zz\humhub\bbb\models\forms\SettingsForm;
 
 class ConfigController extends Controller
 {
