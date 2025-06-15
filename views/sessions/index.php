@@ -13,49 +13,50 @@ $canCreate = $scope === 'container'
 ?>
 <div class="content">
     <div id="layout-content">
-        <div class="container-fluid">
+        <div class="container-fluid container-cards container-bbb-sessions">
+
             <div class="panel panel-default">
+                <?php if ($canCreate) { ?>
+                    <?= Html::a(
+                        Icon::get('plus') . ' ' . Yii::t('BbbModule.base', 'Create session'),
+                        ['/bbb/session/edit', 'containerId' => $containerId],
+                        ['class' => 'btn btn-primary pull-right', 'style' => 'margin: 10px']
+                    ); ?>
+                <?php } ?>
                 <div class="panel-heading">
-                    <h3 class="panel-title"><?= Yii::t('BbbModule.base', 'Conference sessions') ?></h3>
-                    <?php if ($canCreate) { ?>
-                        <?= Html::a(
-                            Icon::get('plus') . ' ' . Yii::t('BbbModule.base', 'Create session'),
-                            ['/bbb/session/edit', 'containerId' => $containerId],
-                            ['class' => 'btn btn-primary pull-right', 'style' => 'margin-right: 40px']
-                        ); ?>
-                    <?php } ?>
+                    <strong><?= Yii::t('BbbModule.base', 'Conference sessions') ?></strong>
                 </div>
+
                 <div class="panel-body">
                     <p>
                         <?= Yii::t('BbbModule.base', 'Here you can manage your conference sessions.'); ?>
                     </p>
-                    <?php if (empty($rows)) { ?>
-                        <div class="row">
-                            <div class="alert alert-info">
-                                <?= Yii::t('BbbModule.base', 'No conference sessions found.'); ?>
-                            </div>
-                        </div>
-                    <?php } ?>
-                    <div class="row">
-                        <?php foreach ($rows as $row): ?>
-                            <?= SessionCard::widget([
-                                'session' => $row['model'],
-                                'running' => $row['running'],
-                                'scope' => $scope,
-                                'highlightId' => $highlightId ?? 0,
-                            ]) ?>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <div class="panel-footer">
-                    <?= Yii::t('BbbModule.base', 'You can create a new session by clicking the button above.'); ?>
                 </div>
             </div>
+            <?php if (empty($rows)) { ?>
+                <div class="row">
+                    <div class="alert alert-info">
+                        <?= Yii::t('BbbModule.base', 'No conference sessions found.'); ?>
+                    </div>
+                </div>
+            <?php } ?>
+            <div class="row cards">
+                <?php foreach ($rows as $row): ?>
+                    <?= SessionCard::widget([
+                        'session' => $row['model'],
+                        'running' => $row['running'],
+                        'scope' => $scope,
+                        'highlightId' => $highlightId ?? 0,
+                    ]) ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <?= Yii::t('BbbModule.base', 'You can create a new session by clicking the button above.'); ?>
         </div>
     </div>
 </div>
 <?php
-
 /* JS, um den User-Picker live ein- und auszublenden */
 $this->registerJs("
     if (top != self) top.location.href = location.href;    

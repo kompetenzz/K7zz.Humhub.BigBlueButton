@@ -73,9 +73,8 @@ class SessionController extends BaseContentController
         $session = $this->svc->get($id, $slug)
             ?? throw new NotFoundHttpException();
 
-        // return $this->render('quit', compact('session'));
-        return Yii::$app->response->redirect(["bbb/sessions", "highlight" => $session->id]);
-
+        return $this->render('quit', compact('session'));
+        // return Yii::$app->response->redirect(["bbb/sessions", "highlight" => $session->id]);
     }
 
     private function prepareJoin(?int $id = null, ?string $slug = null): JoinInfo

@@ -21,6 +21,11 @@ use yii\helpers\Html;
 <?php
 /* JS, um den User-Picker live ein- und auszublenden */
 $this->registerJs("
-    if (top != self) top.location.href = location.href;    
+    if (top != self) {
+        top.location.href = '/bbb/sessions?highlight=" . rawurlencode($session->id) . "'; 
+        console.log('Redirecting to sessions page');
+  }
+    else
+        window.close();    
 ", \yii\web\View::POS_HEAD);
 ?>

@@ -9,6 +9,7 @@
 
 namespace k7zz\humhub\bbb;
 
+use k7zz\humhub\bbb\assets\BBBAssets;
 use Yii;
 use humhub\components\Module as BaseModule;
 use k7zz\humhub\bbb\permissions\{
@@ -37,12 +38,5 @@ class Module extends BaseModule
     public function getConfigUrl()
     {
         return Url::to(['/bbb/config/']);
-    }
-
-    public function getUrlRules()
-    {
-        return [
-            'bbb/session/<action:\w+>/<slug:[a-zA-Z0-9\-]+>' => 'bbb/session/<action>',
-        ];
     }
 }
