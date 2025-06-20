@@ -16,10 +16,20 @@ class SessionsController extends BaseContentController
         );
 
         $rows = array_map(
-            fn($s) => ['model' => $s, 'running' => $this->svc->isRunning($s->uuid)],
+            fn($s) => [
+                'model' => $s,
+                'running' => $this->svc->isRunning($s->uuid)
+            ],
             $sessions
         );
 
-        return $this->render('@bbb/views/sessions/index', ['rows' => $rows, 'scope' => $this->scope, 'highlightId' => $highlight]);
+        return $this->render(
+            '@bbb/views/sessions/index',
+            [
+                'rows' => $rows,
+                'scope' => $this->scope,
+                'highlightId' => $highlight
+            ]
+        );
     }
 }

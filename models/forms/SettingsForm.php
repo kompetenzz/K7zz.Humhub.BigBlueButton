@@ -11,10 +11,8 @@ use Yii;
  *   $model = new SettingsForm();
  *   if ($model->load($_POST) && $model->save()) …
  */
-class SettingsForm extends Model
+class SettingsForm extends SettingsBase
 {
-    private $settings;
-
     public string $bbbUrl = '';
 
     /** @var string  Sicherheitssalt / Secret aus der BBB-Konfiguration */
@@ -22,19 +20,19 @@ class SettingsForm extends Model
 
     public function rules(): array
     {
-        return [
+        return array_merge([
             [['bbbUrl', 'bbbSecret'], 'required'],
             ['bbbUrl', 'url', 'defaultScheme' => 'https'],
             ['bbbSecret', 'string', 'max' => 255],
-        ];
+        ], parent::rules());
     }
 
     public function attributeLabels(): array
     {
-        return [
-            'bbbUrl' => Yii::t('BbbModule.base', 'BBB Server URL'),
-            'bbbSecret' => Yii::t('BbbModule.base', 'BBB Shared Secret'),
-        ];
+        return array_merge([
+            'bbbUrl' => Yii::t('BbbModule.config', 'Server URL'),
+            'bbbSecret' => Yii::t('BbbModule.config', 'Shared Secret')
+        ], parent::attributeLabels());
     }
 
     /* ========== Laden & Speichern in HumHub-Settings ========== */
@@ -42,8 +40,8 @@ class SettingsForm extends Model
     /** Lädt Werte aus Config-Tabelle */
     public function init()
     {
-        parent::init();
         $this->settings = Yii::$app->getModule('bbb')->settings;
+        parent::init();
         $this->bbbUrl = $this->settings->get('bbbUrl') ?? '';
         $this->bbbSecret = $this->settings->get('bbbSecret') ?? '';
     }
@@ -51,6 +49,9 @@ class SettingsForm extends Model
     /** speichert bei erfolgreicher Validierung */
     public function save(): bool
     {
+        if (!parent::save()) {
+            return false;
+        }
         if (!$this->validate()) {
             return false;
         }

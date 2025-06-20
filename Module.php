@@ -9,9 +9,12 @@
 
 namespace k7zz\humhub\bbb;
 
-use k7zz\humhub\bbb\assets\BBBAssets;
+use humhub\modules\content\components\ContentContainerActiveRecord;
+use humhub\modules\space\models\Space;
+use humhub\modules\user\components\User;
+use k7zz\humhub\bbb\models\Session;
 use Yii;
-use humhub\components\Module as BaseModule;
+use humhub\modules\content\components\ContentContainerModule;
 use k7zz\humhub\bbb\permissions\{
     Admin,
     StartSession,
@@ -20,15 +23,39 @@ use k7zz\humhub\bbb\permissions\{
 use k7zz\humhub\bbb\services\SessionService;
 use yii\helpers\Url;
 
-class Module extends BaseModule
+class Module extends ContentContainerModule
 {
-    public $controllerNamespace = 'k7zz\\humhub\\bbb\\controllers';
+    public $guid = 'bbb';                     // ganz wichtig
+    public $controllerNamespace = __NAMESPACE__ . '\controllers';
 
     public function init()
     {
         parent::init();
         Yii::$container->set(SessionService::class);
     }
+
+    public function getContentContainerTypes()
+    {
+        // This module can only be installed on spaces
+        return [Space::class, User::class];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContainerPermissions($contentContainer = null)
+    {
+        return [new Admin(), new StartSession(), new JoinSession()];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentClasses(): array
+    {
+        return [Session::class];
+    }
+
 
     public function getPermissions($contentContainer = null)
     {
@@ -38,5 +65,24 @@ class Module extends BaseModule
     public function getConfigUrl()
     {
         return Url::to(['/bbb/config/']);
+    }
+    /**
+     * @inheritdoc
+     */
+    public function getContentContainerConfigUrl(ContentContainerActiveRecord $container)
+    {
+        return $container->createUrl('/bbb/container-config');
+    }
+    /**
+     * @inheritdoc
+     */
+    public function getContentContainerDescription(ContentContainerActiveRecord $container)
+    {
+        if ($container instanceof Space) {
+            return Yii::t('BbbModule.base', 'Adds sessions to this space.');
+        } elseif ($container instanceof User) {
+            return Yii::t('BbbModule.base', 'Adds sessions to your profile.');
+        }
+        return Yii::t('BbbModule.base', 'Adds sessions to this container.');
     }
 }

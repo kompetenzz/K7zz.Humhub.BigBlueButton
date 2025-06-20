@@ -1,11 +1,12 @@
 <?php
 namespace k7zz\humhub\bbb\models;
 use Yii;
-use yii\db\ActiveRecord;
+use humhub\modules\content\components\ContentActiveRecord;
+use humhub\libs\BasePermission;
 use yii\db\ActiveQuery;
 use humhub\modules\file\converter\PreviewImage;
 use humhub\modules\file\models\File;
-use humhub\modules\user\models\User;
+use humhub\modules\user\components\User;
 use k7zz\humhub\bbb\permissions\{
     Admin,
     StartSession,
@@ -17,7 +18,7 @@ use k7zz\humhub\bbb\permissions\{
  * @property string $moderator_pw
  * …
  */
-class Session extends ActiveRecord
+class Session extends ContentActiveRecord
 {
     public $outputImage = null;
 
@@ -41,15 +42,7 @@ class Session extends ActiveRecord
     {
         $user ??= Yii::$app->user;
 
-        if ($this->contentcontainer_id === null) {
-            if ($user->can(Admin::class))
-                return true;
-        } else {
-            $container = $this->getContentContainer();
-            if ($container && $container->can(Admin::class))
-                return true;
-        }
-        return false;
+        return $this->can($user, Admin::class);
     }
 
     /** darf $user diese Session starten? */
@@ -57,16 +50,13 @@ class Session extends ActiveRecord
     {
         $user ??= Yii::$app->user;
 
-        // 1) Globale bzw. Container-Permission
-        if ($this->contentcontainer_id === null) {
-            if ($user->can(StartSession::class))
-                return true;
-        } else {
-            $container = $this->getContentContainer();                // Space/User-Profil
-            if ($container && $container->can(StartSession::class))
-                return true;
+        if ($this->canAdminister($user)) {
+            return true; //  globale bzw. Container-Permission
         }
 
+        if ($this->can($user, StartSession::class)) {
+            return true; //  globale bzw. Container-Permission
+        }
         // 2) Pivot-Zeile
         $pivot = SessionUser::findOne(['session_id' => $this->id, 'user_id' => $user->id]);
         return $pivot ? (bool) $pivot->can_start || $pivot->role === 'moderator' : false;
@@ -76,17 +66,13 @@ class Session extends ActiveRecord
     public function canJoin(?User $user = null): bool
     {
         $user ??= Yii::$app->user;
-        if ($this->contentcontainer_id === null) {
-            if ($user->can(JoinSession::class))
-                return true;
-        } else {
-            $container = $this->getContentContainer();
-            if ($container && $container->can(JoinSession::class))
-                return true;
-        }
 
         if ($this->canStart($user)) {
             return true; //  dürfen immer beitreten
+        }
+
+        if ($this->can($user, JoinSession::class)) {
+            return true; //  globale bzw. Container-Permission
         }
 
         $pivot = SessionUser::findOne(['session_id' => $this->id, 'user_id' => $user->id]);
@@ -96,17 +82,33 @@ class Session extends ActiveRecord
     public function isModerator(?User $user = null): bool
     {
         $user ??= Yii::$app->user;
-        if ($this->contentcontainer_id === null) {
-            if ($user->can(Admin::class))
-                return true;
-        } else {
-            $container = $this->getContentContainer();
-            if ($container && $container->can(Admin::class))
-                return true;
+        if ($this->can($user, Admin::class)) {
+            return true; //  globale bzw. Container-Permission
         }
 
         $pivot = SessionUser::findOne(['session_id' => $this->id, 'user_id' => $user->id]);
         return $pivot ? (bool) $pivot->role === 'moderator' : false;
+    }
+
+    private function can(?User $user, BasePermission|string $permission): bool
+    {
+        $user ??= Yii::$app->user;
+        if ($this->contentcontainer_id === null) {
+            if ($user->can($permission))
+                return true;
+        } else {
+            $space = \humhub\modules\space\models\Space::find()
+                ->where(['id' => $this->contentcontainer_id])
+                ->one();
+            if ($space && $space->can($permission))
+                return true;
+            $user = \humhub\modules\user\models\User::find()
+                ->where(['id' => $this->contentcontainer_id])
+                ->one();
+            if ($user && $user->can($permission))
+                return true;
+        }
+        return false;
     }
 
     public function rules(): array

@@ -7,6 +7,11 @@
  */
 
 use yii\bootstrap\ActiveForm;
+use humhub\libs\Html;
+
+/* @var $this \humhub\modules\ui\view\components\View *
+/* @var $subNav string */
+/* @var $model \humhub\modules\custom_pages\models\forms\SettingsForm */
 
 ?>
 
@@ -17,7 +22,7 @@ use yii\bootstrap\ActiveForm;
         <div class="clearfix">
             <h4><?= Yii::t('BbbModule.config', 'Settings') ?></h4>
             <div class="help-block">
-                <?= Yii::t('BbbModule.config', 'On this page you can configure general settings of your Bigbluebutton integration.') ?>
+                <?= Yii::t('BbbModule.config', 'On this page you can configure container settings of your Bigbluebutton integration.') ?>
             </div>
         </div>
 
@@ -25,12 +30,6 @@ use yii\bootstrap\ActiveForm;
 
         <?php $form = ActiveForm::begin() ?>
         <div class="panel-body">
-            <?= $form->field($model, 'bbbUrl')
-                ->textInput(options: ['placeholder' => 'https://bbb.example.org/bigbluebutton/']); ?>
-
-            <?= $form->field($model, 'bbbSecret')
-                ->passwordInput(['autocomplete' => 'new-password']); ?>
-
             <?= $form->field($model, 'addNavItem')
                 ->checkbox(); ?>
 

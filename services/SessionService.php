@@ -37,12 +37,10 @@ class SessionService
     {
         $c = [
             'deleted_at' => null,
+            'contentcontainer_id' => $containerId
         ];
         if ($onlyEnabled) {
             $c['enabled'] = true; // nur aktive Sessions
-        }
-        if ($containerId !== null) {
-            $c['contentcontainer_id'] = $containerId;
         }
         $q = Session::find()
             ->where($c)
@@ -52,7 +50,7 @@ class SessionService
     }
 
     /** Holt exakt eine Session (oder null) – optional Container-Check */
-    public function get(?int $id = null, ?string $slug = null, ?int $containerId = null): ?Session
+    public function get(?int $id = null, ?int $containerId = null): ?Session
     {
         $c = [
             'deleted_at' => null, // nur nicht gelöschte Sessions
@@ -62,8 +60,6 @@ class SessionService
         }
         if ($id !== null) {
             $c['id'] = $id; // Suche nach ID
-        } elseif ($slug !== null) {
-            $c['name'] = $slug; // Suche nach Slug
         } else {
             return null; // Keine ID oder Slug angegeben
         }
@@ -84,15 +80,16 @@ class SessionService
 
 
     /** Startet eine neue Session (oder idempotent) und liefert Moderator-URL */
-    public function start(Session $s): string
+    public function start(Session $s, $container = null): string
     {
         $p = new CreateMeetingParameters($s->uuid, $s->name);
         $p->setModeratorPassword($s->moderator_pw);
         $p->setAttendeePassword($s->attendee_pw);
         $p->setAllowStartStopRecording(true);
         $p->setWelcomeMessage($s->description ?? '');
-        $p->setLogoutUrl(Yii::$app->urlManager->createAbsoluteUrl(['/bbb/session/quit/' . $s->name]));
-        //$p->setLogo(Yii::$app->getModule('bbb')->settings->get('bbbLogo') ?? null);
+        $url = $container ? $container->createUrl('/bbb/sessions') :
+            '/bbb/sessions';
+        $p->setLogoutUrl(Yii::$app->urlManager->createAbsoluteUrl($url . "?highlight=" . $s->id));
 
         $r = $this->bbb->createMeeting($p);          // mehrfach aufrufbar
         return $this->joinUrl($s, true);

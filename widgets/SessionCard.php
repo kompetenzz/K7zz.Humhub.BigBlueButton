@@ -10,12 +10,15 @@ class SessionCard extends Widget
     public string $scope;   // 'container' | 'global'
     public ?int $highlightId = null;
 
+    public $contentContainer = null;
+
     public function run()
     {
         return $this->render('sessionCard', [
             'model' => $this->session,
             'running' => $this->running,
             'scope' => $this->scope,
+            'contentContainer' => $this->contentContainer,
             'highlightId' => $this->highlightId ?? 0,
         ]);
     }

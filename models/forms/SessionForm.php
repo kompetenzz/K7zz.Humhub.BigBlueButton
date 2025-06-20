@@ -61,7 +61,7 @@ class SessionForm extends Model
     /* ---------- Fabrik-Methoden ---------- */
 
     /** Neues Formular für eine frische Session */
-    public static function create(int $containerId): self
+    public static function create(?int $containerId = null): self
     {
         $model = new self();
         $model->containerId = $containerId;
@@ -193,10 +193,11 @@ class SessionForm extends Model
                 $this->addError('image', Yii::t('BbbModule.base', 'Could not save image reference to database.'));
                 return false;
             }
-            // 3) Physisches Speichern in HumHubs Storage
             $humhubFile->setStoredFileContent(file_get_contents($this->imageUpload->tempName));
+
             if (!$session->image_file_id) {
                 $session->image_file_id = $humhubFile->id;
+                $session->fileManager->attach($humhubFile->guid);
             }
         }
         if (!$session->save())
