@@ -11,7 +11,7 @@ namespace k7zz\humhub\bbb;
 
 use humhub\modules\content\components\ContentContainerActiveRecord;
 use humhub\modules\space\models\Space;
-use humhub\modules\user\components\User;
+use humhub\modules\user\models\User;
 use k7zz\humhub\bbb\models\Session;
 use Yii;
 use humhub\modules\content\components\ContentContainerModule;
@@ -36,8 +36,10 @@ class Module extends ContentContainerModule
 
     public function getContentContainerTypes()
     {
-        // This module can only be installed on spaces
-        return [Space::class, User::class];
+        return [
+            Space::class,
+            User::class,
+        ];
     }
 
     /**

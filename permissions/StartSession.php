@@ -36,6 +36,6 @@ class StartSession extends \humhub\libs\BasePermission
 
     public function getDescription()
     {
-        return Yii::t('BbbModule.base', 'Allows the user to start an online meeting.');
+        return Yii::t('BbbModule.base', 'Allows the user to start a session.');
     }
 }

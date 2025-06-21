@@ -63,7 +63,7 @@ class SessionController extends BaseContentController
             $joinUrl = $this->svc->start($session, $this->contentContainer);
             if (!$joinUrl) {
                 throw new ServerErrorHttpException(
-                    Yii::t('BbbModule.base', 'Could not start session {title}.', ['title' => $session->title])
+                    Yii::t('BbbModule.base', 'Could not start session "{title}".', ['title' => $session->title])
                 );
             }
         }

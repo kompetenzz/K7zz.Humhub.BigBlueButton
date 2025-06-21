@@ -18,6 +18,6 @@ class JoinSession extends \humhub\libs\BasePermission
 
     public function getDescription()
     {
-        return Yii::t('BbbModule.base', 'Allows the user to join an online meeting.');
+        return Yii::t('BbbModule.base', 'Allows the user to join a session.');
     }
 }

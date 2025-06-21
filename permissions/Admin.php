@@ -42,6 +42,6 @@ class Admin extends BaseAdminPermission
 
     public function getDescription()
     {
-        return Yii::t('BbbModule.base', 'Allows the user to maintain all online meetings.');
+        return Yii::t('BbbModule.base', 'Allows the user to maintain all sessions.');
     }
 }

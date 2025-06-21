@@ -1,31 +1,46 @@
 <?php
-/**
- * Deutsch – BBB-Modul
- */
+
 return [
-    // Status-Labels
-    'Running' => 'Online',
-    'Stopped' => 'Pausiert',
-
-    // Aktionen / Buttons
     'Join' => 'Beitreten',
-    'Start' => 'Starten',
-    'Edit' => 'Bearbeiten',
-    'Manage users' => 'Mitglieder verwalten',
-
-    // Formular-/UI-Texte
     'Live session' => 'Live-Session',
-    'Add as moderator' => 'Moderationsrechte erteilen',
-    'User' => 'Mitlgied',
-    'Role' => 'Rolle',
-
-    // Settings
-    'BBB Server URL' => 'BBB-Server-URL',
-    'BBB Shared Secret' => 'BBB-Shared-Secret',
-
-    // Flash-Meldungen
-    'Session create' => 'Konferenz angelegt',
-    'Session saved' => 'Konferenzeinstellungen gespeichert',
-    'Session deleted' => 'Konferenz gelöscht',
-    'Settings saved' => 'Einstellungen gespeichert',
+    'Running' => 'Online',
+    'Start' => 'Starten',
+    'Stopped' => 'Pausiert',
+    'Adds sessions to this container.' => 'Videokonferenz zu diesem Bereich hinzufügen.',
+    'Adds sessions to this space.' => 'Videokonferenzen zu diesem Space hinzufügen.',
+    'Adds sessions to your profile.' => 'Videokonferenzen zu deinem Profil hinzufügen.',
+    'Administer conference sessions' => 'Videokonferenzen verwalten',
+    'Allow everybody with permission to join this session' => 'Allen Personen mit Berechtigung erlauben, dieser Sitzung beizutreten',
+    'Allow everybody with permission to moderate this session' => 'Allen Personen mit Berechtigung erlauben, diese Sitzung zu moderieren',
+    'Allows the user to join a session.' => 'Erlaubt der/dem Benutzer*in, an einem Online-Meeting teilzunehmen.',
+    'Allows the user to maintain all sessions.' => 'Erlaubt der/dem Benutzer*in, an allen Videokonferenzen teilzunehmen.',
+    'Allows the user to start a session.' => 'Erlaubt der/dem Benutzer*in, eine Videokonferenz zu starten.',
+    'Cancel' => 'Abbrechen',
+    'Conference sessions' => 'Videokonferenzen',
+    'Could not save image reference to database.' => 'Konnte Bild nicht in die Datenbank speichern.',
+    'Could not start session "{title}".' => 'Konnte Videokonferenz "{title}" nicht starten.',
+    'Create session' => 'Videokonferenz erstellen',
+    'Edit session' => 'Videokonferenz bearbeiten',
+    'Here you can manage your conference sessions.' => 'Hier kannst du deine Videokonferenzen verwalten.',
+    'Join online conference session' => 'Videokonferenz beitreten',
+    'No conference sessions found.' => 'Keine Videokonferenzen gefunden.',
+    'Optional detailed description of the session and it\'s purpose.' => 'Optionale detaillierte Beschreibung der Sitzung und ihres Zwecks.',
+    'Optional image for this session. Recommended size: 800x600px.' => 'Optionales Bild für diese Sitzung. Empfohlene Größe: 800x600px.',
+    'Save' => 'Speichern',
+    'Select specific moderators for this session' => 'Wähle spezifische Moderator*innen für diese Sitzung',
+    'Select specific users for this session' => 'Wähle spezifische Benutzer*innen für diese Sitzung',
+    'Session created.' => 'Videokonferenz erstellt.',
+    'Session image' => 'Videokonferenz-Bild',
+    'Session not found.' => 'Videokonferenz nicht gefunden.',
+    'Session saved.' => 'Videokonferenz gespeichert.',
+    'Session with Id {id} not found.' => 'Videokonferenz mit Id {id} nicht gefunden.',
+    'Speaking name for your audience, e.g. "Weekly Team Meeting"' => 'Sprechender Name für dein Publikum, z.B. "Wöchentliches Team-Meeting"',
+    'Start in embedded mode' => 'Starten im eingebetteten Modus',
+    'Start in new tab' => 'Starten in neuem Tab',
+    'Start online conference session' => 'Starte Videokonferenz',
+    'Use this safe suggestion.' => 'Nutze diesen sicheren Vorschlag.',
+    'Used as identifier and for the URL of the session, e.g. "weekly-team-meeting"' => 'Wird als Kennung und für die URL der Sitzung verwendet, z.B. "weekly-team-meeting"',
+    'You can create a new session by clicking the button above.' => 'Du kannst eine neue Videokonferenz erstellen, indem du auf die Schaltfläche oben klickst.',
+    'not recommended' => 'Nicht empfohlen',
+    'recommended' => 'Empfohlen',
 ];
