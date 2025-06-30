@@ -37,7 +37,7 @@ class SessionForm extends Model
 
     /* interne Helfer */
     private ?Session $record = null;
-    public int $containerId;
+    public ?int $containerId;
     private int $creatorId;
     public bool $publicJoin = true;
     public bool $publicModerate = true;
