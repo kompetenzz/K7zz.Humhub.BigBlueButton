@@ -1,7 +1,6 @@
 <?php
 namespace k7zz\humhub\bbb\services;
 
-use humhub\modules\content\models\ContentContainer;
 use k7zz\humhub\bbb\models\Session;
 use Yii;
 use BigBlueButton\BigBlueButton;
@@ -67,9 +66,6 @@ class SessionService
             ->joinWith('content')
             ->where(['session.id' => $id, 'session.deleted_at' => null]);
 
-        if ($container !== null) {
-            $query->andWhere(['content.contentcontainer_id' => $container->id]);
-        }
         return $query->one();
     }
 
@@ -89,14 +85,14 @@ class SessionService
     /** Startet eine neue Session (oder idempotent) und liefert Moderator-URL */
     public function start(Session $s, ContentContainerActiveRecord $container = null): string
     {
-        $p = new CreateMeetingParameters($s->uuid, $s->name);
-        $p->setModeratorPassword($s->moderator_pw);
-        $p->setAttendeePassword($s->attendee_pw);
-        $p->setAllowStartStopRecording(true);
-        $p->setWelcomeMessage($s->description ?? '');
         $url = $container ? $container->createUrl('/bbb/sessions') :
             Url::to('/bbb/sessions');
-        $p->setLogoutUrl(Yii::$app->urlManager->createAbsoluteUrl($url . "?highlight=" . $s->id));
+        $p = (new CreateMeetingParameters($s->uuid, $s->name))
+            ->setModeratorPassword($s->moderator_pw)
+            ->setAttendeePassword($s->attendee_pw)
+            ->setAllowStartStopRecording(true)
+            ->setWelcomeMessage($s->description ?? '')
+            ->setLogoutUrl(Yii::$app->urlManager->createAbsoluteUrl($url . "?highlight=" . $s->id));
 
         $r = $this->bbb->createMeeting($p);          // mehrfach aufrufbar
         return $this->joinUrl($s, true);
@@ -105,13 +101,14 @@ class SessionService
     /** Baut eine Join-URL für den gegebenen Nutzer */
     public function joinUrl(Session $session, bool $moderator = false): string
     {
-        $jp = new JoinMeetingParameters(
-            $session->uuid,
-            Yii::$app->user->identity->displayName,
-            $moderator ? $session->moderator_pw : $session->attendee_pw
-        );
-        $jp->setUserId(Yii::$app->user->identity->email);
-        $jp->setAvatarURL(avatarURL: Yii::$app->user->identity->getProfileImage()->getUrl());
+        $jp = (new JoinMeetingParameters())
+            ->setUserName(Yii::$app->user->identity->displayName)
+            ->setPassword(
+                $moderator ? $session->moderator_pw : $session->attendee_pw
+            )
+            ->setMeetingId($session->uuid)
+            ->setUserId(Yii::$app->user->identity->email)
+            ->setAvatarURL(avatarURL: Url::to(Yii::$app->user->identity->getProfileImage()->getUrl(), true));
         return $this->bbb->getJoinMeetingURL($jp);
     }
 }

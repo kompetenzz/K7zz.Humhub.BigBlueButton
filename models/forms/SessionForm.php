@@ -110,7 +110,7 @@ class SessionForm extends Model
             ->column();
         $model->publicJoin = $session->getAttendeeUsers() === null || count($model->attendeeRefs) === 0;
         $model->publicModerate = $session->getModeratorUsers() === null || count($model->moderatorRefs) === 0;
-        $model->container = $session->content->container;
+        $model->contentContainer = $session->content->container;
         $model->creatorId = $session->creator_user_id;
         if ($session->image_file_id !== null) {
             $model->image_file_id = $session->image_file_id;

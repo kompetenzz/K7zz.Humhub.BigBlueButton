@@ -34,10 +34,10 @@ abstract class BaseContentController extends ContentContainerController
         }
     }
 
-    protected function getUrl($url, ContentActiveRecord $container = null)
+    protected function getUrl($url)
     {
-        if ($container) {
-            return $container->createUrl($url);
+        if ($this->contentContainer) {
+            return $this->contentContainer->createUrl($url);
         }
         return Url::to($url);
     }

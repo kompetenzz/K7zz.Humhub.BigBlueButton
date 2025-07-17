@@ -6,7 +6,8 @@ use humhub\libs\BasePermission;
 use yii\db\ActiveQuery;
 use humhub\modules\file\converter\PreviewImage;
 use humhub\modules\file\models\File;
-use humhub\modules\user\components\User;
+use humhub\modules\user\components\User as UserComponent;
+use humhub\modules\user\models\User;
 use k7zz\humhub\bbb\permissions\{
     Admin,
     StartSession,
@@ -51,7 +52,7 @@ class Session extends ContentActiveRecord
         return $this->description ?: Yii::t('BbbModule.base', 'Live video session with BigBlueButton');
     }
 
-    public function canAdminister(?User $user = null): bool
+    public function canAdminister(?UserComponent $user = null): bool
     {
         $user ??= Yii::$app->user;
 
@@ -63,7 +64,7 @@ class Session extends ContentActiveRecord
     }
 
     /** darf $user diese Session starten? */
-    public function canStart(?User $user = null): bool
+    public function canStart(?UserComponent $user = null): bool
     {
         $user ??= Yii::$app->user;
 
@@ -80,7 +81,7 @@ class Session extends ContentActiveRecord
     }
 
     /** darf $user beitreten? */
-    public function canJoin(?User $user = null): bool
+    public function canJoin(?UserComponent $user = null): bool
     {
         $user ??= Yii::$app->user;
 
@@ -96,7 +97,7 @@ class Session extends ContentActiveRecord
         return $pivot ? (bool) $pivot->can_join : false;
     }
 
-    public function isModerator(?User $user = null): bool
+    public function isModerator(?UserComponent $user = null): bool
     {
         $user ??= Yii::$app->user;
         if ($this->can($user, Admin::class)) {
@@ -107,7 +108,7 @@ class Session extends ContentActiveRecord
         return $pivot ? (bool) $pivot->role === 'moderator' : false;
     }
 
-    private function can(?User $user, BasePermission|string $permission): bool
+    private function can(?UserComponent $user, BasePermission|string $permission): bool
     {
         $user ??= Yii::$app->user;
 
