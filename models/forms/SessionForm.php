@@ -40,7 +40,7 @@ class SessionForm extends Model
     /* interne Helfer */
     private ?Session $record = null;
 
-    public ContentContainerActiveRecord $contentContainer;
+    public ?ContentContainerActiveRecord $contentContainer;
     private int $creatorId;
     public bool $publicJoin = true;
     public bool $publicModerate = true;
