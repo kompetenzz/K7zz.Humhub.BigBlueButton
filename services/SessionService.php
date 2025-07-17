@@ -1,6 +1,7 @@
 <?php
 namespace k7zz\humhub\bbb\services;
 
+use humhub\modules\content\models\ContentContainer;
 use k7zz\humhub\bbb\models\Session;
 use Yii;
 use BigBlueButton\BigBlueButton;
@@ -9,6 +10,8 @@ use BigBlueButton\Parameters\{
     IsMeetingRunningParameters,
     JoinMeetingParameters
 };
+use humhub\modules\content\components\ContentContainerActiveRecord;
+use yii\helpers\Url;
 
 /**
  * Domaindienst rund um BBB-Sessions.
@@ -28,42 +31,46 @@ class SessionService
         $this->bbb = new BigBlueButton($baseUrl, $secret);
     }
 
+    private function getQueryStarter(ContentContainerActiveRecord $container = null)
+    {
+        return Session::find()->contentContainer($container);
+    }
+
     /* ------------------------------------------------------------------ */
     /*  API-Methoden                                                      */
     /* ------------------------------------------------------------------ */
 
     /** Liste aller Sessions – optional nach ContentContainer gefiltert */
-    public function list(?int $containerId = null, bool $onlyEnabled = false): array
+    public function list(ContentContainerActiveRecord $container = null, bool $onlyEnabled = false): array
     {
-        $c = [
-            'deleted_at' => null,
-            'contentcontainer_id' => $containerId
-        ];
-        if ($onlyEnabled) {
-            $c['enabled'] = true; // nur aktive Sessions
-        }
-        $q = Session::find()
-            ->where($c)
-            ->orderBy(['ord' => SORT_ASC, 'title' => SORT_ASC]);
+        $query = $this->getQueryStarter($container)
+            ->alias('session')
+            ->joinWith('content')
+            ->where(['session.deleted_at' => null]);
 
-        return $q->all();
+        if ($onlyEnabled) {
+            $query->andWhere(['session.enabled' => true]);
+        }
+        Yii::error("Query: " . $query->createCommand()->getRawSql(), 'bbb');
+        return $query->all();
     }
 
     /** Holt exakt eine Session (oder null) – optional Container-Check */
-    public function get(?int $id = null, ?int $containerId = null): ?Session
+    public function get(?int $id = null, ContentContainerActiveRecord $container = null): ?Session
     {
-        $c = [
-            'deleted_at' => null, // nur nicht gelöschte Sessions
-        ];
-        if ($containerId !== null) {
-            $c['contentcontainer_id'] = $containerId; // optional Container-Filter
+        if ($id === null) {
+            return null;
         }
-        if ($id !== null) {
-            $c['id'] = $id; // Suche nach ID
-        } else {
-            return null; // Keine ID oder Slug angegeben
+
+        $query = $this->getQueryStarter($container)
+            ->alias('session')
+            ->joinWith('content')
+            ->where(['session.id' => $id, 'session.deleted_at' => null]);
+
+        if ($container !== null) {
+            $query->andWhere(['content.contentcontainer_id' => $container->id]);
         }
-        return Session::findOne($c);
+        return $query->one();
     }
 
     /** Prüft, ob ein Raum bereits auf BBB läuft */
@@ -80,7 +87,7 @@ class SessionService
 
 
     /** Startet eine neue Session (oder idempotent) und liefert Moderator-URL */
-    public function start(Session $s, $container = null): string
+    public function start(Session $s, ContentContainerActiveRecord $container = null): string
     {
         $p = new CreateMeetingParameters($s->uuid, $s->name);
         $p->setModeratorPassword($s->moderator_pw);
@@ -88,7 +95,7 @@ class SessionService
         $p->setAllowStartStopRecording(true);
         $p->setWelcomeMessage($s->description ?? '');
         $url = $container ? $container->createUrl('/bbb/sessions') :
-            '/bbb/sessions';
+            Url::to('/bbb/sessions');
         $p->setLogoutUrl(Yii::$app->urlManager->createAbsoluteUrl($url . "?highlight=" . $s->id));
 
         $r = $this->bbb->createMeeting($p);          // mehrfach aufrufbar

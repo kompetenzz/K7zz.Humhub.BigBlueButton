@@ -10,7 +10,7 @@ class SessionsController extends BaseContentController
     public function actionIndex(?int $highlight = 0)
     {
         $sessions = array_filter(
-            $this->svc->list($this->contentContainer?->id),
+            $this->svc->list($this->contentContainer),
             fn($s) => $s->canJoin() ||
             $s->canStart()
         );

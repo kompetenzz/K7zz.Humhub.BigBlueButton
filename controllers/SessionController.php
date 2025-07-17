@@ -6,45 +6,44 @@ use k7zz\humhub\bbb\models\forms\SessionForm;
 use k7zz\humhub\bbb\models\Session;
 use k7zz\humhub\bbb\models\JoinInfo;
 use Yii;
+use yii\helpers\Url;
 use yii\web\{ForbiddenHttpException, NotFoundHttpException, ServerErrorHttpException};
 
 class SessionController extends BaseContentController
 {
 
-    public function actionIndex(?int $id = null, ?string $containerId = null)
+    public function actionIndex(?int $id = null)
     {
-        if ($id !== null) {
-            $s = Session::find()->where(['id' => $id, 'contentcontainer_id' => $containerId])->one();
-            if (!$s) {
-                throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
-            }
+        if ($id === null) {
+            throw new NotFoundHttpException();
         }
-        return $this->render('edit', ['model' => $s]);
+        return $this->actionEdit($id);
     }
 
-    public function actionCreate(?int $containerId = null)
+    public function actionCreate()
     {
-        $form = SessionForm::create($containerId);
+        $form = SessionForm::create($this->contentContainer);
 
         if ($form->load(Yii::$app->request->post()) && $form->save()) {
             $this->view->success(Yii::t('BbbModule.base', 'Session created.'));
-            $url = $containerId && $this->contentContainer
-                ? $this->contentContainer->createUrl('/bbb/sessions') : '/bbb/sessions';
-            return $this->redirect([$url, 'highlight' => $form->id]);
+            return $this->redirect([$this->getUrl('/bbb/sessions'), 'highlight' => $form->id]);
         }
         return $this->render('edit', ['model' => $form]);
     }
 
-    public function actionEdit(?int $id = null, ?string $containerId = null)
+    public function actionEdit(?int $id = null)
     {
-        $session = $this->svc->get($id, $this->contentContainer ? $this->contentContainer->id : null)
-            ?? throw new NotFoundHttpException();
+        if ($id === null) {
+            throw new NotFoundHttpException();
+        }
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
 
         $form = SessionForm::edit($session);
 
         if ($form->load(Yii::$app->request->post()) && $form->save()) {
             $this->view->success(Yii::t('BbbModule.base', 'Session saved.'));
-            return $this->redirect(['sessions/', 'highlight' => $form->id, 'containerId' => $form->containerId]);
+            return $this->redirect([$this->getUrl('sessions/'), 'highlight' => $form->id]);
         }
         return $this->render('edit', ['model' => $form]);
     }
@@ -54,8 +53,8 @@ class SessionController extends BaseContentController
         if ($id === null) {
             throw new NotFoundHttpException();
         }
-        $session = $this->svc->get($id, $this->contentContainer ? $this->contentContainer->id : null)
-            ?? throw new NotFoundHttpException();
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
         if (!$this->svc->isRunning($session->uuid)) {
             if (!$session->canStart()) {
                 throw new ForbiddenHttpException();
@@ -71,17 +70,15 @@ class SessionController extends BaseContentController
             return Yii::$app->response->redirect(Yii::$app->request->referrer);
 
         $actionName = $embed ? "embed" : "join";
-        return $this->redirect("/bbb/session/{$actionName}/{$session->name}");
+        return $this->redirect($this->getUrl("/bbb/session/{$actionName}/{$session->name}"));
     }
 
     public function actionQuit(?int $id = null)
     {
         $session = $this->svc->get($id)
-            ?? throw new NotFoundHttpException();
-        return $this->redirect("/bbb/sessions?highlight={$session->id}", $session->contentcontainer_id);
+            ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
+        return $this->redirect($this->getUrl("/bbb/sessions?highlight={$session->id}"));
 
-        // return $this->render('quit', compact('session'));
-        // return Yii::$app->response->redirect(["bbb/sessions", "highlight" => $session->id]);
     }
 
     private function prepareJoin(?int $id = null): JoinInfo
@@ -89,8 +86,8 @@ class SessionController extends BaseContentController
         if ($id === null) {
             throw new NotFoundHttpException();
         }
-        $session = $this->svc->get($id, $this->contentContainer ? $this->contentContainer->id : null)
-            ?? throw new NotFoundHttpException();
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
 
         if (!$session->canJoin()) {
             throw new ForbiddenHttpException();

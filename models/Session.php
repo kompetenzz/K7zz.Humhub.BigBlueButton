@@ -20,6 +20,7 @@ use k7zz\humhub\bbb\permissions\{
  */
 class Session extends ContentActiveRecord
 {
+    protected $moduleId = 'bbb';
     public $outputImage = null;
 
     public function afterFind()
@@ -37,10 +38,26 @@ class Session extends ContentActiveRecord
     {
         return 'bbb_session';
     }
+    public $wallEntryClass = null; // optional, falls keine Wall-Darstellung
+    public $autoAddToWall = true; // optional
+
+    public function getContentName()
+    {
+        return $this->title ?: Yii::t('BbbModule.base', 'A live session');
+    }
+
+    public function getContentDescription()
+    {
+        return $this->description ?: Yii::t('BbbModule.base', 'Live video session with BigBlueButton');
+    }
 
     public function canAdminister(?User $user = null): bool
     {
         $user ??= Yii::$app->user;
+
+        if ($this->content->canEdit($user->identity)) {
+            return true; //  globale bzw. Container-Permission
+        }
 
         return $this->can($user, Admin::class);
     }
@@ -93,21 +110,18 @@ class Session extends ContentActiveRecord
     private function can(?User $user, BasePermission|string $permission): bool
     {
         $user ??= Yii::$app->user;
-        if ($this->contentcontainer_id === null) {
-            if ($user->can($permission))
-                return true;
-        } else {
-            $space = \humhub\modules\space\models\Space::find()
-                ->where(['id' => $this->contentcontainer_id])
-                ->one();
-            if ($space && $space->can($permission))
-                return true;
-            $user = \humhub\modules\user\models\User::find()
-                ->where(['id' => $this->contentcontainer_id])
-                ->one();
-            if ($user && $user->can($permission))
-                return true;
+
+        // Kein Container → prüfe globale Berechtigung
+        if (!$this->content || !$this->content->container) {
+            return $user->can($permission);
         }
+
+        $container = $this->content->container;
+        if ($container instanceof ContentContainerActiveRecord && $container->can($permission, ['user' => $user])) {
+            return true;
+        }
+        Yii::error("User {$user->id} cannot {$permission} in container {$container->id}", 'bbb');
+
         return false;
     }
 

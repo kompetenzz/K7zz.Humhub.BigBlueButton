@@ -1,9 +1,11 @@
 <?php
 namespace k7zz\humhub\bbb\models\forms;
 
+use humhub\modules\content\components\ContentContainerActiveRecord;
 use k7zz\humhub\bbb\models\SessionUser;
 use humhub\modules\file\converter\PreviewImage;
 use humhub\modules\file\models\File;
+use PhpOffice\PhpSpreadsheet\Writer\Ods\Content;
 use yii\web\UploadedFile;
 use yii\base\Model;
 use Yii;
@@ -37,7 +39,8 @@ class SessionForm extends Model
 
     /* interne Helfer */
     private ?Session $record = null;
-    public ?int $containerId;
+
+    public ContentContainerActiveRecord $contentContainer;
     private int $creatorId;
     public bool $publicJoin = true;
     public bool $publicModerate = true;
@@ -61,10 +64,10 @@ class SessionForm extends Model
     /* ---------- Fabrik-Methoden ---------- */
 
     /** Neues Formular für eine frische Session */
-    public static function create(?int $containerId = null): self
+    public static function create(ContentContainerActiveRecord $container = null): self
     {
         $model = new self();
-        $model->containerId = $containerId;
+        $model->contentContainer = $container;
         $model->creatorId = Yii::$app->user->id;
         // Default-Werte
         $model->moderator_pw = Yii::$app->security->generateRandomString(10);
@@ -107,7 +110,7 @@ class SessionForm extends Model
             ->column();
         $model->publicJoin = $session->getAttendeeUsers() === null || count($model->attendeeRefs) === 0;
         $model->publicModerate = $session->getModeratorUsers() === null || count($model->moderatorRefs) === 0;
-        $model->containerId = $session->contentcontainer_id ?? 0;
+        $model->container = $session->content->container;
         $model->creatorId = $session->creator_user_id;
         if ($session->image_file_id !== null) {
             $model->image_file_id = $session->image_file_id;
@@ -163,9 +166,9 @@ class SessionForm extends Model
         $session = $this->record ?? new Session([
             'uuid' => uniqid('bbb-sess-'),
             'creator_user_id' => $this->creatorId,
-            'contentcontainer_id' => $this->containerId ?: null,
             'created_at' => time(),
         ]);
+        $session->content->container = $this->contentContainer;
 
         echo "Saving session with Image: {$session->image_file_id}\n"; // Debug-Ausgabe
 

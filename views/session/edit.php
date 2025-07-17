@@ -8,10 +8,13 @@
 use humhub\modules\user\widgets\UserPickerField;
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
+$spaceTitle = $this->context->contentContainer
+    ? $this->context->contentContainer->getDisplayName() . ": "
+    : "";
 
-$title = $model->id
+$title = $spaceTitle . ($model->id
     ? Yii::t('BbbModule.base', 'Edit session')
-    : Yii::t('BbbModule.base', 'Create session');
+    : Yii::t('BbbModule.base', 'Create session'));
 ?>
 <div class="content">
     <div id="layout-content">

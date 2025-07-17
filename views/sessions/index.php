@@ -3,11 +3,13 @@ use humhub\libs\Html;
 use k7zz\humhub\bbb\widgets\SessionCard;
 use k7zz\humhub\bbb\permissions\Admin;
 use humhub\modules\ui\icon\widgets\Icon;
-$containerId = $this->context->contentContainer
-    ? $this->context->contentContainer->id
-    : null;
+use yii\helpers\Url;
+$createUrl = $this->context->contentContainer
+    ? $this->context->contentContainer->createUrl('/bbb/session/create')
+    : Url::to('/bbb/session/create');
+
 $canCreate = $scope === 'container'
-    ? $this->context->container->can(Admin::class)
+    ? $this->context->contentContainer->can(Admin::class)
     : Yii::$app->user->can(Admin::class);
 
 ?>
@@ -17,7 +19,7 @@ $canCreate = $scope === 'container'
             <?php if ($canCreate) { ?>
                 <?= Html::a(
                     Icon::get('plus') . ' ' . Yii::t('BbbModule.base', 'Create session'),
-                    ['/bbb/session/create', 'containerId' => $containerId],
+                    $createUrl,
                     ['class' => 'btn btn-primary pull-right', 'style' => 'margin: 10px']
                 ); ?>
             <?php } ?>
