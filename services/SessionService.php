@@ -90,8 +90,16 @@ class SessionService
         $p = (new CreateMeetingParameters($s->uuid, $s->name))
             ->setModeratorPassword($s->moderator_pw)
             ->setAttendeePassword($s->attendee_pw)
-            ->setAllowStartStopRecording(true)
+            ->setAllowStartStopRecording($s->allow_recording)
             ->setWelcomeMessage($s->description ?? '')
+            ->setBreakoutRoomsEnabled(true)
+            ->setMuteOnStart($s->mute_on_entry)
+            ->setAllowModsToUnmuteUsers(true)
+            ->setAllowModsToEjectCameras(true)
+            ->setMeetingKeepEvents(true)
+            ->setGuestPolicy(
+                $s->has_waitingroom ? "ASK_MODERATOR" : "ALWAYS_ACCEPT"
+            )
             ->setLogoutUrl(Yii::$app->urlManager->createAbsoluteUrl($url . "?highlight=" . $s->id));
 
         $r = $this->bbb->createMeeting($p);          // mehrfach aufrufbar

@@ -43,8 +43,13 @@ class SessionForm extends Model
 
     public ?ContentContainerActiveRecord $contentContainer;
     private int $creatorId;
-    public bool $publicJoin = true;
     public bool $publicModerate = true;
+    public bool $publicJoin = true;
+    public bool $joinCanStart = true;
+    public bool $joinCanModerate = false;
+    public bool $hasWaitingRoom = false;
+    public bool $allowRecording = true;
+    public bool $muteOnEntry = false; // Session kann gestartet werden, wenn der User Moderator ist
     public bool $enabled = true;
     public ?int $image_file_id = null;        // hier speichern wir später die File‐ID
     public $image = null;
@@ -114,6 +119,11 @@ class SessionForm extends Model
             ->column();
         $model->publicJoin = count($model->attendeeRefs) === 0;
         $model->publicModerate = count($model->moderatorRefs) === 0;
+        $model->joinCanStart = $session->join_can_start;
+        $model->joinCanModerate = $session->join_can_moderate;
+        $model->hasWaitingRoom = $session->has_waitingroom;
+        $model->allowRecording = $session->allow_recording;
+        $model->muteOnEntry = $session->mute_on_entry;
         $model->contentContainer = $session->content->container;
         $model->creatorId = $session->creator_user_id;
         if ($session->image_file_id !== null) {
@@ -147,6 +157,7 @@ class SessionForm extends Model
             [['attendeeRefs', 'moderatorRefs'], 'each', 'rule' => ['string']],
             ['image_file_id', 'integer'],
             ['image', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
+            [['joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled'], 'boolean']
         ];
     }
 
@@ -184,6 +195,11 @@ class SessionForm extends Model
         $session->description = $this->description;
         $session->moderator_pw = $this->moderator_pw;
         $session->attendee_pw = $this->attendee_pw;
+        $session->join_can_start = $this->joinCanStart;
+        $session->join_can_moderate = $this->joinCanModerate;
+        $session->has_waitingroom = $this->hasWaitingRoom;
+        $session->allow_recording = $this->allowRecording;
+        $session->mute_on_entry = $this->muteOnEntry;
         $session->enabled = $this->enabled;
         $session->updated_at = time();
 

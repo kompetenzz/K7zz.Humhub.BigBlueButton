@@ -72,6 +72,10 @@ class Session extends ContentActiveRecord
             return true; //  globale bzw. Container-Permission
         }
 
+        if ($this->join_can_start && $this->canJoin($user)) {
+            return true; //  dürfen immer starten, wenn sie beitreten können
+        }
+
         if ($this->can($user, StartSession::class)) {
             return true; //  globale bzw. Container-Permission
         }
@@ -103,9 +107,12 @@ class Session extends ContentActiveRecord
         if ($this->can($user, Admin::class)) {
             return true; //  globale bzw. Container-Permission
         }
+        if ($this->join_can_moderate && $this->canJoin($user)) {
+            return true; //  dürfen immer starten, wenn sie beitreten können
+        }
 
         $pivot = SessionUser::findOne(['session_id' => $this->id, 'user_id' => $user->id]);
-        return $pivot ? (bool) $pivot->role === 'moderator' : false;
+        return $pivot ? (bool) $pivot->role === 'moderator' || $this->join_can_moderate : false;
     }
 
     private function can(?UserComponent $user, BasePermission|string $permission): bool

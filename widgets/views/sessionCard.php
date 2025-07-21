@@ -30,6 +30,10 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
                 <?= $running
                     ? '<big class="text-success pull-right" title="' . Yii::t('BbbModule.base', 'Running') . '">' . Icon::get('play') . '</big>'
                     : '<big class="text-warning pull-right" title="' . Yii::t('BbbModule.base', 'Stopped') . '">' . Icon::get('pause') . '</big>' ?>
+                <?php if ($model->isModerator()): ?>
+                    <big class="text-info pull-right"
+                        title="<?= Yii::t('BbbModule.base', 'You are moderator') ?>"><?= Icon::get('user-secret') ?></big>
+                <?php endif; ?>
             </h5>
             <p class="card-text">
                 <?= Html::encode($model->description) ?>

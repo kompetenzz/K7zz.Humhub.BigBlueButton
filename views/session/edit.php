@@ -6,11 +6,15 @@
  */
 
 use humhub\modules\user\widgets\UserPickerField;
+use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
 $spaceTitle = $this->context->contentContainer
     ? $this->context->contentContainer->getDisplayName() . ": "
     : "";
+$cancelUrl = $this->context->contentContainer
+    ? $this->context->contentContainer->createUrl('/bbb/sessions')
+    : Url::to('/bbb/sessions');
 
 $title = $spaceTitle . ($model->id
     ? Yii::t('BbbModule.base', 'Edit session')
@@ -109,6 +113,16 @@ $title = $spaceTitle . ($model->id
                                 </div>
                             </div>
                             <div class="form-group">
+                                <?= $f->field($model, 'joinCanStart')->checkbox([
+                                    'label' => Yii::t('BbbModule.base', 'Allow everybody with join permission to start this session'),
+                                ]); ?>
+                            </div>
+                            <div class="form-group">
+                                <?= $f->field($model, 'joinCanModerate')->checkbox([
+                                    'label' => Yii::t('BbbModule.base', 'Allow everybody with join permission to moderate this session'),
+                                ]); ?>
+                            </div>
+                            <div class="form-group">
                                 <?= $f->field($model, 'publicModerate')
                                     ->checkbox([
                                         'id' => 'public-moderate-toggle',
@@ -125,6 +139,22 @@ $title = $spaceTitle . ($model->id
                                     ?>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <?= $f->field($model, 'hasWaitingRoom')->checkbox([
+                                    'label' => Yii::t('BbbModule.base', 'Join users via waiting room')
+                                ]); ?>
+                            </div>
+                            <div class="form-group">
+                                <?= $f->field($model, 'allowRecording')->checkbox([
+                                    'label' => Yii::t('BbbModule.base', 'Allow recording this session'),
+                                ]); ?>
+                            </div>
+                            <div class="form-group">
+                                <?= $f->field($model, 'muteOnEntry')->checkbox([
+                                    'label' => Yii::t('BbbModule.base', 'Mute users on session entry'),
+                                ]); ?>
+                            </div>
+
                         </div>
                         <div class="col-md-6">
                             <?php
@@ -152,7 +182,7 @@ $title = $spaceTitle . ($model->id
                     ); ?>
                     <?= Html::a(
                         Yii::t('BbbModule.base', 'Cancel'),
-                        ['/bbb/sessions/index'],
+                        [$cancelUrl],
                         ['class' => 'btn btn-default']
                     ); ?>
                 </div>
