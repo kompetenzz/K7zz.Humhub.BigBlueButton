@@ -13,6 +13,7 @@ use k7zz\humhub\bbb\models\Session;
 use humhub\modules\user\models\User;
 use yii\helpers\Inflector;
 use yii\web\NotFoundHttpException;
+use function PHPUnit\Framework\isFalse;
 
 /**
  * Formular-Model für Create / Update einer BBB-Session.
@@ -75,6 +76,13 @@ class SessionForm extends Model
         return $model;
     }
 
+    private static function getUserQuery(Session $session)
+    {
+        return SessionUser::find()
+            ->join('JOIN', User::tableName(), 'user_id = user.id')
+            ->where(['session_id' => $session->id]);
+    }
+
     /** Formular zum Bearbeiten */
     public static function edit(Session $session): self
     {
@@ -88,10 +96,6 @@ class SessionForm extends Model
             throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $session->id]));
         }
 
-        $userQ = SessionUser::find()
-            ->join('JOIN', User::tableName(), 'user_id = user.id')
-            ->where(['session_id' => $session->id]);
-
         $model = new self();
         $model->record = $session;
         $model->id = $session->id;
@@ -100,16 +104,16 @@ class SessionForm extends Model
         $model->description = $session->description;
         $model->moderator_pw = $session->moderator_pw;
         $model->attendee_pw = $session->attendee_pw;
-        $model->attendeeRefs = $userQ
+        $model->attendeeRefs = self::getUserQuery($session)
             ->andWhere(['role' => 'attendee'])
             ->select('user.guid')
             ->column();
-        $model->moderatorRefs = $userQ
+        $model->moderatorRefs = self::getUserQuery($session)
             ->andWhere(['role' => 'moderator'])
             ->select('user.guid')
             ->column();
-        $model->publicJoin = $session->getAttendeeUsers() === null || count($model->attendeeRefs) === 0;
-        $model->publicModerate = $session->getModeratorUsers() === null || count($model->moderatorRefs) === 0;
+        $model->publicJoin = count($model->attendeeRefs) === 0;
+        $model->publicModerate = count($model->moderatorRefs) === 0;
         $model->contentContainer = $session->content->container;
         $model->creatorId = $session->creator_user_id;
         if ($session->image_file_id !== null) {
@@ -140,7 +144,7 @@ class SessionForm extends Model
             [['name', 'title', 'moderator_pw', 'attendee_pw'], 'string', 'max' => 255],
             ['name', 'unique', 'targetClass' => Session::class, 'targetAttribute' => 'name', 'on' => 'create'],
             [['description'], 'string'],
-            [['attendeeRefs', 'moderatorRefs'], 'each', 'rule' => ['integer']],
+            [['attendeeRefs', 'moderatorRefs'], 'each', 'rule' => ['string']],
             ['image_file_id', 'integer'],
             ['image', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
         ];
@@ -168,7 +172,9 @@ class SessionForm extends Model
             'creator_user_id' => $this->creatorId,
             'created_at' => time(),
         ]);
-        $session->content->container = $this->contentContainer;
+        if ($this->contentContainer !== null) {
+            $session->content->container = $this->contentContainer;
+        }
 
         echo "Saving session with Image: {$session->image_file_id}\n"; // Debug-Ausgabe
 
@@ -236,23 +242,22 @@ class SessionForm extends Model
         return true;
     }
 
-    private function addUser(User $user, string $role): void
+    private function addUser(User $user, string $role): bool
     {
-        if (
-            SessionUser::find()
-                ->where(['session_id' => $this->record->id, 'user_id' => $user->id])
-                ->exists()
-        ) {
-            return; // existiert schon
+        $s = SessionUser::find()
+            ->where(['session_id' => $this->record->id, 'user_id' => $user->id])
+            ->one();
+        if ($s === null) {
+            $s = new SessionUser([
+                'session_id' => $this->record->id,
+                'user_id' => $user->id,
+                'created_at' => time()
+            ]);
         }
+        $s->role = $role;
+        $s->can_start = $role === 'moderator';
+        $s->can_join = true;
 
-        (new SessionUser([
-            'session_id' => $this->record->id,
-            'user_id' => $user->id,
-            'role' => $role,
-            'can_start' => $role === 'moderator',
-            'can_join' => true,
-            'created_at' => time(),
-        ]))->save();
+        return $s->save();
     }
 }
