@@ -119,4 +119,24 @@ class SessionService
             ->setAvatarURL(avatarURL: Url::to(Yii::$app->user->identity->getProfileImage()->getUrl(), true));
         return $this->bbb->getJoinMeetingURL($jp);
     }
+
+    public function delete(?int $id = null, ContentContainerActiveRecord $container = null): ?bool
+    {
+        if ($id === null) {
+            return null;
+        }
+
+        $query = $this->getQueryStarter($container)
+            ->alias('session')
+            ->joinWith('content')
+            ->where(['session.id' => $id, 'session.deleted_at' => null]);
+
+        $session = $query->one();
+        if ($session) {
+            $session->deleted_at = time();
+            return $session->save();
+        }
+        return false;
+    }
+
 }

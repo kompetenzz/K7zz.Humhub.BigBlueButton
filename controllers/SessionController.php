@@ -114,4 +114,15 @@ class SessionController extends BaseContentController
         return $this->render('embed', compact('joinInfo'));
     }
 
+    public function actionDelete(int $id)
+    {
+        if ($this->svc->delete($id, $this->contentContainer)) {
+            $this->view->success(Yii::t('BbbModule.base', 'Session deleted.'));
+
+        } else {
+            $this->view->error(Yii::t('BbbModule.base', 'Could not delete session.'));
+        }
+        return $this->redirect($this->getUrl("/bbb/sessions"));
+    }
+
 }

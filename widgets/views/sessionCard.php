@@ -77,7 +77,21 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
                 <?= Html::a(
                     Icon::get('pencil'),
                     $routePrefix . '/edit/' . $model->name,
-                    ['class' => 'btn btn-danger btn-sm pull-right', 'title' => Yii::t('BbbModule.base', 'Edit session')]
+                    [
+                        'class' => 'btn btn-info btn-sm pull-right',
+                        'title' => Yii::t('BbbModule.base', 'Edit session')
+                    ]
+                ) ?>
+                <?= Html::a(
+                    Icon::get('trash'),
+                    $routePrefix . '/delete/' . $model->name,
+                    [
+                        'class' => 'btn btn-danger btn-sm',
+                        'data-confirm' => Yii::t('BbbModule.base', 'Are you sure you want to delete this session?'),
+                        'data-method' => 'post',
+                        'title' => Yii::t('BbbModule.base', 'Delete session'),
+                        'aria-label' => Yii::t('BbbModule.base', 'Delete session'),
+                    ]
                 ) ?>
             <?php endif; ?>
         </div>
