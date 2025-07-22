@@ -57,7 +57,7 @@ class SessionController extends BaseContentController
             ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
         if (!$this->svc->isRunning($session->uuid)) {
             if (!$session->canStart()) {
-                Yii::$app->getSession()->setFlash('access-denied', Yii::t('BbbModule.base', 'You are not allowed to start session"{title}".', ['title' => $session->title]));
+                Yii::$app->getSession()->setFlash('access-denied', Yii::t('BbbModule.base', 'You are not allowed to start session "{title}".', ['title' => $session->title]));
             } else {
                 $joinUrl = $this->svc->start($session, $this->contentContainer);
                 if (!$joinUrl) {

@@ -166,7 +166,9 @@ $title = $spaceTitle . ($model->id
                             <div class="form-group">
                                 <?= $f->field($model, 'image')
                                     ->fileInput()
-                                    ->label(Yii::t('BbbModule.base', ($model->previewImage ? 'Change' : 'Upload') . ' session image'))
+                                    ->label($model->previewImage
+                                        ? Yii::t('BbbModule.base', 'Change session image')
+                                        : Yii::t('BbbModule.base', 'Upload session image'))
                                     ->hint(Yii::t(
                                         'BbbModule.base',
                                         'Optional image for this session. Recommended size: 800x600px.'
