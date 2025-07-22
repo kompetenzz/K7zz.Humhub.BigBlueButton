@@ -50,8 +50,10 @@ class SessionService
         if ($onlyEnabled) {
             $query->andWhere(['session.enabled' => true]);
         }
-        // Yii::error("Query: " . $query->createCommand()->getRawSql(), 'bbb');
-        return $query->all();
+        //Yii::error("Query: " . $query->createCommand()->getRawSql(), 'bbb');
+        $result = $query->all();
+        //Yii::error("Result: " . count($result), 'bbb');
+        return $result;
     }
 
     /** Holt exakt eine Session (oder null) – optional Container-Check */

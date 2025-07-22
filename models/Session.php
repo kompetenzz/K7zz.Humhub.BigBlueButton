@@ -2,6 +2,7 @@
 namespace k7zz\humhub\bbb\models;
 use Yii;
 use humhub\modules\content\components\ContentActiveRecord;
+use humhub\modules\content\components\ContentContainerActiveRecord;
 use humhub\libs\BasePermission;
 use yii\db\ActiveQuery;
 use humhub\modules\file\converter\PreviewImage;
@@ -123,12 +124,10 @@ class Session extends ContentActiveRecord
         if (!$this->content || !$this->content->container) {
             return $user->can($permission);
         }
-
         $container = $this->content->container;
         if ($container instanceof ContentContainerActiveRecord && $container->can($permission, ['user' => $user])) {
             return true;
         }
-        Yii::error("User {$user->id} cannot {$permission} in container {$container->id}", 'bbb');
 
         return false;
     }
