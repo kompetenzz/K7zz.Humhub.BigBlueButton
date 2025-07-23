@@ -16,6 +16,24 @@ if ($this->context->contentContainer) {
 }
 $highlightClass = $model->id === $highlightId ? 'highlight' : '';
 $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseUrl . '/images/conference.png';
+
+$this->registerJs(<<<JS
+function openBbbWindow(url) {
+    const w = 1280, h = 800;
+    const left = (screen.width - w) / 2;
+    const top = (screen.height - h) / 2;
+    window.open(url, '_blank', `width=\${w},height=\${h},left=\${left},top=\${top},resizable=yes,scrollbars=yes,toolbar=no,location=no,status=no,menubar=no`);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.bbb-launch').forEach(el => {
+        el.addEventListener('click', function (e) {
+            e.preventDefault();
+            openBbbWindow(this.dataset.url);
+        });
+    });
+});
+JS, \yii\web\View::POS_END);
 ?>
 
 
@@ -29,12 +47,14 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
         </div>
         <div class="card-body panel-body">
             <h5 class="card-title"><?= $model->title ?>
-                <?= $running
-                    ? '<big class="text-success pull-right" title="' . Yii::t('BbbModule.base', 'Running') . '">' . Icon::get('play') . '</big>'
-                    : '<big class="text-warning pull-right" title="' . Yii::t('BbbModule.base', 'Stopped') . '">' . Icon::get('pause') . '</big>' ?>
-                <?php if ($model->isModerator()): ?>
-                    <big class="text-info pull-right"
-                        title="<?= Yii::t('BbbModule.base', 'You are moderator') ?>"><?= Icon::get('user-secret') ?></big>
+                <span class="pull-right">
+                    <?= $running
+                        ? '<span class="text-success" title="' . Yii::t('BbbModule.base', 'Running') . '">' . Icon::get('play') . '</span>'
+                        : '<span class="text-warning" title="' . Yii::t('BbbModule.base', 'Stopped') . '">' . Icon::get('pause') . '</span>' ?>
+                    <?php if ($model->isModerator()): ?>
+                        <span class="text-info"
+                            title="<?= Yii::t('BbbModule.base', 'You are moderator') ?>"><?= Icon::get('user-secret') ?></span>
+                    </span>
                 <?php endif; ?>
             </h5>
             <p class="card-text">
@@ -45,56 +65,47 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
         <div class="panel-footer" style="padding-top: 10px">
             <?php if ($running && $model->canJoin()): ?>
                 <?= Html::a(
-                    Icon::get('window-maximize') . ' ' . Yii::t('BbbModule.base', 'Join'),
-                    $routePrefix . '/embed/' . $model->name,
-                    ['class' => 'btn btn-success btn-sm', 'title' => Yii::t('BbbModule.base', 'Start in embedded mode') . ' – ' . Yii::t('BbbModule.base', 'recommended')]
-                ) ?>
-                <?= Html::a(
-                    Icon::get('window-restore') . ' ' . Yii::t('BbbModule.base', 'Join'),
-                    $routePrefix . '/join/' . $model->name,
+                    Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Join'),
+                    '#',
                     [
-                        'target' => '_bbb',
                         'class' => 'btn btn-primary btn-sm',
-                        'title' => Yii::t('BbbModule.base', 'Start in new tab') . ' – ' . Yii::t('BbbModule.base', 'not recommended')
-                    ],
+                        'data-url' => $routePrefix . '/join/' . $model->name,
+                        'title' => Yii::t('BbbModule.base', 'Join session') . ' – ' . Yii::t('BbbModule.base', 'not recommended'),
+                    ]
                 ) ?>
             <?php elseif (!$running && $model->canStart()): ?>
                 <?= Html::a(
-                    Icon::get('window-maximize') . ' ' . Yii::t('BbbModule.base', 'Start'),
-                    [$routePrefix . '/start/' . $model->name, 'embed' => 1],
-                    ['class' => 'btn btn-success btn-sm', 'title' => Yii::t('BbbModule.base', 'Start in embedded mode') . ' – ' . Yii::t('BbbModule.base', 'recommended')]
-                ) ?>
-                <?= Html::a(
-                    Icon::get('window-restore') . ' ' . Yii::t('BbbModule.base', 'Start'),
-                    [$routePrefix . '/start/' . $model->name, 'embed' => 0],
+                    Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Start'),
+                    '#',
                     [
-                        'target' => '_bbb',
-                        'class' => 'btn btn-primary btn-sm',
-                        'title' => Yii::t('BbbModule.base', 'Start in new tab') . ' – ' . Yii::t('BbbModule.base', 'not recommended')
-                    ],
-                ) ?>
-            <?php endif; ?>
+                        'class' => 'btn btn-primary btn-sm bbb-launch',
+                        'data-url' => $routePrefix . '/start/' . $model->name . '?embed=0',
+                        'title' => Yii::t('BbbModule.base', 'Start session') . ' – ' . Yii::t('BbbModule.base', 'not recommended'),
+                    ]
+                ) ?> <?php endif; ?>
 
             <?php if ($model->canAdminister()): ?>
-                <?= Html::a(
-                    Icon::get('pencil'),
-                    $routePrefix . '/edit/' . $model->name,
-                    [
-                        'class' => 'btn btn-info btn-sm pull-right',
-                        'title' => Yii::t('BbbModule.base', 'Edit session')
-                    ]
-                ) ?>
-                <?= Html::a(
-                    Icon::get('trash'),
-                    $routePrefix . '/delete/' . $model->name,
-                    [
-                        'class' => 'btn btn-danger btn-sm',
-                        'data-confirm' => Yii::t('BbbModule.base', 'Are you sure you want to delete this session?'),
-                        'data-method' => 'post',
-                        'title' => Yii::t('BbbModule.base', 'Delete session'),
-                        'aria-label' => Yii::t('BbbModule.base', 'Delete session'),
-                    ]
-                ) ?>
+                <span class="pull-right">
+                    <?= Html::a(
+                        Icon::get('pencil'),
+                        $routePrefix . '/edit/' . $model->name,
+                        [
+                            'class' => 'btn btn-info btn-sm',
+                            'title' => Yii::t('BbbModule.base', 'Edit session')
+                        ]
+                    ) ?>
+                    <?= Html::a(
+                        Icon::get('trash'),
+                        $routePrefix . '/delete/' . $model->name,
+                        [
+                            'class' => 'btn btn-danger btn-sm',
+                            'data-confirm' => Yii::t('BbbModule.base', 'Are you sure you want to delete this session?'),
+                            'data-method' => 'post',
+                            'title' => Yii::t('BbbModule.base', 'Delete session'),
+                            'aria-label' => Yii::t('BbbModule.base', 'Delete session'),
+                        ]
+                    ) ?>
+                </span>
             <?php endif; ?>
         </div>
         <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="panel-footer" style="padding-top: 10px">

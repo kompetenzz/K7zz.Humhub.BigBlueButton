@@ -88,8 +88,8 @@ class SessionService
     /** Startet eine neue Session (oder idempotent) und liefert Moderator-URL */
     public function start(Session $s, ContentContainerActiveRecord $container = null): string
     {
-        $url = $container ? $container->createUrl('/bbb/sessions') :
-            Url::to('/bbb/sessions');
+        $url = $container ? $container->createUrl('/bbb/session/exit') :
+            Url::to('/bbb/session/exit');
         $p = (new CreateMeetingParameters($s->uuid, $s->name))
             ->setModeratorPassword($s->moderator_pw)
             ->setAttendeePassword($s->attendee_pw)

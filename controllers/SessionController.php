@@ -80,6 +80,11 @@ class SessionController extends BaseContentController
 
     }
 
+    public function actionExit()
+    {
+        return $this->render('exit');
+    }
+
     private function prepareJoin(?int $id = null): JoinInfo
     {
         if ($id === null) {
