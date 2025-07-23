@@ -37,7 +37,7 @@ $canCreate = $scope === 'container'
             <?= Yii::t('BbbModule.base', 'No conference sessions found.'); ?>
         </div>
     <?php } ?>
-    <div class="row cards">
+    <div class="row cards align-items-start">
         <?php foreach ($rows as $row): ?>
             <?= SessionCard::widget([
                 'session' => $row['model'],

@@ -7,6 +7,7 @@
  */
 use humhub\modules\ui\icon\widgets\Icon;
 use k7zz\humhub\bbb\assets\BBBAssets;
+use k7zz\humhub\bbb\widgets\RecordingsList;
 use yii\helpers\Html;
 $bundle = BBBAssets::register(view: $this);
 $routePrefix = '/bbb/session';
@@ -19,7 +20,8 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
 
 
 
-<div class="card card card-space col-lg-3 col-md-4 col-sm-6 col-xs-12 card-bbb-sessions <?= $highlightClass ?>">
+<div id="sessioncard-<?= $model->id ?>"
+    class="card card card-space col-lg-3 col-md-4 col-sm-6 col-xs-12 card-bbb-sessions <?= $highlightClass ?>">
     <div class="card-panel">
         <div class="card-heading panel-heading">
             <img class="" alt="<?= Yii::t('BbbModule.base', 'Session image') ?>" style="max-height: 200px; width: 100%"
@@ -40,7 +42,7 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
             </p>
         </div>
         <!-- Fußzeile mit Action-Links-->
-        <div class="card-footer panel-footer" style="padding-top: 10px">
+        <div class="panel-footer" style="padding-top: 10px">
             <?php if ($running && $model->canJoin()): ?>
                 <?= Html::a(
                     Icon::get('window-maximize') . ' ' . Yii::t('BbbModule.base', 'Join'),
@@ -95,5 +97,24 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
                 ) ?>
             <?php endif; ?>
         </div>
+        <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="panel-footer" style="padding-top: 10px">
+            <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer]) ?>
+        </div>
     </div>
 </div>
+
+<?php
+$getRecordingsCountUrlBase = '/bbb/session/recordings-count';
+$getRecordingsCountUrl = $this->context->contentContainer
+    ? $this->context->contentContainer->createUrl($getRecordingsCountUrlBase, ['id' => $model->id])
+    : Url::to($getRecordingsCountUrlBase, ['id' => $model->id]);
+$this->registerJs(<<<JS
+
+$.getJSON('{$getRecordingsCountUrl}', function(recordingsCount) {
+    $('#sessioncard-recordingsbox-{$model->id}').toggle(recordingsCount > 0);
+});
+JS
+    ,
+    \yii\web\View::POS_READY
+);
+?>

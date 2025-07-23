@@ -9,7 +9,6 @@ class SessionCard extends Widget
     public bool $running;
     public string $scope;   // 'container' | 'global'
     public ?int $highlightId = null;
-
     public $contentContainer = null;
 
     public function run()

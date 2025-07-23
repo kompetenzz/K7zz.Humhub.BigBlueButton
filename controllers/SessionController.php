@@ -125,4 +125,53 @@ class SessionController extends BaseContentController
         return $this->redirect($this->getUrl("/bbb/sessions"));
     }
 
+    public function actionRecordings(?int $id = null): array
+    {
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
+
+        $result = [];
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        if (!$session->canJoin()) {
+            return $result;
+        }
+        $recordings = $this->svc->getRecordings($id, $this->contentContainer);
+        foreach ($recordings as $r) {
+            $start = intval($r->getStartTime() / 1000);
+            $end = intval($r->getEndTime() / 1000);
+            $duration = $r->getPlaybackLength() ?? ($end - $start);
+            $url = $r->getPlaybackUrl() ?? null;
+            $type = $r->getPlaybackType();
+
+            if (!$url)
+                continue;
+
+            $result[] = [
+                'date' => Yii::$app->formatter->asDate($start),
+                'time' => Yii::$app->formatter->asTime($start),
+                'duration' => gmdate("H:i:s", $duration),
+                'url' => $url,
+                'type' => $type,
+                'name' => $r->getName(),
+                'isPublished' => $r->isPublished(),
+                'state' => Yii::t('BbbModule.base', $r->getState()),
+            ];
+        }
+        return $result;
+    }
+    public function actionRecordingsCount(?int $id = null): int
+    {
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
+
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        if (!$session->canJoin()) {
+            return 0;
+        }
+        $recordings = array_filter(
+            $this->svc->getRecordings($id, $this->contentContainer),
+            fn($r) => !empty($r->getPlaybackUrl())
+        );
+        return count($recordings);
+    }
 }

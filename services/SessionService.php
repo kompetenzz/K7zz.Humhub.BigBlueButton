@@ -1,6 +1,7 @@
 <?php
 namespace k7zz\humhub\bbb\services;
 
+use BigBlueButton\Parameters\GetRecordingsParameters;
 use k7zz\humhub\bbb\models\Session;
 use Yii;
 use BigBlueButton\BigBlueButton;
@@ -92,6 +93,7 @@ class SessionService
         $p = (new CreateMeetingParameters($s->uuid, $s->name))
             ->setModeratorPassword($s->moderator_pw)
             ->setAttendeePassword($s->attendee_pw)
+            ->setRecord($s->allow_recording)
             ->setAllowStartStopRecording($s->allow_recording)
             ->setWelcomeMessage($s->description ?? '')
             ->setBreakoutRoomsEnabled(true)
@@ -120,6 +122,25 @@ class SessionService
             ->setUserId(Yii::$app->user->identity->email)
             ->setAvatarURL(avatarURL: Url::to(Yii::$app->user->identity->getProfileImage()->getUrl(), true));
         return $this->bbb->getJoinMeetingURL($jp);
+    }
+
+    public function getRecordings(?int $id = null, ContentContainerActiveRecord $container = null): array
+    {
+        $session = $this->get($id, $container);
+        if (!$session) {
+            return [];
+        }
+        $params = new GetRecordingsParameters();
+        $params->setMeetingId($session->uuid);
+        try {
+            $response = $this->bbb->getRecordings($params);
+            if ($response && $response->success()) {
+                return $response->getRecords();
+            }
+        } catch (\Exception $e) {
+            Yii::error("BBB-GetRecordings failed for session {$session->name}: " . $e->getMessage(), 'bbb');
+        }
+        return [];
     }
 
     public function delete(?int $id = null, ContentContainerActiveRecord $container = null): ?bool

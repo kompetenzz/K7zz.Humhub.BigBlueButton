@@ -83,7 +83,7 @@ class SessionUrlRule extends Component implements UrlRuleInterface, ContentConta
         }
 
         unset($params['id']);
-        $url = $containerUrlPath . $route . '/' . $session->name;
+        $url = $containerUrlPath . '/' . $route . '/' . $session->name;
         if (!empty($params) && ($query = http_build_query($params)) !== '') {
             $url .= "?$query";
         }
