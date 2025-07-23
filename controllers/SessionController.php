@@ -148,8 +148,8 @@ class SessionController extends BaseContentController
 
             $result[] = [
                 'date' => Yii::$app->formatter->asDate($start),
-                'time' => Yii::$app->formatter->asTime($start),
-                'duration' => gmdate("H:i:s", $duration),
+                'time' => Yii::$app->formatter->asTime($start, "H:mm"),
+                'duration' => gmdate("H:i:s", $end - $start),
                 'url' => $url,
                 'type' => $type,
                 'name' => $r->getName(),
