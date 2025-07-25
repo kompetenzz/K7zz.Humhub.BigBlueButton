@@ -2,6 +2,8 @@
 namespace k7zz\humhub\bbb\services;
 
 use BigBlueButton\Parameters\GetRecordingsParameters;
+use BigBlueButton\Parameters\PublishRecordingsParameters;
+use BigBlueButton\Parameters\UpdateRecordingsParameters;
 use k7zz\humhub\bbb\models\Session;
 use Yii;
 use BigBlueButton\BigBlueButton;
@@ -132,6 +134,8 @@ class SessionService
         }
         $params = new GetRecordingsParameters();
         $params->setMeetingId($session->uuid);
+        if (!$session->canAdminister())
+            $params->setState('published'); // nur veröffentlichte Aufzeichnungen
         try {
             $response = $this->bbb->getRecordings($params);
             if ($response && $response->success()) {
@@ -160,6 +164,20 @@ class SessionService
             return $session->save();
         }
         return false;
+    }
+
+    public function publishRecording(string $recordId, bool $publish = false): bool
+    {
+        $params = new PublishRecordingsParameters($recordId);
+        $params->setPublish($publish);
+
+        try {
+            $response = $this->bbb->publishRecordings($params);
+            return $response->getReturnCode() === 'SUCCESS';
+        } catch (\Exception $e) {
+            Yii::error("BBB-PublishRecordings failed for record {$recordId}: " . $e->getMessage(), 'bbb');
+            return false;
+        }
     }
 
 }

@@ -73,16 +73,23 @@ class Session extends ContentActiveRecord
             return true; //  globale bzw. Container-Permission
         }
 
-        if ($this->join_can_start && $this->canJoin($user)) {
+        if ($this->join_can_start && $this->hasJoinPermission($user)) {
             return true; //  dürfen immer starten, wenn sie beitreten können
         }
+
+        return $this->hasStartPermission($user);
+    }
+
+    private function hasStartPermission(?UserComponent $user = null): bool
+    {
+        $user ??= Yii::$app->user;
 
         if ($this->can($user, StartSession::class)) {
             return true; //  globale bzw. Container-Permission
         }
-        // 2) Pivot-Zeile
+
         $pivot = SessionUser::findOne(['session_id' => $this->id, 'user_id' => $user->id]);
-        return $pivot ? (bool) $pivot->can_start || $pivot->role === 'moderator' : false;
+        return $pivot ? (bool) $pivot->can_start : false;
     }
 
     /** darf $user beitreten? */
@@ -94,6 +101,13 @@ class Session extends ContentActiveRecord
             return true; //  dürfen immer beitreten
         }
 
+        return $this->hasJoinPermission($user);
+    }
+
+    private function hasJoinPermission(?UserComponent $user = null): bool
+    {
+        $user ??= Yii::$app->user;
+
         if ($this->can($user, JoinSession::class)) {
             return true; //  globale bzw. Container-Permission
         }
@@ -101,6 +115,7 @@ class Session extends ContentActiveRecord
         $pivot = SessionUser::findOne(['session_id' => $this->id, 'user_id' => $user->id]);
         return $pivot ? (bool) $pivot->can_join : false;
     }
+
 
     public function isModerator(?UserComponent $user = null): bool
     {

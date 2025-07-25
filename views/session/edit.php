@@ -6,9 +6,14 @@
  */
 
 use humhub\modules\user\widgets\UserPickerField;
+use k7zz\humhub\bbb\models\forms\SessionForm;
 use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
+use k7zz\humhub\bbb\assets\BBBAssets;
+
+$bundle = BBBAssets::register($this);
+
 $spaceTitle = $this->context->contentContainer
     ? $this->context->contentContainer->getDisplayName() . ": "
     : "";
@@ -55,7 +60,14 @@ $title = $spaceTitle . ($model->id
                         <div class="col-md-6">
                             <div class="form-group">
                                 <?= $f->field($model, 'name')
-                                    ->textInput(['maxlength' => true])
+                                    ->textInput([
+                                        'maxlength' => true,
+                                        'style' => 'text-transform: lowercase;',
+                                        'pattern' => SessionForm::SLUG_PATTERN,
+                                        'data-slugify' => 'true',
+                                        'data-slugify-title-selector' => '#sessionform-title',
+                                        'data-slugify-autogenerate' => 'true'
+                                    ])
                                     ->hint(Yii::t(
                                         'BbbModule.base',
                                         'Used as identifier and for the URL of the session, e.g. "weekly-team-meeting"'
@@ -206,12 +218,3 @@ $title = $spaceTitle . ($model->id
         </div>
     </div>
 </div>
-<script type="module">
-    import { SlugHelper } from '/path/to/SlugHelper.js';
-
-    new SlugHelper({
-        titleSelector: '#title',
-        slugSelector: '#name',
-        autogenerate: true // false = nur manuell
-    });
-</script>

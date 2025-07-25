@@ -144,19 +144,18 @@ class SessionController extends BaseContentController
         foreach ($recordings as $r) {
             $start = intval($r->getStartTime() / 1000);
             $end = intval($r->getEndTime() / 1000);
-            $duration = $r->getPlaybackLength() ?? ($end - $start);
             $url = $r->getPlaybackUrl() ?? null;
-            $type = $r->getPlaybackType();
 
             if (!$url)
                 continue;
 
             $result[] = [
+                'id' => $r->getRecordId(),
                 'date' => Yii::$app->formatter->asDate($start),
                 'time' => Yii::$app->formatter->asTime($start, "H:mm"),
                 'duration' => gmdate("H:i:s", $end - $start),
                 'url' => $url,
-                'type' => $type,
+                'type' => $r->getPlaybackType(),
                 'name' => $r->getName(),
                 'isPublished' => $r->isPublished(),
                 'state' => Yii::t('BbbModule.base', $r->getState()),
@@ -175,8 +174,18 @@ class SessionController extends BaseContentController
         }
         $recordings = array_filter(
             $this->svc->getRecordings($id, $this->contentContainer),
-            fn($r) => !empty($r->getPlaybackUrl())
+            fn($r) => $session->canAdminister() || !empty($r->getPlaybackUrl())
         );
         return count($recordings);
+    }
+
+    /** 
+     * Toggle publish state of a recording 
+     * */
+    public function actionPublishRecording(string $recordId, bool $publish = false): bool
+    {
+        Yii::error($recordId);
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return $this->svc->publishRecording($recordId, $publish);
     }
 }

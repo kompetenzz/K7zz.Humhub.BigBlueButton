@@ -1,4 +1,5 @@
-export class SlugHelper {
+
+export class Slugifyer {
     constructor(options) {
         this.titleSelector = options.titleSelector || '#title';
         this.slugSelector = options.slugSelector || '#slug';
@@ -15,17 +16,13 @@ export class SlugHelper {
     init() {
         this.titleInput.addEventListener('input', () => {
             if (!this.autogenerate) return;
-            if (this.slugInput.value.trim() !== '') return;
 
-            this.slugInput.value = SlugHelper.slugify(this.titleInput.value);
+            this.slugInput.value = Slugifyer.slugify(this.titleInput.value);
         });
 
-        // Optional: Markiere manuelle Änderung → autogenerate deaktivieren
-        this.slugInput.addEventListener('input', () => {
-            if (this.slugInput.value.trim() !== '') {
-                this.autogenerate = false;
-            }
-        });
+        if (this.slugInput.value.trim() === '') {
+            this.slugInput.value = Slugifyer.slugify(this.titleInput.value);
+        }
     }
 
     static slugify(text) {
@@ -39,8 +36,23 @@ export class SlugHelper {
     }
 
     static slugifyWithSuffix(text, suffixLength = 4) {
-        const base = SlugHelper.slugify(text);
+        const base = Slugifyer.slugify(text);
         const rand = Math.random().toString(36).substring(2, 2 + suffixLength);
         return `${base}-${rand}`;
     }
 }
+
+$(document).on('humhub:ready', function (evt, contentContainer) {
+    const slugInputs = document.querySelectorAll('[data-slugify]');
+
+    slugInputs.forEach((slugInput) => {
+        const titleSelector = slugInput.dataset.slugifyTitleSelector || '#title';
+        const autogenerate = slugInput.dataset.slugifyAutogenerate !== 'false';
+
+        new Slugifyer({
+            titleSelector,
+            slugSelector: `#${slugInput.id}`,
+            autogenerate
+        });
+    });
+});

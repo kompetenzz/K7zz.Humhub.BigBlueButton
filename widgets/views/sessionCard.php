@@ -9,6 +9,8 @@ use humhub\modules\ui\icon\widgets\Icon;
 use k7zz\humhub\bbb\assets\BBBAssets;
 use k7zz\humhub\bbb\widgets\RecordingsList;
 use yii\helpers\Html;
+use yii\helpers\Url;
+
 $bundle = BBBAssets::register(view: $this);
 $routePrefix = '/bbb/session';
 if ($this->context->contentContainer) {
@@ -17,23 +19,6 @@ if ($this->context->contentContainer) {
 $highlightClass = $model->id === $highlightId ? 'highlight' : '';
 $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseUrl . '/images/conference.png';
 
-$this->registerJs(<<<JS
-function openBbbWindow(url) {
-    const w = 1280, h = 800;
-    const left = (screen.width - w) / 2;
-    const top = (screen.height - h) / 2;
-    window.open(url, '_blank', `width=\${w},height=\${h},left=\${left},top=\${top},resizable=yes,scrollbars=yes,toolbar=no,location=no,status=no,menubar=no`);
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.bbb-launch').forEach(el => {
-        el.addEventListener('click', function (e) {
-            e.preventDefault();
-            openBbbWindow(this.dataset.url);
-        });
-    });
-});
-JS, \yii\web\View::POS_END);
 ?>
 
 
@@ -68,9 +53,9 @@ JS, \yii\web\View::POS_END);
                     Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Join'),
                     '#',
                     [
-                        'class' => 'btn btn-primary btn-sm',
+                        'class' => 'btn btn-primary btn-sm bbb-launch-window',
                         'data-url' => $routePrefix . '/join/' . $model->name,
-                        'title' => Yii::t('BbbModule.base', 'Join session') . ' – ' . Yii::t('BbbModule.base', 'not recommended'),
+                        'title' => Yii::t('BbbModule.base', 'Join session'),
                     ]
                 ) ?>
             <?php elseif (!$running && $model->canStart()): ?>
@@ -78,9 +63,9 @@ JS, \yii\web\View::POS_END);
                     Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Start'),
                     '#',
                     [
-                        'class' => 'btn btn-primary btn-sm bbb-launch',
+                        'class' => 'btn btn-primary btn-sm bbb-launch-window',
                         'data-url' => $routePrefix . '/start/' . $model->name . '?embed=0',
-                        'title' => Yii::t('BbbModule.base', 'Start session') . ' – ' . Yii::t('BbbModule.base', 'not recommended'),
+                        'title' => Yii::t('BbbModule.base', 'Start session'),
                     ]
                 ) ?> <?php endif; ?>
 
@@ -109,7 +94,7 @@ JS, \yii\web\View::POS_END);
             <?php endif; ?>
         </div>
         <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="panel-footer" style="padding-top: 10px">
-            <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer]) ?>
+            <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer, 'canAdminister' => $model->canAdminister()]) ?>
         </div>
     </div>
 </div>

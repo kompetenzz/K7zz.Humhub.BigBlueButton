@@ -28,6 +28,7 @@ use function PHPUnit\Framework\isFalse;
  */
 class SessionForm extends Model
 {
+    public const SLUG_PATTERN = '[a-z0-9\-]+';
     /* ---------- Form-Attribute ---------- */
     public ?int $id = null;
     public string $name = '';
@@ -152,7 +153,26 @@ class SessionForm extends Model
         return [
             [['title', 'moderator_pw', 'attendee_pw'], 'required'],
             [['name', 'title', 'moderator_pw', 'attendee_pw'], 'string', 'max' => 255],
-            ['name', 'unique', 'targetClass' => Session::class, 'targetAttribute' => 'name', 'on' => 'create'],
+            [
+                'name',
+                'unique',
+                'targetClass' => Session::class,
+                'targetAttribute' => 'name',
+                'when' => fn() => $this->id === null,
+                'message' => Yii::t('BbbModule.base', 'This name has already been taken.'),
+            ],
+            [
+                'name',
+                'unique',
+                'targetClass' => Session::class,
+                'targetAttribute' => 'name',
+                'when' => fn() => $this->id > 0,
+                'message' => Yii::t('BbbModule.base', 'This name has already been taken.'),
+                'filter' => function ($query) {
+                    return $query->andWhere(['!=', 'id', $this->id]);
+                }
+            ],
+            ['name', 'match', 'pattern' => '/^' . self::SLUG_PATTERN . '$/', 'message' => Yii::t('BbbModule.base', 'Only lowercase letters, numbers and hyphens are allowed.')],
             [['description'], 'string'],
             [['attendeeRefs', 'moderatorRefs'], 'each', 'rule' => ['string']],
             ['image_file_id', 'integer'],
