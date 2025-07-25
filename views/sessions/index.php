@@ -8,7 +8,7 @@ $createUrl = $this->context->contentContainer
     ? $this->context->contentContainer->createUrl('/bbb/session/create')
     : Url::to('/bbb/session/create');
 
-$canCreate = $scope === 'container'
+$canCreate = $this->context->contentContainer
     ? $this->context->contentContainer->can(Admin::class)
     : Yii::$app->user->can(Admin::class);
 
@@ -43,7 +43,6 @@ $canCreate = $scope === 'container'
                 'session' => $row['model'],
                 'running' => $row['running'],
                 'contentContainer' => $this->context->contentContainer,
-                'scope' => $scope,
                 'highlightId' => $highlightId ?? 0,
             ]) ?>
         <?php endforeach; ?>

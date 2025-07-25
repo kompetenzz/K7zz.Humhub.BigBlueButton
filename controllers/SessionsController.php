@@ -27,7 +27,6 @@ class SessionsController extends BaseContentController
             '@bbb/views/sessions/index',
             [
                 'rows' => $rows,
-                'scope' => $this->scope,
                 'highlightId' => $highlight
             ]
         );

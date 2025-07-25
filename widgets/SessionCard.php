@@ -16,7 +16,6 @@ class SessionCard extends Widget
         return $this->render('sessionCard', [
             'model' => $this->session,
             'running' => $this->running,
-            'scope' => $this->scope,
             'contentContainer' => $this->contentContainer,
             'highlightId' => $this->highlightId ?? 0,
         ]);

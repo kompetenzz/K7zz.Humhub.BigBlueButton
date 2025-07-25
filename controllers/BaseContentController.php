@@ -16,8 +16,6 @@ abstract class BaseContentController extends ContentContainerController
     public $requireContainer = false;
     public $hideSidebar = true;
 
-    protected ?string $scope = null;
-
     protected ?SessionService $svc = null;
 
     /**
@@ -27,11 +25,6 @@ abstract class BaseContentController extends ContentContainerController
     {
         parent::init();
         $this->svc = Yii::createObject(SessionService::class);
-
-        $this->scope = 'global';
-        if ($this->contentContainer) {
-            $this->scope = $this->contentContainer instanceof Space ? 'space' : 'user';
-        }
     }
 
     protected function getUrl($url)
