@@ -132,6 +132,9 @@ class SessionService
         if (!$session) {
             return [];
         }
+        if (!$session->canAdminister())
+            return []; // ATM only for admins
+
         $params = new GetRecordingsParameters();
         $params->setMeetingId($session->uuid);
         if (!$session->canAdminister())
