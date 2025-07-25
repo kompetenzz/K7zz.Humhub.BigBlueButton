@@ -1,9 +1,8 @@
 <?php
 /**
- * @link https://www.humhub.org/
- * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
- * @license https://www.humhub.com/licences
+ * View: Container-specific BBB module settings form.
  *
+ * @var k7zz\humhub\bbb\models\forms\ContainerSettingsForm $model  The container settings form model
  */
 
 use yii\bootstrap\ActiveForm;

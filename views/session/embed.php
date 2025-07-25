@@ -1,7 +1,9 @@
 <?php
 /**
- * @var k7zz\humhub\bbb\models\JoinInfo $joinInfo  Vollständige Join-URL
- * @var string $title  Titel der Sessuin
+ * View: Embed a BBB session as an iframe.
+ *
+ * @var k7zz\humhub\bbb\models\JoinInfo $joinInfo  The join information (URL, title)
+ * @var string $title                                The session title
  */
 
 use yii\helpers\Html;

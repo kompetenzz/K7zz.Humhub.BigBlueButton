@@ -14,17 +14,27 @@ use k7zz\humhub\bbb\permissions\{
     StartSession,
     JoinSession
 };
+
 /**
+ * ActiveRecord model for a BigBlueButton session in HumHub.
+ *
+ * Represents a video session/meeting, including permissions, metadata, and image handling.
+ *
  * @property int    $id
  * @property string $uuid
  * @property string $moderator_pw
- * …
+ * ...
  */
 class Session extends ContentActiveRecord
 {
+    /** @var string The module ID for this model. */
     protected $moduleId = 'bbb';
+    /** @var PreviewImage|null Output image for the session (if set). */
     public $outputImage = null;
 
+    /**
+     * Handles image preview after loading the model.
+     */
     public function afterFind()
     {
         parent::afterFind();
@@ -36,23 +46,43 @@ class Session extends ContentActiveRecord
             }
         }
     }
+
+    /**
+     * @inheritdoc
+     */
     public static function tableName(): string
     {
         return 'bbb_session';
     }
+
+    /** @var string|null Wall entry class (optional). */
     public $wallEntryClass = null; // optional, falls keine Wall-Darstellung
+    /** @var bool Whether to auto-add to wall (optional). */
     public $autoAddToWall = true; // optional
 
+    /**
+     * Returns the display name for the session content.
+     * @return string
+     */
     public function getContentName()
     {
         return $this->title ?: Yii::t('BbbModule.base', 'A live session');
     }
 
+    /**
+     * Returns the description for the session content.
+     * @return string
+     */
     public function getContentDescription()
     {
         return $this->description ?: Yii::t('BbbModule.base', 'Live video session with BigBlueButton');
     }
 
+    /**
+     * Checks if the given user (or current user) can administer the session.
+     * @param UserComponent|null $user
+     * @return bool
+     */
     public function canAdminister(?UserComponent $user = null): bool
     {
         $user ??= Yii::$app->user;

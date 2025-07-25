@@ -1,4 +1,12 @@
 <?php
+/**
+ * Widget view: List of BBB session recordings.
+ *
+ * @var string $ajaxUrl         The AJAX URL to fetch recordings
+ * @var string $sessionId       The session ID
+ * @var bool $canAdminister     Whether the user can administer recordings
+ */
+
 use humhub\modules\ui\icon\widgets\Icon;
 use yii\helpers\Html;
 use yii\web\View;

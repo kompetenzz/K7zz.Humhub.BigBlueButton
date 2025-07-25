@@ -3,6 +3,15 @@ namespace k7zz\humhub\bbb\widgets;
 use humhub\components\Widget;
 use yii\helpers\Url;
 
+/**
+ * Widget: List of BBB session recordings.
+ *
+ * Renders a list of recordings for a given session, optionally with admin controls.
+ *
+ * @property int $sessionId                The session ID
+ * @property mixed $contentContainer       The content container (space/user) or null
+ * @property bool $canAdminister           Whether the user can administer recordings
+ */
 class RecordingsList extends Widget
 {
     private const AJAX_URL = '/bbb/session/recordings';

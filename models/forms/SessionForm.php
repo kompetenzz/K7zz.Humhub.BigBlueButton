@@ -5,7 +5,6 @@ use humhub\modules\content\components\ContentContainerActiveRecord;
 use k7zz\humhub\bbb\models\SessionUser;
 use humhub\modules\file\converter\PreviewImage;
 use humhub\modules\file\models\File;
-use PhpOffice\PhpSpreadsheet\Writer\Ods\Content;
 use yii\web\UploadedFile;
 use yii\base\Model;
 use Yii;
@@ -13,23 +12,22 @@ use k7zz\humhub\bbb\models\Session;
 use humhub\modules\user\models\User;
 use yii\helpers\Inflector;
 use yii\web\NotFoundHttpException;
-use function PHPUnit\Framework\isFalse;
 
 /**
- * Formular-Model für Create / Update einer BBB-Session.
+ * Form model for creating and updating BBB sessions.
  *
- * Verwendet im SessionController:
+ * Used in SessionController for both creation and editing of sessions.
+ * Handles validation, saving, and image upload logic.
  *
- *   $form = SessionForm::create($containerId);     // neu
- *   // oder
- *   $form = SessionForm::edit($id, $containerId);  // bearbeiten
- *
- *   if ($form->load($_POST) && $form->save()) …
+ * Example usage:
+ *   $form = SessionForm::create($containerId);     // new
+ *   $form = SessionForm::edit($id, $containerId);  // edit
+ *   if ($form->load($_POST) && $form->save()) ...
  */
 class SessionForm extends Model
 {
     public const SLUG_PATTERN = '[a-z0-9\-]+';
-    /* ---------- Form-Attribute ---------- */
+    /* ---------- Form attributes ---------- */
     public ?int $id = null;
     public string $name = '';
     public ?string $title = null;
@@ -39,9 +37,8 @@ class SessionForm extends Model
     public $attendeeRefs = [];
     public $moderatorRefs = [];
 
-    /* interne Helfer */
+    /* Internal helpers */
     private ?Session $record = null;
-
     public ?ContentContainerActiveRecord $contentContainer;
     private int $creatorId;
     public bool $publicModerate = true;
@@ -50,9 +47,9 @@ class SessionForm extends Model
     public bool $joinCanModerate = false;
     public bool $hasWaitingRoom = false;
     public bool $allowRecording = true;
-    public bool $muteOnEntry = false; // Session kann gestartet werden, wenn der User Moderator ist
+    public bool $muteOnEntry = false;
     public bool $enabled = true;
-    public ?int $image_file_id = null;        // hier speichern wir später die File‐ID
+    public ?int $image_file_id = null;
     public $image = null;
     public ?UploadedFile $imageUpload = null;
     public $previewImage = null; // für die Thumbnail-Vorschau

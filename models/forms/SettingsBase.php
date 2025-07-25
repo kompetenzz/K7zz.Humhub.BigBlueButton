@@ -4,14 +4,25 @@ namespace k7zz\humhub\bbb\models\forms;
 use yii\base\Model;
 use Yii;
 
+/**
+ * Base class for BBB settings forms (global and container-specific).
+ *
+ * Provides common properties and logic for loading and saving settings.
+ *
+ * @property string $navItemLabel  The label for the navigation item
+ * @property bool   $addNavItem    Whether to add a navigation item
+ */
 abstract class SettingsBase extends Model
 {
+    /** @var mixed Settings storage (HumHub settings component) */
     protected $settings;
 
     public string $navItemLabel;
-
     public bool $addNavItem;
 
+    /**
+     * @inheritdoc
+     */
     public function rules(): array
     {
         return [
@@ -20,6 +31,9 @@ abstract class SettingsBase extends Model
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels(): array
     {
         return [
@@ -30,7 +44,9 @@ abstract class SettingsBase extends Model
 
     /* ========== Laden & Speichern in HumHub-Settings ========== */
 
-    /** Lädt Werte aus Config-Tabelle */
+    /**
+     * Loads values from the config table.
+     */
     public function init()
     {
         parent::init();
@@ -39,7 +55,10 @@ abstract class SettingsBase extends Model
         $this->navItemLabel = $this->settings->get('navItemLabel') ?? 'Live Sessions';
     }
 
-    /** speichert bei erfolgreicher Validierung */
+    /**
+     * Saves values to the config table after validation.
+     * @return bool
+     */
     public function save(): bool
     {
         if (!$this->validate()) {

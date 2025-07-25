@@ -1,4 +1,9 @@
 <?php
+/**
+ * View: Global BBB module settings form.
+ *
+ * @var k7zz\humhub\bbb\models\forms\SettingsForm $model  The settings form model
+ */
 
 use yii\bootstrap\ActiveForm;
 

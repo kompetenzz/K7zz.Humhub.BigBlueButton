@@ -1,4 +1,10 @@
 <?php
+/**
+ * View: Exit overlay after a BBB session has ended.
+ *
+ * Shows a message and a close button to the user.
+ */
+
 $this->registerCss(<<<CSS
 .bbb-exit-overlay {
     position: fixed;

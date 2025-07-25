@@ -16,13 +16,26 @@ use humhub\modules\content\components\ContentContainerActiveRecord;
 use yii\helpers\Url;
 
 /**
- * Domaindienst rund um BBB-Sessions.
- * Die BBB-Serverdaten werden aus den Modul-Settings geladen.
+ * Service class for handling BigBlueButton (BBB) session logic in HumHub.
+ *
+ * This service provides methods to:
+ * - List, retrieve, and delete BBB sessions
+ * - Start and join meetings
+ * - Check if a meeting is running
+ * - Manage and publish recordings
+ *
+ * The BBB server URL and secret are loaded from the module settings.
  */
 class SessionService
 {
+    /**
+     * @var BigBlueButton BBB API client instance
+     */
     private BigBlueButton $bbb;
 
+    /**
+     * Initializes the BBB API client using module settings.
+     */
     public function __construct()
     {
         /* ---------- Settings laden ---------- */
@@ -33,6 +46,11 @@ class SessionService
         $this->bbb = new BigBlueButton($baseUrl, $secret);
     }
 
+    /**
+     * Returns a query for sessions, optionally filtered by content container.
+     * @param ContentContainerActiveRecord|null $container
+     * @return \yii\db\ActiveQuery
+     */
     private function getQueryStarter(ContentContainerActiveRecord $container = null)
     {
         return Session::find()->contentContainer($container);
@@ -42,7 +60,12 @@ class SessionService
     /*  API-Methoden                                                      */
     /* ------------------------------------------------------------------ */
 
-    /** Liste aller Sessions – optional nach ContentContainer gefiltert */
+    /**
+     * Returns a list of all sessions, optionally filtered by content container and enabled status.
+     * @param ContentContainerActiveRecord|null $container
+     * @param bool $onlyEnabled
+     * @return Session[]
+     */
     public function list(ContentContainerActiveRecord $container = null, bool $onlyEnabled = false): array
     {
         $query = $this->getQueryStarter($container)
@@ -59,7 +82,12 @@ class SessionService
         return $result;
     }
 
-    /** Holt exakt eine Session (oder null) – optional Container-Check */
+    /**
+     * Retrieves a single session by ID, optionally filtered by content container.
+     * @param int|null $id
+     * @param ContentContainerActiveRecord|null $container
+     * @return Session|null
+     */
     public function get(?int $id = null, ContentContainerActiveRecord $container = null): ?Session
     {
         if ($id === null) {
@@ -74,7 +102,11 @@ class SessionService
         return $query->one();
     }
 
-    /** Prüft, ob ein Raum bereits auf BBB läuft */
+    /**
+     * Checks if a meeting with the given UUID is currently running on BBB.
+     * @param string $uuid
+     * @return bool
+     */
     public function isRunning(string $uuid): bool
     {
         if (empty($uuid)) {
@@ -86,8 +118,12 @@ class SessionService
             ->isRunning();
     }
 
-
-    /** Startet eine neue Session (oder idempotent) und liefert Moderator-URL */
+    /**
+     * Starts a new BBB session (idempotent) and returns the moderator join URL.
+     * @param Session $s
+     * @param ContentContainerActiveRecord|null $container
+     * @return string Moderator join URL
+     */
     public function start(Session $s, ContentContainerActiveRecord $container = null): string
     {
         $url = $container ? $container->createUrl('/bbb/session/exit') :
@@ -112,7 +148,12 @@ class SessionService
         return $this->joinUrl($s, true);
     }
 
-    /** Baut eine Join-URL für den gegebenen Nutzer */
+    /**
+     * Builds a join URL for the current user for the given session.
+     * @param Session $session
+     * @param bool $moderator
+     * @return string
+     */
     public function joinUrl(Session $session, bool $moderator = false): string
     {
         $jp = (new JoinMeetingParameters())
@@ -126,6 +167,12 @@ class SessionService
         return $this->bbb->getJoinMeetingURL($jp);
     }
 
+    /**
+     * Retrieves all recordings for a session, if the user can administer it.
+     * @param int|null $id
+     * @param ContentContainerActiveRecord|null $container
+     * @return array
+     */
     public function getRecordings(?int $id = null, ContentContainerActiveRecord $container = null): array
     {
         $session = $this->get($id, $container);
@@ -150,6 +197,12 @@ class SessionService
         return [];
     }
 
+    /**
+     * Soft-deletes a session by setting its deleted_at timestamp.
+     * @param int|null $id
+     * @param ContentContainerActiveRecord|null $container
+     * @return bool|null
+     */
     public function delete(?int $id = null, ContentContainerActiveRecord $container = null): ?bool
     {
         if ($id === null) {
@@ -169,6 +222,12 @@ class SessionService
         return false;
     }
 
+    /**
+     * Publishes or unpublishes a BBB recording by its record ID.
+     * @param string $recordId
+     * @param bool $publish
+     * @return bool
+     */
     public function publishRecording(string $recordId, bool $publish = false): bool
     {
         $params = new PublishRecordingsParameters($recordId);

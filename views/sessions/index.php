@@ -1,4 +1,13 @@
 <?php
+/**
+ * View: List and manage BBB sessions for a container or globally.
+ *
+ * Variables:
+ * @var array $rows           List of session data (model, running)
+ * @var int $highlightId      ID of the session to highlight (optional)
+ * @var \humhub\modules\content\components\ContentContainerActiveRecord|null $contentContainer
+ */
+
 use humhub\libs\Html;
 use k7zz\humhub\bbb\widgets\SessionCard;
 use k7zz\humhub\bbb\permissions\Admin;

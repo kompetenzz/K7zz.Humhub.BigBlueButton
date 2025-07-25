@@ -1,8 +1,11 @@
 <?php
 /**
- * @var k7zz\humhub\bbb\models\Session $model
- * @var bool   $running
- * @var int    $highlightId
+ * Widget view: Single session as a card element.
+ *
+ * @var k7zz\humhub\bbb\models\Session $model           The session model
+ * @var bool   $running                                   Whether the session is currently running
+ * @var int    $highlightId                               ID of the session to highlight
+ * @var \humhub\modules\content\components\ContentContainerActiveRecord|null $contentContainer  The content container (space/user) or null
  */
 use humhub\modules\ui\icon\widgets\Icon;
 use k7zz\humhub\bbb\assets\BBBAssets;

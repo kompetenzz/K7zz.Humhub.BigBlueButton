@@ -3,6 +3,17 @@ namespace k7zz\humhub\bbb\widgets;
 use humhub\components\Widget;
 use k7zz\humhub\bbb\models\Session;
 
+/**
+ * Widget: BBB session card.
+ *
+ * Renders a single session as a card element, including status and actions.
+ *
+ * @property Session $session              The session model
+ * @property bool $running                 Whether the session is currently running
+ * @property string $scope                 'container' or 'global'
+ * @property int|null $highlightId         ID of the session to highlight
+ * @property mixed $contentContainer       The content container (space/user) or null
+ */
 class SessionCard extends Widget
 {
     public Session $session;

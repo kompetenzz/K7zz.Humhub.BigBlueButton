@@ -5,19 +5,26 @@ use yii\base\Model;
 use Yii;
 
 /**
- * Globale BBB-Moduleinstellungen.
+ * Form model for global BBB module settings.
  *
- * Wird im ConfigController geladen / gespeichert:
+ * Used in ConfigController to load and save global settings like server URL and secret.
+ *
+ * Example usage:
  *   $model = new SettingsForm();
- *   if ($model->load($_POST) && $model->save()) …
+ *   if ($model->load($_POST) && $model->save()) ...
+ *
+ * @property string $bbbUrl     The BBB server URL
+ * @property string $bbbSecret  The shared secret for BBB
  */
 class SettingsForm extends SettingsBase
 {
     public string $bbbUrl = '';
-
-    /** @var string  Sicherheitssalt / Secret aus der BBB-Konfiguration */
+    /** @var string  Security salt / secret from BBB configuration */
     public string $bbbSecret = '';
 
+    /**
+     * @inheritdoc
+     */
     public function rules(): array
     {
         return array_merge([
@@ -27,6 +34,9 @@ class SettingsForm extends SettingsBase
         ], parent::rules());
     }
 
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels(): array
     {
         return array_merge([
@@ -37,7 +47,9 @@ class SettingsForm extends SettingsBase
 
     /* ========== Laden & Speichern in HumHub-Settings ========== */
 
-    /** Lädt Werte aus Config-Tabelle */
+    /**
+     * Loads values from the config table.
+     */
     public function init()
     {
         $this->settings = Yii::$app->getModule('bbb')->settings;
@@ -46,7 +58,10 @@ class SettingsForm extends SettingsBase
         $this->bbbSecret = $this->settings->get('bbbSecret') ?? '';
     }
 
-    /** speichert bei erfolgreicher Validierung */
+    /**
+     * Saves values to the config table after validation.
+     * @return bool
+     */
     public function save(): bool
     {
         if (!parent::save()) {

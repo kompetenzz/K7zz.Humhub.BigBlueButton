@@ -1,8 +1,8 @@
 <?php
 /**
- * Page handlinh session end
+ * View: End/quit page for a BBB session.
  *
- * @var k7zz\humhub\bbb\models\forms\SessionForm $session
+ * @var k7zz\humhub\bbb\models\forms\SessionForm $session  The session form model
  */
 use yii\helpers\Html;
 ?>

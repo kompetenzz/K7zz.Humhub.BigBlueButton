@@ -9,9 +9,25 @@ use Yii;
 use yii\helpers\Url;
 use yii\web\{ForbiddenHttpException, NotFoundHttpException, ServerErrorHttpException};
 
+/**
+ * Controller for handling BBB session actions in HumHub.
+ *
+ * Provides endpoints for:
+ * - Creating, editing, and deleting sessions
+ * - Starting and joining meetings (including embed/iframe)
+ * - Listing and counting recordings
+ * - Publishing/unpublishing recordings
+ *
+ * All actions are permission-checked and use the SessionService for business logic.
+ */
 class SessionController extends BaseContentController
 {
-
+    /**
+     * Redirects to the edit action for a given session ID.
+     * @param int|null $id
+     * @return \yii\web\Response
+     * @throws NotFoundHttpException
+     */
     public function actionIndex(?int $id = null)
     {
         if ($id === null) {
@@ -20,6 +36,10 @@ class SessionController extends BaseContentController
         return $this->actionEdit($id);
     }
 
+    /**
+     * Creates a new BBB session via form.
+     * @return string|\yii\web\Response
+     */
     public function actionCreate()
     {
         $form = SessionForm::create($this->contentContainer);
@@ -31,6 +51,12 @@ class SessionController extends BaseContentController
         return $this->render('edit', ['model' => $form]);
     }
 
+    /**
+     * Edits an existing BBB session.
+     * @param int|null $id
+     * @return string|\yii\web\Response
+     * @throws NotFoundHttpException
+     */
     public function actionEdit(?int $id = null)
     {
         if ($id === null) {
@@ -48,6 +74,15 @@ class SessionController extends BaseContentController
         return $this->render('edit', ['model' => $form]);
     }
 
+    /**
+     * Starts a BBB session (meeting) or joins if already running.
+     * @param int|null $id
+     * @param bool $embed
+     * @param bool $void
+     * @param string|null $space
+     * @return \yii\web\Response
+     * @throws NotFoundHttpException
+     */
     public function actionStart(?int $id = null, bool $embed = true, bool $void = false, ?string $space = null)
     {
         if ($id === null) {
@@ -73,6 +108,12 @@ class SessionController extends BaseContentController
         return $this->redirect($this->getUrl("/bbb/session/{$actionName}/{$session->name}"));
     }
 
+    /**
+     * Quits a session and redirects to the session list.
+     * @param int|null $id
+     * @return \yii\web\Response
+     * @throws NotFoundHttpException
+     */
     public function actionQuit(?int $id = null)
     {
         $session = $this->svc->get($id)
@@ -81,11 +122,21 @@ class SessionController extends BaseContentController
 
     }
 
+    /**
+     * Renders the exit view for a session.
+     * @return string
+     */
     public function actionExit()
     {
         return $this->render('exit');
     }
 
+    /**
+     * Prepares join information for a session, including join URL and title.
+     * @param int|null $id
+     * @return JoinInfo
+     * @throws NotFoundHttpException|ForbiddenHttpException
+     */
     private function prepareJoin(?int $id = null): JoinInfo
     {
         if ($id === null) {
@@ -106,20 +157,35 @@ class SessionController extends BaseContentController
         return $result;
     }
 
-    /* ------------- Join in bbb (use with target, or window.open) --------------------------------------- */
+    /**
+     * Joins a BBB session (redirects to join URL).
+     * @param int|null $id
+     * @return \yii\web\Response
+     * @throws NotFoundHttpException|ForbiddenHttpException
+     */
     public function actionJoin(?int $id = null)
     {
         $joinInfo = $this->prepareJoin($id);
         return Yii::$app->response->redirect($joinInfo->url, 303, true);
     }
 
-    /* ------------- iframe embed --------------------------------------- */
+    /**
+     * Embeds a BBB session in an iframe.
+     * @param int|null $id
+     * @return string
+     * @throws NotFoundHttpException|ForbiddenHttpException
+     */
     public function actionEmbed(?int $id = null)
     {
         $joinInfo = $this->prepareJoin($id);
         return $this->render('embed', compact('joinInfo'));
     }
 
+    /**
+     * Deletes a BBB session.
+     * @param int $id
+     * @return \yii\web\Response
+     */
     public function actionDelete(int $id)
     {
         if ($this->svc->delete($id, $this->contentContainer)) {
@@ -131,6 +197,12 @@ class SessionController extends BaseContentController
         return $this->redirect($this->getUrl("/bbb/sessions"));
     }
 
+    /**
+     * Returns a list of recordings for a session as JSON.
+     * @param int|null $id
+     * @return array
+     * @throws NotFoundHttpException
+     */
     public function actionRecordings(?int $id = null): array
     {
         $session = $this->svc->get($id, $this->contentContainer)
@@ -164,6 +236,13 @@ class SessionController extends BaseContentController
         }
         return $result;
     }
+
+    /**
+     * Returns the number of recordings for a session as JSON.
+     * @param int|null $id
+     * @return int
+     * @throws NotFoundHttpException
+     */
     public function actionRecordingsCount(?int $id = null): int
     {
         $session = $this->svc->get($id, $this->contentContainer)
@@ -180,9 +259,12 @@ class SessionController extends BaseContentController
         return count($recordings);
     }
 
-    /** 
-     * Toggle publish state of a recording 
-     * */
+    /**
+     * Toggles the publish state of a recording.
+     * @param string $recordId
+     * @param bool $publish
+     * @return bool
+     */
     public function actionPublishRecording(string $recordId, bool $publish = false): bool
     {
         Yii::error($recordId);
