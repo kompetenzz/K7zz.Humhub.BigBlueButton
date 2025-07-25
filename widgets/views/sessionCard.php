@@ -46,57 +46,63 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
                 <?= Html::encode($model->description) ?>
             </p>
         </div>
-        <!-- Fußzeile mit Action-Links-->
-        <div class="panel-footer" style="padding-top: 10px">
-            <?php if ($running && $model->canJoin()): ?>
-                <?= Html::a(
-                    Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Join'),
-                    '#',
-                    [
-                        'class' => 'btn btn-primary btn-sm bbb-launch-window',
-                        'data-url' => $routePrefix . '/join/' . $model->name,
-                        'title' => Yii::t('BbbModule.base', 'Join session'),
-                    ]
-                ) ?>
-            <?php elseif (!$running && $model->canStart()): ?>
-                <?= Html::a(
-                    Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Start'),
-                    '#',
-                    [
-                        'class' => 'btn btn-primary btn-sm bbb-launch-window',
-                        'data-url' => $routePrefix . '/start/' . $model->name . '?embed=0',
-                        'title' => Yii::t('BbbModule.base', 'Start session'),
-                    ]
-                ) ?> <?php endif; ?>
+        <?php if ($model->canJoin()): ?>
 
+            <!-- Fußzeile mit Action-Links-->
+            <div class="panel-footer" style="padding-top: 10px">
+                <?php if ($running && $model->canJoin()): ?>
+                    <?= Html::a(
+                        Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Join'),
+                        '#',
+                        [
+                            'class' => 'btn btn-primary btn-sm bbb-launch-window',
+                            'data-url' => $routePrefix . '/join/' . $model->name,
+                            'title' => Yii::t('BbbModule.base', 'Join session'),
+                        ]
+                    ) ?>
+                <?php elseif (!$running && $model->canStart()): ?>
+                    <?= Html::a(
+                        Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Start'),
+                        '#',
+                        [
+                            'class' => 'btn btn-primary btn-sm bbb-launch-window',
+                            'data-url' => $routePrefix . '/start/' . $model->name . '?embed=0',
+                            'title' => Yii::t('BbbModule.base', 'Start session'),
+                        ]
+                    ) ?>     <?php endif; ?>
+
+                <?php if ($model->canAdminister()): ?>
+                    <span class="pull-right">
+                        <?= Html::a(
+                            Icon::get('pencil'),
+                            $routePrefix . '/edit/' . $model->name,
+                            [
+                                'class' => 'btn btn-info btn-sm',
+                                'title' => Yii::t('BbbModule.base', 'Edit session')
+                            ]
+                        ) ?>
+                        <?= Html::a(
+                            Icon::get('trash'),
+                            $routePrefix . '/delete/' . $model->name,
+                            [
+                                'class' => 'btn btn-danger btn-sm',
+                                'data-confirm' => Yii::t('BbbModule.base', 'Are you sure you want to delete this session?'),
+                                'data-method' => 'post',
+                                'title' => Yii::t('BbbModule.base', 'Delete session'),
+                                'aria-label' => Yii::t('BbbModule.base', 'Delete session'),
+                            ]
+                        ) ?>
+                    </span>
+                <?php endif; ?>
+            </div>
             <?php if ($model->canAdminister()): ?>
-                <span class="pull-right">
-                    <?= Html::a(
-                        Icon::get('pencil'),
-                        $routePrefix . '/edit/' . $model->name,
-                        [
-                            'class' => 'btn btn-info btn-sm',
-                            'title' => Yii::t('BbbModule.base', 'Edit session')
-                        ]
-                    ) ?>
-                    <?= Html::a(
-                        Icon::get('trash'),
-                        $routePrefix . '/delete/' . $model->name,
-                        [
-                            'class' => 'btn btn-danger btn-sm',
-                            'data-confirm' => Yii::t('BbbModule.base', 'Are you sure you want to delete this session?'),
-                            'data-method' => 'post',
-                            'title' => Yii::t('BbbModule.base', 'Delete session'),
-                            'aria-label' => Yii::t('BbbModule.base', 'Delete session'),
-                        ]
-                    ) ?>
-                </span>
+                <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="panel-footer" style="padding-top: 10px">
+                    <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer, 'canAdminister' => $model->canAdminister()]) ?>
+                </div>
             <?php endif; ?>
-        </div>
-        <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="panel-footer" style="padding-top: 10px">
-            <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer, 'canAdminister' => $model->canAdminister()]) ?>
-        </div>
+        <?php endif; ?>
     </div>
+
 </div>
 
 <?php

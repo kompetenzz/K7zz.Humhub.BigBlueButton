@@ -174,7 +174,7 @@ class SessionController extends BaseContentController
         }
         $recordings = array_filter(
             $this->svc->getRecordings($id, $this->contentContainer),
-            fn($r) => $session->canAdminister())// || !empty($r->getPlaybackUrl())
+            fn($r) => $session->canAdminister()// || !empty($r->getPlaybackUrl())
         );
         return count($recordings);
     }
