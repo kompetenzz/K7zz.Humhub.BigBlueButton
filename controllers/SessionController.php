@@ -63,6 +63,7 @@ class SessionController extends BaseContentController
                 if (!$joinUrl) {
                     Yii::$app->getSession()->setFlash('access-denied', Yii::t('BbbModule.base', 'Could not start session "{title}".', ['title' => $session->title]));
                 }
+                return Yii::$app->response->redirect($joinUrl, 303, true);
             }
         }
         if ($void)
