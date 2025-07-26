@@ -2,6 +2,8 @@
 
 This module integrates a BigBlueButton (BBB) video conferencing solution into your HumHub installation. It allows users to create, join, and manage BBB meetings directly within HumHub spaces and user profiles.
 
+Grateful to benefit from the georgeous [official BBB API](https://github.com/bigbluebutton/bigbluebutton-api-php).
+
 ## Features
 - Seamless integration of BigBlueButton meetings in HumHub
 - Create and join video conference sessions from spaces or user profiles
@@ -34,7 +36,7 @@ This module integrates a BigBlueButton (BBB) video conferencing solution into yo
 
 ## Installation
 1. Copy the `bbb` module directory into your `humhub/modules-custom/` folder.
-2. Install dependencies if required (see below).
+2. Install dependencies via composer.
 3. Enable the module in the HumHub administration area.
 
 ## Configuration
