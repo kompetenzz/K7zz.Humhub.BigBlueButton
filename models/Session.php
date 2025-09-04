@@ -9,6 +9,7 @@ use humhub\modules\file\converter\PreviewImage;
 use humhub\modules\file\models\File;
 use humhub\modules\user\components\User as UserComponent;
 use humhub\modules\user\models\User;
+use k7zz\humhub\bbb\enums\Layouts;
 use k7zz\humhub\bbb\permissions\{
     Admin,
     StartSession,
@@ -39,7 +40,7 @@ class Session extends ContentActiveRecord
     {
         parent::afterFind();
         if ($this->image_file_id !== null) {
-            $image = $this->getImageFile()->one();
+            $image = $this->getImageFile();
             $previewImage = new PreviewImage();
             if ($previewImage->applyFile($image)) {
                 $this->outputImage = $previewImage;
@@ -184,8 +185,25 @@ class Session extends ContentActiveRecord
             [['uuid', 'name', 'title', 'moderator_pw', 'attendee_pw'], 'string', 'max' => 255],
             [['description'], 'string'],
             [['uuid'], 'unique'],
-            [['creator_user_id', 'contentcontainer_id', 'created_at', 'updated_at', 'deleted_at', 'ord', 'image_file_id'], 'integer'],
-            [['enabled'], 'boolean'],
+            [
+                [
+                    'creator_user_id',
+                    'contentcontainer_id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'ord',
+                    'image_file_id',
+                    'presentation_file_id',
+                    'presentation_preview_file_id'
+                ],
+                'integer'
+            ],
+            [['enabled', 'public_join', 'allow_recording'], 'boolean'],
+            [['public_token'], 'string', 'max' => 64],
+            ['layout', 'required'],
+            ['layout', 'in', 'range' => Layouts::values()],
+
         ];
     }
     public function getSessionUsers(): ActiveQuery
@@ -211,8 +229,40 @@ class Session extends ContentActiveRecord
             });
     }
 
-    public function getImageFile(): ActiveQuery
+    public function getImageFile(): File|null
     {
-        return $this->hasOne(File::class, ['id' => 'image_file_id']);
+        return $this
+            ->hasOne(File::class, ['id' => 'image_file_id'])
+            ->one();
     }
+
+    public function getPresentationFile(): File|null
+    {
+        return $this
+            ->hasOne(File::class, ['id' => 'presentation_file_id'])
+            ->one();
+    }
+
+    public function getPresentationPreviewImageFile(): File|null
+    {
+        return $this
+            ->hasOne(File::class, ['id' => 'presentation_preview_file_id'])
+            ->one();
+    }
+
+    public function ensurePublicToken()
+    {
+        if (!$this->public_token) {
+            $this->public_token = Yii::$app->security->generateRandomString(48);
+        }
+    }
+
+    public function beforeSave($insert)
+    {
+        if ($this->public_join) {
+            $this->ensurePublicToken();
+        }
+        return parent::beforeSave($insert);
+    }
+
 }

@@ -2,6 +2,8 @@
 namespace k7zz\humhub\bbb\models\forms;
 
 use humhub\modules\content\components\ContentContainerActiveRecord;
+use k7zz\humhub\bbb\enums\Layouts;
+use k7zz\humhub\bbb\helpers\Tools;
 use k7zz\humhub\bbb\models\SessionUser;
 use humhub\modules\file\converter\PreviewImage;
 use humhub\modules\file\models\File;
@@ -26,6 +28,7 @@ use yii\web\NotFoundHttpException;
  */
 class SessionForm extends Model
 {
+    public const AUTO_IMAGE_FORMAT = 'png';
     public const SLUG_PATTERN = '[a-z0-9\-]+';
     /* ---------- Form attributes ---------- */
     public ?int $id = null;
@@ -41,18 +44,33 @@ class SessionForm extends Model
     private ?Session $record = null;
     public ?ContentContainerActiveRecord $contentContainer;
     private int $creatorId;
-    public bool $publicModerate = true;
-    public bool $publicJoin = true;
+    public bool $moderateByPermissions = true;
+    public bool $publicJoin = false;
+    public bool $joinByPermissions = true;
     public bool $joinCanStart = true;
     public bool $joinCanModerate = false;
     public bool $hasWaitingRoom = false;
     public bool $allowRecording = true;
     public bool $muteOnEntry = false;
     public bool $enabled = true;
-    public ?int $image_file_id = null;
-    public $image = null;
-    public ?UploadedFile $imageUpload = null;
-    public $previewImage = null; // für die Thumbnail-Vorschau
+    public string $layout = Layouts::CUSTOM_LAYOUT;
+
+    // pdf Presentation - an uploaded file in PDF format
+    public ?int $presentation_file_id = null; // DB ref
+    /** @var UploadedFile|string|null */
+    public $presentationUpload = null; // Form upload
+    public ?File $presentationFile = null; // DB record
+    // Preview image der Presentation – a generated thumbnail image from the first page of the PDF
+    public ?int $presentation_preview_file_id = null; // DB ref
+    public ?File $presentationPreviewImageFile = null; // DB record
+    public ?PreviewImage $presentationPreviewImage = null; // Thumbnail
+
+    // Session image
+    public ?int $image_file_id = null; // DB ref
+    public ?File $imageFile = null; // DB record
+    /** @var UploadedFile|string|null */
+    public $imageUpload = null; // Form upload
+    public ?PreviewImage $previewImage = null; // Thumbnail
 
     public function init()
     {
@@ -115,8 +133,9 @@ class SessionForm extends Model
             ->andWhere(['role' => 'moderator'])
             ->select('user.guid')
             ->column();
-        $model->publicJoin = count($model->attendeeRefs) === 0;
-        $model->publicModerate = count($model->moderatorRefs) === 0;
+        $model->joinByPermissions = count($model->attendeeRefs) === 0;
+        $model->moderateByPermissions = count($model->moderatorRefs) === 0;
+        $model->publicJoin = $session->public_join;
         $model->joinCanStart = $session->join_can_start;
         $model->joinCanModerate = $session->join_can_moderate;
         $model->hasWaitingRoom = $session->has_waitingroom;
@@ -124,11 +143,34 @@ class SessionForm extends Model
         $model->muteOnEntry = $session->mute_on_entry;
         $model->contentContainer = $session->content->container;
         $model->creatorId = $session->creator_user_id;
-        if ($session->image_file_id !== null) {
+        $model->layout = $session->layout;
+
+        Yii::error("Loading pdf" . $session->presentation_file_id);
+        // pdf and it's preview image
+        if ($session->presentation_file_id > 0) {
+            Yii::error("Loading pdf with id: " . $session->presentation_file_id, 'bbb');
+            $model->presentation_file_id = $session->presentation_file_id;
+            $model->presentationFile = $session->getPresentationFile(); // Lazy-Loading der Präsentation
+            if ($session->presentation_preview_file_id > 0) {
+                Yii::error("Loading presentation preview image with id: " . $session->presentation_preview_file_id, 'bbb');
+                $model->presentationPreviewImageFile = $session->getPresentationPreviewImageFile(); // Lazy-Loading des Bildes
+                Yii::error("Loaded " . $model->presentationPreviewImageFile->file_name . "-" . $model->presentationPreviewImageFile->getUrl(), 'bbb');
+                $presentationPreviewImage = new PreviewImage();
+                if ($presentationPreviewImage->applyFile($model->presentationPreviewImageFile)) {
+                    Yii::error("Applied prese ntation preview image for session edit: " . ($model->presentationPreviewImageFile ? $model->presentationPreviewImageFile->getUrl() : 'no file'), 'bbb');
+                    $model->presentationPreviewImage = $presentationPreviewImage; // Vorschau-Bild für die Thumbnail-Anzeige
+                }
+            }
+        }
+        Yii::error("Loading image file for session edit: " . ($session->image_file_id ? $session->image_file_id : 'no file'), 'bbb');
+        if ($session->image_file_id > 0) {
+            Yii::error("Loading image file for session edit: " . ($session->image_file_id ? $session->image_file_id : 'no file'), 'bbb');
             $model->image_file_id = $session->image_file_id;
-            $model->image = $session->getImageFile()->one(); // Lazy-Loading des Bildes
+            $model->imageFile = $session->getImageFile(); // Lazy-Loading des Bildes
             $previewImage = new PreviewImage();
-            if ($previewImage->applyFile($model->image)) {
+            Yii::error("Loading image file for session edit: " . ($model->imageFile ? $model->imageFile->getUrl() : 'no file'), 'bbb');
+            if ($previewImage->applyFile($model->imageFile)) {
+                Yii::error("Applied image file for session edit: " . $model->imageFile->getUrl(), 'bbb');
                 $model->previewImage = $previewImage; // Vorschau-Bild für die Thumbnail-Anzeige
             }
         }
@@ -172,18 +214,26 @@ class SessionForm extends Model
             ['name', 'match', 'pattern' => '/^' . self::SLUG_PATTERN . '$/', 'message' => Yii::t('BbbModule.base', 'Only lowercase letters, numbers and hyphens are allowed.')],
             [['description'], 'string'],
             [['attendeeRefs', 'moderatorRefs'], 'each', 'rule' => ['string']],
-            ['image_file_id', 'integer'],
-            ['image', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
-            [['joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled'], 'boolean']
+            [['image_file_id', 'presentation_file_id', 'presentation_preview_file_id'], 'integer'],
+            ['imageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
+            ['presentationUpload', 'file', 'extensions' => 'pdf', 'maxSize' => 40 * 1024 * 1024], // max. 40 MB
+            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled'], 'boolean'],
+            ['layout', 'required'],
+            ['layout', 'in', 'range' => Layouts::values()]
         ];
     }
 
     public function load($data, $formName = null): bool
     {
         $result = parent::load($data, $formName);
-        $file = UploadedFile::getInstance($this, 'image');
-        if ($file) {
-            $this->imageUpload = $file;
+        $iU = UploadedFile::getInstance($this, 'imageUpload');
+        if ($iU) {
+            Yii::error("Image uploaded: " . $iU->name, 'bbb');
+            $this->imageUpload = $iU;
+        }
+        $pU = UploadedFile::getInstance($this, 'presentationUpload');
+        if ($pU) {
+            $this->presentationUpload = $pU;
         }
         return $result;
     }
@@ -204,52 +254,152 @@ class SessionForm extends Model
             $session->content->container = $this->contentContainer;
         }
 
-        echo "Saving session with Image: {$session->image_file_id}\n"; // Debug-Ausgabe
-
         $session->id = $this->id;
         $session->name = $this->name;
         $session->title = $this->title;
         $session->description = $this->description;
         $session->moderator_pw = $this->moderator_pw;
         $session->attendee_pw = $this->attendee_pw;
+        $session->public_join = $this->publicJoin;
         $session->join_can_start = $this->joinCanStart;
         $session->join_can_moderate = $this->joinCanModerate;
         $session->has_waitingroom = $this->hasWaitingRoom;
         $session->allow_recording = $this->allowRecording;
         $session->mute_on_entry = $this->muteOnEntry;
+        $session->layout = $this->layout;
         $session->enabled = $this->enabled;
         $session->updated_at = time();
 
+        $this->saveBlobRefs($session);
+
+        if (!$session->save()) {
+            Yii::error("Could not save session.", 'bbb');
+            return false;
+        }
+        $this->id = $session->id;
+        $this->record = $session;
+
+        if (!$this->assignUsers($session)) {
+            Yii::error("Could not assign users to session.", 'bbb');
+            return false;
+        }
+        return true;
+    }
+
+    private function saveBlobRefs(Session $session): bool
+    {
+        // session image
         if ($this->imageUpload instanceof UploadedFile) {
-            if ($session->image_file_id) {
-                $humhubFile = $session->getImageFile()->one();
-            } else {
-                $humhubFile = new File();
-            }
-            $humhubFile->file_name = $this->imageUpload->baseName . '.' . $this->imageUpload->extension;
-            $humhubFile->mime_type = $this->imageUpload->type;
-            $humhubFile->size = $this->imageUpload->size;
-
-            if (!$humhubFile->save()) {
-                // Wenn die File‐Metadaten nicht gespeichert werden können, abbrechen
-                $this->addError('image', Yii::t('BbbModule.base', 'Could not save image reference to database.'));
-                return false;
-            }
-            $humhubFile->setStoredFileContent(file_get_contents($this->imageUpload->tempName));
-
-            if (!$session->image_file_id) {
-                $session->image_file_id = $humhubFile->id;
-                $session->fileManager->attach($humhubFile->guid);
+            if (!$this->saveSessionImage($session)) {
+                Yii::error("Could not save uploaded session image.", 'bbb');
             }
         }
-        if (!$session->save())
+
+        // Pdf presentation
+        if ($this->presentationUpload instanceof UploadedFile) {
+            if (!$this->savePresentation($session)) {
+                Yii::error("Could not save uploaded presentation file.", 'bbb');
+            }
+        }
+        return true;
+    }
+
+    private function saveSessionImage(Session $session): bool
+    {
+        $editImage = $session->image_file_id > 0;
+        if ($editImage) {
+            $humhubFile = $session->getImageFile();
+        } else {
+            $humhubFile = new File();
+        }
+
+        $humhubFile->file_name = $this->imageUpload->baseName . '.' . $this->imageUpload->extension;
+        $humhubFile->mime_type = $this->imageUpload->type;
+        $humhubFile->size = $this->imageUpload->size;
+
+        if (!$humhubFile->save()) {
+            // Wenn die File‐Metadaten nicht gespeichert werden können, abbrechen
+            $this->addError('image', Yii::t('BbbModule.base', 'Could not save image reference to database.'));
             return false;
+        }
+        $humhubFile->setStoredFileContent(file_get_contents($this->imageUpload->tempName));
 
-        $this->id = $session->id; // für die SessionUser-Zuordnung
-        $this->record = $session; // für die SessionUser-Zuordnung
+        if (!$editImage) {
+            $session->image_file_id = $humhubFile->id;
+            $session->fileManager->attach($humhubFile->guid);
+        }
+        return true;
+    }
 
+    private function savePresentation(Session $session): bool
+    {
+        $path = $this->presentationUpload->tempName;
+        $editPresentation = $session->presentation_file_id > 0;
+
+        if ($editPresentation) {
+            $humhubPresentationFile = $session->getPresentationFile();
+        } else {
+            $humhubPresentationFile = new File();
+        }
+        $humhubPresentationFile->file_name = $this->presentationUpload->baseName . '.' . $this->presentationUpload->extension;
+        $humhubPresentationFile->mime_type = $this->presentationUpload->type;
+        $humhubPresentationFile->size = $this->presentationUpload->size;
+
+        if (!$humhubPresentationFile->save()) {
+            // Wenn die File‐Metadaten nicht gespeichert werden können, abbrechen
+            $this->addError('presentation', Yii::t('BbbModule.base', 'Could not save presentation reference to database.'));
+            return false;
+        }
+        $humhubPresentationFile->setStoredFileContent(file_get_contents($path));
+
+        if (!$editPresentation) {
+            $session->presentation_file_id = $humhubPresentationFile->id;
+            $session->fileManager->attach($humhubPresentationFile->guid);
+        }
+
+        return $this->savePresentationPreviewImage($session, $path);
+    }
+
+    private function savePresentationPreviewImage(Session $session, string $path): bool
+    {
+        // create preview image from first page of PDF
+        $previewImageSuffix = '_preview.' . SessionForm::AUTO_IMAGE_FORMAT;
+        $presentationPreviewImgPath = $path . $previewImageSuffix;
+        if (
+            Tools::pdfFirstPageToPng(
+                $path,
+                $presentationPreviewImgPath
+            )
+        ) {
+            $editPresentationPreviewImage = $session->presentation_preview_file_id > 0;
+            if ($editPresentationPreviewImage) {
+                $humhubPresentationImageFile = $session->getPresentationPreviewImageFile();
+            } else {
+                $humhubPresentationImageFile = new File();
+            }
+            $humhubPresentationImageFile->file_name = $this->presentationUpload->baseName . $previewImageSuffix;
+            $humhubPresentationImageFile->mime_type = "image/" . SessionForm::AUTO_IMAGE_FORMAT;
+            $humhubPresentationImageFile->size = filesize($presentationPreviewImgPath);
+
+            if (!$humhubPresentationImageFile->save()) {
+                Yii::error("Could not save presentation preview image to database.", 'bbb');
+            }
+            $humhubPresentationImageFile->setStoredFileContent(
+                file_get_contents($presentationPreviewImgPath),
+                true
+            );
+            if (!$editPresentationPreviewImage) {
+                $session->presentation_preview_file_id = $humhubPresentationImageFile->id;
+                $session->fileManager->attach($humhubPresentationImageFile->guid);
+            }
+        }
+        return true;
+    }
+
+    private function assignUsers(Session $session): bool
+    {
         // Assign moderators
-        if (!$this->publicModerate) {
+        if (!$this->moderateByPermissions) {
             $moderatorDBUsers = User::find()
                 ->where(['IN', 'guid', $this->moderatorRefs])
                 ->all();
@@ -261,36 +411,37 @@ class SessionForm extends Model
         }
 
         // Assign attendees
-        if (!$this->publicJoin) {
+        if (!$this->joinByPermissions) {
             $attendeeDBUsers = User::find()
                 ->where(['IN', 'guid', $this->attendeeRefs])
                 ->andWhere(['NOT IN', 'guid', $this->moderatorRefs]) // keine Moderatoren als Teilnehmer
                 ->all();
             foreach ($attendeeDBUsers as $user) {
-                $this->addUser($user, $this->publicModerate ? 'moderator' : 'attendee');
+                $this->addUser($user, $this->moderateByPermissions ? 'moderator' : 'attendee');
             }
         } else if ($this->record !== null) {
             SessionUser::deleteAll(['session_id' => $this->record->id, 'can_join' => true, 'role' => 'attendee']);
         }
+
         return true;
     }
 
     private function addUser(User $user, string $role): bool
     {
-        $s = SessionUser::find()
+        $userRef = SessionUser::find()
             ->where(['session_id' => $this->record->id, 'user_id' => $user->id])
             ->one();
-        if ($s === null) {
-            $s = new SessionUser([
+        if ($userRef === null) {
+            $userRef = new SessionUser([
                 'session_id' => $this->record->id,
                 'user_id' => $user->id,
                 'created_at' => time()
             ]);
         }
-        $s->role = $role;
-        $s->can_start = $role === 'moderator';
-        $s->can_join = true;
+        $userRef->role = $role;
+        $userRef->can_start = $role === 'moderator';
+        $userRef->can_join = true;
 
-        return $s->save();
+        return $userRef->save();
     }
 }

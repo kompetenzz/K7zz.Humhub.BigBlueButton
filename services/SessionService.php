@@ -1,19 +1,21 @@
 <?php
 namespace k7zz\humhub\bbb\services;
 
-use BigBlueButton\Parameters\GetRecordingsParameters;
-use BigBlueButton\Parameters\PublishRecordingsParameters;
-use BigBlueButton\Parameters\UpdateRecordingsParameters;
 use k7zz\humhub\bbb\models\Session;
 use Yii;
 use BigBlueButton\BigBlueButton;
 use BigBlueButton\Parameters\{
     CreateMeetingParameters,
     IsMeetingRunningParameters,
-    JoinMeetingParameters
+    JoinMeetingParameters,
+    GetRecordingsParameters,
+    PublishRecordingsParameters,
+    UpdateRecordingsParameters
 };
+use BigBlueButton\Enum\Role;
 use humhub\modules\content\components\ContentContainerActiveRecord;
 use yii\helpers\Url;
+use humhub\libs\UUID;
 
 /**
  * Service class for handling BigBlueButton (BBB) session logic in HumHub.
@@ -124,27 +126,42 @@ class SessionService
      * @param ContentContainerActiveRecord|null $container
      * @return string Moderator join URL
      */
-    public function start(Session $s, ContentContainerActiveRecord $container = null): string
+    public function start(Session $s, ContentContainerActiveRecord $container = null): string|null
     {
-        $url = $container ? $container->createUrl('/bbb/session/exit') :
+        $exitUrl = $container ? $container->createUrl('/bbb/session/exit') :
             Url::to('/bbb/session/exit');
-        $p = (new CreateMeetingParameters($s->uuid, $s->name))
-            ->setModeratorPassword($s->moderator_pw)
-            ->setAttendeePassword($s->attendee_pw)
-            ->setRecord($s->allow_recording)
-            ->setAllowStartStopRecording($s->allow_recording)
-            ->setWelcomeMessage($s->description ?? '')
-            ->setBreakoutRoomsEnabled(true)
-            ->setMuteOnStart($s->mute_on_entry)
+        $anonymousJoinUrl = Url::to('/bbb/public/join/' . $s->public_token, true);
+        $description = $s->description ?? '';
+        if ($s->public_token && $s->public_join) {
+            $description .= "\n\n<br><br>" . Yii::t('BbbModule.base', 'Public join link for this session: <a href="{link}">{link}</a>', [
+                'link' => $anonymousJoinUrl
+            ]);
+        }
+        $p = (new CreateMeetingParameters($s->uuid, $s->title))
+            ->setRecord((bool) $s->allow_recording)
+            ->setAllowStartStopRecording((bool) $s->allow_recording)
+            ->setWelcome($description)
+            ->setMuteOnStart((bool) $s->mute_on_entry)
             ->setAllowModsToUnmuteUsers(true)
             ->setAllowModsToEjectCameras(true)
             ->setMeetingKeepEvents(true)
             ->setGuestPolicy(
                 $s->has_waitingroom ? "ASK_MODERATOR" : "ALWAYS_ACCEPT"
             )
-            ->setLogoutUrl(Yii::$app->urlManager->createAbsoluteUrl($url . "?highlight=" . $s->id));
+            ->setLogoutURL(Yii::$app->urlManager->createAbsoluteUrl($exitUrl . "?highlight=" . $s->id))
+            ->setMeetingLayout($s->layout);
+
+        if ($s->presentation_file_id > 0) {
+            $presentationUrl = Url::to('/bbb/public/download', true) . "?token=" . $s->public_token . "&type=presentation";
+
+            $p->addPresentation($presentationUrl, file_get_contents($presentationUrl), $s->name . "_presentation.pdf");
+        }
 
         $r = $this->bbb->createMeeting($p);          // mehrfach aufrufbar
+        if (!$r->success()) {
+            Yii::error("BBB-CreateMeeting failed for session {$s->name} ({$s->id}): " . $r->getMessage(), 'bbb');
+            return null;
+        }
         return $this->joinUrl($s, true);
     }
 
@@ -156,14 +173,21 @@ class SessionService
      */
     public function joinUrl(Session $session, bool $moderator = false): string
     {
-        $jp = (new JoinMeetingParameters())
-            ->setUserName(Yii::$app->user->identity->displayName)
-            ->setPassword(
-                $moderator ? $session->moderator_pw : $session->attendee_pw
-            )
-            ->setMeetingId($session->uuid)
-            ->setUserId(Yii::$app->user->identity->email)
-            ->setAvatarURL(avatarURL: Url::to(Yii::$app->user->identity->getProfileImage()->getUrl(), true));
+        $jp = (new JoinMeetingParameters(
+            $session->uuid,
+            Yii::$app->user->identity->displayName,
+            $moderator ? Role::MODERATOR : Role::VIEWER
+        ))
+            ->setUserID(Yii::$app->user->identity->email);
+        if (Yii::$app->user->identity->getProfileImage())
+            $jp->setAvatarURL(Url::to(Yii::$app->user->identity->getProfileImage()->getUrl(), true));
+        return $this->bbb->getJoinMeetingURL($jp);
+    }
+
+    public function anonymousJoinUrl(Session $session, string $displayName): string
+    {
+        $jp = (new JoinMeetingParameters($session->uuid, $displayName, Role::VIEWER))
+            ->setUserID(UUID::v4());
         return $this->bbb->getJoinMeetingURL($jp);
     }
 

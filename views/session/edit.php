@@ -11,6 +11,7 @@ use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
 use k7zz\humhub\bbb\assets\BBBAssets;
+use k7zz\humhub\bbb\enums\Layouts;
 
 $bundle = BBBAssets::register($this);
 
@@ -79,7 +80,7 @@ $title = $spaceTitle . ($model->id
                         <div class="col-md-6">
                             <div class="form-group">
                                 <?= $f->field($model, 'description')
-                                    ->textarea(['rows' => 6])
+                                    ->textarea(['rows' => 7])
                                     ->hint(Yii::t(
                                         'BbbModule.base',
                                         'Optional detailed description of the session and it\'s purpose.'
@@ -88,38 +89,70 @@ $title = $spaceTitle . ($model->id
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <?= $f->field($model, 'moderator_pw')
-                                    ->textInput(['maxlength' => true])
-                                    ->hint(Yii::t(
-                                        'BbbModule.base',
-                                        'Use this safe suggestion.'
-                                    )); ?>
+                                <?= $f->field($model, 'layout')->radioList(
+                                    Layouts::options(),
+                                    [
+                                        'item' => function ($index, $label, $name, $checked, $value) {
+                                        $desc = Layouts::descriptions()[$value] ?? '';
+                                        return "
+                                            <div class='radio'>
+                                                <label>
+                                                    <input type='radio' name='$name' value='$value' " . ($checked ? 'checked' : '') . ">
+                                                        <strong>$label</strong><br>
+                                                        <small class='text-muted'>$desc</small>
+                                                </label>
+                                            </div>
+                                        ";
+                                    }
+                                    ]
+                                ); ?>
                             </div>
-                            <div class="form-group">
 
-                                <?= $f->field($model, 'attendee_pw')
-                                    ->textInput(['maxlength' => true])
-                                    ->hint(Yii::t(
-                                        'BbbModule.base',
-                                        'Use this safe suggestion.'
-                                    )); ?>
-                            </div>
+                            <?php /** Passwords not used anymore
+
+  <div class="form-group">
+      <?= $f->field($model, 'moderator_pw')
+          ->textInput(['maxlength' => true])
+          ->hint(Yii::t(
+              'BbbModule.base',
+              'Use this safe suggestion.'
+          )); ?>
+  </div>
+  <div class="form-group">
+
+      <?= $f->field($model, 'attendee_pw')
+          ->textInput(['maxlength' => true])
+          ->hint(Yii::t(
+              'BbbModule.base',
+              'Use this safe suggestion.'
+          )); ?>
+  </div>
+  */ ?>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group" id="public-join-box">
                                 <?= $f->field($model, 'publicJoin')->checkbox([
                                     'id' => 'public-join-toggle',
+                                    'label' => Yii::t('BbbModule.base', 'Allow public joining by a shareable link.'),
+                                ])->hint(Yii::t(
+                                            'BbbModule.base',
+                                            'Creates a public join link which can be used by anybody to join this session (no login required).'
+                                        )); ?>
+                            </div>
+                            <div class="form-group" id="join-by-permissions-box">
+                                <?= $f->field($model, 'joinByPermissions')->checkbox([
+                                    'id' => 'join-by-permissions-toggle',
                                     'label' => Yii::t('BbbModule.base', 'Allow everybody with permission to join this session'),
                                 ]); ?>
                             </div>
-                            <div class="form-group">
-                                <div id="user-picker" <?= $model->publicJoin ? 'style="display:none"' : '' ?>>
+                            <div class="form-group" id="user-picker-box">
+                                <div id="user-picker" <?= $model->joinByPermissions || $model->publicJoin ? 'style="display:none"' : '' ?>>
                                     <?= $f->field($model, 'attendeeRefs')
                                         ->widget(class: UserPickerField::class)
                                         ->label(
-                                            Yii::t('BbbModule.base', 'Select specific users for this session')
+                                            Yii::t('BbbModule.base', 'Select specific attendees for this session')
                                         );
                                     ; ?>
                                 </div>
@@ -134,15 +167,15 @@ $title = $spaceTitle . ($model->id
                                     'label' => Yii::t('BbbModule.base', 'Allow everybody with join permission to moderate this session'),
                                 ]); ?>
                             </div>
-                            <div class="form-group">
-                                <?= $f->field($model, 'publicModerate')
-                                    ->checkbox([
-                                        'id' => 'public-moderate-toggle',
+                            <div class="form-group" id="moderator-box">
+                                <?= $f->field($model, 'moderateByPermissions')
+                                    ->checkbox(options: [
+                                        'id' => 'moderate-by-permissions-toggle',
                                         'label' => Yii::t('BbbModule.base', 'Allow everybody with permission to moderate this session'),
                                     ]); ?>
                             </div>
-                            <div class="form-group">
-                                <div id="moderator-picker" <?= $model->publicModerate ? 'style="display:none"' : '' ?>>
+                            <div class="form-group" id="moderator-picker-box">
+                                <div id="moderator-picker" <?= $model->moderateByPermissions ? 'style="display:none"' : '' ?>>
                                     <?= $f->field($model, 'moderatorRefs')
                                         ->widget(class: UserPickerField::class)
                                         ->label(
@@ -170,13 +203,36 @@ $title = $spaceTitle . ($model->id
                         </div>
                         <div class="col-md-6">
                             <?php
+                            if ($model->presentationFile !== null) { ?>
+                                <label><?= Yii::t('BbbModule.base', 'Current presentation') ?></label>
+                                <?php if ($model->presentationPreviewImage !== null) { ?>
+                                    <img src="<?= $model->presentationPreviewImage->getUrl() ?>"
+                                        class="img-responsive img-thumbnail"
+                                        alt="<?= Yii::t('BbbModule.base', 'PDF preview') ?>"
+                                        style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
+                                <?php } ?>
+                                <span><?= $model->presentationFile->file_name ?>
+                                    (<?= round($model->presentationFile->size / 1024 / 1024, 2); ?>MB)</span>
+                            <?php } ?>
+                            <div class="form-group">
+                                <?= $f->field($model, 'presentationUpload')
+                                    ->fileInput()
+                                    ->label($model->presentationFile
+                                        ? Yii::t('BbbModule.base', 'Change presentation file')
+                                        : Yii::t('BbbModule.base', 'Upload presentation file'))
+                                    ->hint(Yii::t(
+                                        'BbbModule.base',
+                                        'Optional presentation for this session. Use pdf in landscape mode.'
+                                    )); ?>
+                            </div>
+                            <?php
                             if ($model->previewImage !== null) { ?>
                                 <img src="<?= $model->previewImage->getUrl() ?>" class="img-responsive img-thumbnail"
                                     alt="<?= Yii::t('BbbModule.base', 'Session image') ?>"
                                     style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
                             <?php } ?>
                             <div class="form-group">
-                                <?= $f->field($model, 'image')
+                                <?= $f->field($model, 'imageUpload')
                                     ->fileInput()
                                     ->label($model->previewImage
                                         ? Yii::t('BbbModule.base', 'Change session image')
@@ -206,13 +262,34 @@ $title = $spaceTitle . ($model->id
                 <?php
                 /* JS, um den User-Picker live ein- und auszublenden */
                 $this->registerJs("
-        $('#public-join-toggle').on('change', function() {
-            $('#user-picker').toggle(!this.checked);
-        });
-        $('#public-moderate-toggle').on('change', function() {
-            $('#moderator-picker').toggle(!this.checked);
-        });");
+
+                function toggleControls() {
+                    if ($('#public-join-toggle').is(':checked')) {
+                        $('#join-by-permissions-box').hide();
+                    } 
+                    else {
+                        $('#join-by-permissions-box').show();
+                        if ($('#join-by-permissions-toggle').is(':checked')) {
+                            $('#user-picker-box').hide();
+                        } else {
+                            $('#user-picker-box').show();
+                        }
+                    }
+
+                
+                    if ($('#moderate-by-permissions-toggle').is(':checked')) {
+                        $('#moderator-picker-box').hide();
+                    } else {
+                        $('#moderator-picker-box').show();
+                    }
+                }
+                $('#public-join-toggle, #join-by-permissions-toggle, #moderate-by-permissions-toggle')
+                    .on('change', toggleControls);
+
+                toggleControls(); // initial call
+                ");
                 ?>
+
             </div>
 
         </div>

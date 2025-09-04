@@ -10,8 +10,8 @@
 use humhub\modules\ui\icon\widgets\Icon;
 use k7zz\humhub\bbb\assets\BBBAssets;
 use k7zz\humhub\bbb\widgets\RecordingsList;
-use yii\helpers\Html;
 use yii\helpers\Url;
+use humhub\libs\Html;
 
 $bundle = BBBAssets::register(view: $this);
 $routePrefix = '/bbb/session';
@@ -72,6 +72,20 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
                             'title' => Yii::t('BbbModule.base', 'Start session'),
                         ]
                     ) ?>     <?php endif; ?>
+                <?php if ($model->public_join && $model->public_token): ?>
+                    <span id="bbb-public-url-<?= $model->id ?>"
+                        class="hidden"><?= Url::to(['/bbb/public/join', 'token' => $model->public_token], true) ?></span>
+                    <?= Html::a(
+                        Icon::get('link') . ' ' . Yii::t('BbbModule.base', 'Join link'),
+                        '#',
+                        [
+                            'class' => 'btn btn-success btn-sm',
+                            'title' => Yii::t('BbbModule.base', 'Copy public access URL to clipboard'),
+                            'data-action-click' => 'copyToClipboard', // HumHub Action
+                            'data-action-target' => '#bbb-public-url-' . $model->id
+                        ]
+                    ) ?>
+                <?php endif; ?>
 
                 <?php if ($model->canAdminister()): ?>
                     <span class="pull-right">
