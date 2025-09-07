@@ -9,6 +9,7 @@ use humhub\modules\file\converter\PreviewImage;
 use humhub\modules\file\models\File;
 use humhub\modules\user\components\User as UserComponent;
 use humhub\modules\user\models\User;
+use k7zz\humhub\bbb\widgets\WallEntry;
 use k7zz\humhub\bbb\enums\Layouts;
 use k7zz\humhub\bbb\permissions\{
     Admin,
@@ -57,7 +58,8 @@ class Session extends ContentActiveRecord
     }
 
     /** @var string|null Wall entry class (optional). */
-    public $wallEntryClass = null; // optional, falls keine Wall-Darstellung
+    public $wallEntryClass = WallEntry::class; // optional, falls keine Wall-Darstellung
+
     /** @var bool Whether to auto-add to wall (optional). */
     public $autoAddToWall = true; // optional
 
@@ -249,6 +251,7 @@ class Session extends ContentActiveRecord
             ->hasOne(File::class, ['id' => 'presentation_preview_file_id'])
             ->one();
     }
+
 
     public function ensurePublicToken()
     {

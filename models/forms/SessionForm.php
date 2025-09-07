@@ -2,6 +2,8 @@
 namespace k7zz\humhub\bbb\models\forms;
 
 use humhub\modules\content\components\ContentContainerActiveRecord;
+use humhub\modules\content\models\Content;
+use humhub\modules\space\models\Space;
 use k7zz\humhub\bbb\enums\Layouts;
 use k7zz\humhub\bbb\helpers\Tools;
 use k7zz\humhub\bbb\models\SessionUser;
@@ -42,6 +44,8 @@ class SessionForm extends Model
 
     /* Internal helpers */
     private ?Session $record = null;
+    public $visibility;
+    public $hidden = true;
     public ?ContentContainerActiveRecord $contentContainer;
     private int $creatorId;
     public bool $moderateByPermissions = true;
@@ -94,7 +98,20 @@ class SessionForm extends Model
         // Default-Werte
         $model->moderator_pw = Yii::$app->security->generateRandomString(10);
         $model->attendee_pw = Yii::$app->security->generateRandomString(10);
+        $model->visibility = $model->getDefaultVisibility();
         return $model;
+    }
+
+    /**
+     * @return int the default visibility of the given content container
+     */
+    private function getDefaultVisibility()
+    {
+        if ($this->contentContainer instanceof Space) {
+            return $this->contentContainer->getDefaultContentVisibility();
+        } else {
+            return Content::VISIBILITY_PRIVATE;
+        }
     }
 
     private static function getUserQuery(Session $session)

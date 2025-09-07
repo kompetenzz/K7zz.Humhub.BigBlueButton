@@ -7,6 +7,8 @@
  * @var int    $highlightId                               ID of the session to highlight
  * @var \humhub\modules\content\components\ContentContainerActiveRecord|null $contentContainer  The content container (space/user) or null
  */
+use humhub\modules\content\widgets\richtext\RichText;
+use humhub\modules\custom_pages\modules\template\models\RichtextContent;
 use humhub\modules\ui\icon\widgets\Icon;
 use k7zz\humhub\bbb\assets\BBBAssets;
 use k7zz\humhub\bbb\widgets\RecordingsList;
@@ -22,8 +24,6 @@ $highlightClass = $model->id === $highlightId ? 'highlight' : '';
 $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseUrl . '/images/conference.png';
 
 ?>
-
-
 
 <div id="sessioncard-<?= $model->id ?>"
     class="card card card-space col-lg-3 col-md-4 col-sm-6 col-xs-12 card-bbb-sessions <?= $highlightClass ?>">
@@ -45,7 +45,7 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
                 <?php endif; ?>
             </h5>
             <p class="card-text">
-                <?= Html::encode($model->description) ?>
+                <?= RichText::output($model->description) ?>
             </p>
         </div>
         <?php if ($model->canJoin()): ?>
