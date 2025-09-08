@@ -17,7 +17,11 @@ class Admin extends BaseAdminPermission
     /** @var string The module ID for this permission. */
     protected $moduleId = 'bbb';
     /** @inheritdoc */
-    public $defaultAllowedGroups = [];
+    public $defaultAllowedGroups = [
+        Space::USERGROUP_ADMIN,
+        Space::USERGROUP_OWNER,
+        User::USERGROUP_SELF,
+    ];
     /** @inheritdoc */
     protected $fixedGroups = [
         Space::USERGROUP_USER,

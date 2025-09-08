@@ -45,7 +45,7 @@ class SessionForm extends Model
     /* Internal helpers */
     private ?Session $record = null;
     public $visibility;
-    public $hidden = true;
+    public $hidden;
     public ?ContentContainerActiveRecord $contentContainer;
     private int $creatorId;
     public bool $moderateByPermissions = true;
@@ -98,19 +98,20 @@ class SessionForm extends Model
         // Default-Werte
         $model->moderator_pw = Yii::$app->security->generateRandomString(10);
         $model->attendee_pw = Yii::$app->security->generateRandomString(10);
-        $model->visibility = $model->getDefaultVisibility();
+        $model->setDefaultVisibility();
         return $model;
     }
 
     /**
      * @return int the default visibility of the given content container
      */
-    private function getDefaultVisibility()
+    private function setDefaultVisibility(): void
     {
-        if ($this->contentContainer instanceof Space) {
-            return $this->contentContainer->getDefaultContentVisibility();
+        $this->hidden = true;
+        if ($this->contentContainer && $this->contentContainer instanceof Space) {
+            $this->visibility = $this->contentContainer->getDefaultContentVisibility();
         } else {
-            return Content::VISIBILITY_PRIVATE;
+            $this->visibility = Content::VISIBILITY_PRIVATE;
         }
     }
 
@@ -161,6 +162,8 @@ class SessionForm extends Model
         $model->contentContainer = $session->content->container;
         $model->creatorId = $session->creator_user_id;
         $model->layout = $session->layout;
+        $model->visibility = $session->content->visibility;
+        $model->hidden = $session->content->hidden;
 
         Yii::error("Loading pdf" . $session->presentation_file_id);
         // pdf and it's preview image
@@ -234,9 +237,17 @@ class SessionForm extends Model
             [['image_file_id', 'presentation_file_id', 'presentation_preview_file_id'], 'integer'],
             ['imageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
             ['presentationUpload', 'file', 'extensions' => 'pdf', 'maxSize' => 40 * 1024 * 1024], // max. 40 MB
-            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled'], 'boolean'],
+            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled', 'hidden'], 'boolean'],
             ['layout', 'required'],
-            ['layout', 'in', 'range' => Layouts::values()]
+            ['layout', 'in', 'range' => Layouts::values()],
+            [
+                'visibility',
+                'in',
+                'range' => [
+                    Content::VISIBILITY_PRIVATE,
+                    Content::VISIBILITY_PUBLIC
+                ]
+            ],
         ];
     }
 
@@ -269,6 +280,8 @@ class SessionForm extends Model
         ]);
         if ($this->contentContainer !== null) {
             $session->content->container = $this->contentContainer;
+            $session->content->visibility = $this->visibility;
+            $session->content->hidden = $this->hidden;
         }
 
         $session->id = $this->id;

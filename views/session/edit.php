@@ -136,7 +136,9 @@ $title = $spaceTitle . ($model->id
                     <div class="row">
                         <div class="col-md-6">
                             <?= $f->field($model, 'visibility')->widget(ContentVisibilitySelect::class) ?>
-                            <?= $f->field($model, 'hidden')->widget(ContentHiddenCheckbox::class) ?>
+                            <?php if (!$model->id) {
+                                echo $f->field($model, 'hidden')->widget(ContentHiddenCheckbox::class);
+                            } ?>
                             <div class="form-group" id="public-join-box">
                                 <?= $f->field($model, 'publicJoin')->checkbox([
                                     'id' => 'public-join-toggle',
