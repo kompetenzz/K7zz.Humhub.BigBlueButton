@@ -1,0 +1,84 @@
+name: Release on tag
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node (for changelog generation)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate changelog from conventional commits
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          preset: "angular"            # Conventional Commits
+          output-file: "CHANGELOG.md"  # hält ein CHANGELOG.md aktuell (optional)
+          skip-tag: true               # wir erstellen das Release selbst
+          tag-prefix: "v"
+          release-count: 0
+
+      - name: Show generated release notes (debug)
+        run: |
+          echo "=== Release Notes Preview ==="
+          echo "${{ steps.changelog.outputs.clean_changelog }}"
+
+      - name: Derive tag name
+        id: tag
+        run: echo "TAG=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      # Optional: Version aus composer.json lesen (falls vorhanden)
+      - name: Read version from composer.json (optional)
+        id: version
+        shell: bash
+        run: |
+          if [ -f composer.json ]; then
+            VER=$(jq -r '.version // empty' composer.json || true)
+            if [ -n "$VER" ]; then echo "VERSION=$VER" >> "$GITHUB_OUTPUT"; fi
+          fi
+
+      - name: Create package tar.gz
+        run: |
+          NAME="${{ github.event.repository.name }}"
+          TAG="${{ steps.tag.outputs.TAG }}"
+          ARCHIVE="${NAME}-${TAG}.tar.gz"
+          echo "Packaging ${ARCHIVE}…"
+
+          # Sinnvolle Default-Ausschlüsse (anpassbar)
+          tar --exclude-vcs \
+              --exclude='.github' \
+              --exclude='node_modules' \
+              --exclude='.idea' \
+              --exclude='.vscode' \
+              --exclude='*.log' \
+              --exclude='*.cache' \
+              --exclude='.DS_Store' \
+              -czf "$ARCHIVE" .
+
+          echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.TAG }}
+          name: ${{ steps.version.outputs.VERSION || steps.tag.outputs.TAG }}
+          body: ${{ steps.changelog.outputs.clean_changelog }}
+          files: ${{ env.ARCHIVE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
