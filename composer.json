@@ -12,5 +12,28 @@
         "littleredbutton/bigbluebutton-api-php": "^6.1",
         "vlucas/phpdotenv": "^5.6",
         "spatie/pdf-to-image": "^3.1"
+    },
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Niels Heinemann",
+            "email": "heinemann@kompetenzz.de"
+        },
+        {
+            "name": "Claudia Wiewel",
+            "email": "wiewel@kompetenzz.de"
+        }
+    ],
+    "keywords": [
+        "humhub",
+        "bigbluebutton",
+        "video",
+        "conference",
+        "module"
+    ],
+    "homepage": "https://github.com/kompetenzz/k7zz.HumHub.BigBlueButton",
+    "version": "0.8.0",
+    "extra": {
+        "humhub-min-version": "1.14"
     }
 }
