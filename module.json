@@ -1,9 +1,9 @@
 {
     "id": "bbb",
-    "name": "kompetenzZ BigBlueButton Module for Humhub",
+    "name": "BigBlueButton",
     "description": "Integrate your BBB instance.",
     "keywords": [],
-    "version": "1.0.0",
+    "version": "0.8.0",
     "humhub": {
         "minVersion": "1.0"
     }
