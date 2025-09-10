@@ -207,7 +207,7 @@ class SessionService
             return []; // ATM only for admins
 
         $params = new GetRecordingsParameters();
-        $params->setMeetingId($session->uuid);
+        $params->setMeetingID($session->uuid);
         if (!$session->canAdminister())
             $params->setState('published'); // nur veröffentlichte Aufzeichnungen
         try {

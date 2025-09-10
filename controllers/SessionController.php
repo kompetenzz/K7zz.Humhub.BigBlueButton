@@ -4,6 +4,7 @@ namespace k7zz\humhub\bbb\controllers;
 
 use k7zz\humhub\bbb\models\forms\SessionForm;
 use k7zz\humhub\bbb\models\Session;
+use k7zz\humhub\bbb\models\Recording;
 use k7zz\humhub\bbb\models\JoinInfo;
 use Yii;
 use yii\helpers\Url;
@@ -200,41 +201,33 @@ class SessionController extends BaseContentController
     /**
      * Returns a list of recordings for a session as JSON.
      * @param int|null $id
-     * @return array
+     * @return string
      * @throws NotFoundHttpException
      */
-    public function actionRecordings(?int $id = null): array
+    public function actionRecordings(?int $id = null): string
     {
+        if ($id === null) {
+            throw new NotFoundHttpException();
+        }
         $session = $this->svc->get($id, $this->contentContainer)
             ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
 
         $result = [];
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
         if (!$session->canJoin()) {
-            return $result;
+            return "";
         }
+
         $recordings = $this->svc->getRecordings($id, $this->contentContainer);
+
         foreach ($recordings as $r) {
-            $start = intval($r->getStartTime() / 1000);
-            $end = intval($r->getEndTime() / 1000);
-            $url = $r->getPlaybackUrl() ?? null;
-
-            if (!$url)
-                continue;
-
-            $result[] = [
-                'id' => $r->getRecordId(),
-                'date' => Yii::$app->formatter->asDate($start),
-                'time' => Yii::$app->formatter->asTime($start, "H:mm"),
-                'duration' => gmdate("H:i:s", $end - $start),
-                'url' => $url,
-                'type' => $r->getPlaybackType(),
-                'name' => $r->getName(),
-                'isPublished' => $r->isPublished(),
-                'state' => Yii::t('BbbModule.base', $r->getState()),
-            ];
+            $result[] = new Recording($r);
         }
-        return $result;
+
+        return $this->renderAjax('_recordings', [
+            'recordings' => $result,
+            'canAdminister' => $session->canAdminister(),
+        ]);
     }
 
     /**
@@ -245,6 +238,9 @@ class SessionController extends BaseContentController
      */
     public function actionRecordingsCount(?int $id = null): int
     {
+        if ($id === null) {
+            throw new NotFoundHttpException();
+        }
         $session = $this->svc->get($id, $this->contentContainer)
             ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
 

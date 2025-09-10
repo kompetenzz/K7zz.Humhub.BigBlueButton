@@ -111,11 +111,9 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
                     </span>
                 <?php endif; ?>
             </div>
-            <?php if ($model->canAdminister()): ?>
-                <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="panel-footer" style="padding-top: 10px">
-                    <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer, 'canAdminister' => $model->canAdminister()]) ?>
-                </div>
-            <?php endif; ?>
+            <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="panel-footer" style="padding-top: 10px">
+                <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer, 'canAdminister' => $model->canAdminister()]) ?>
+            </div>
         <?php endif; ?>
     </div>
 

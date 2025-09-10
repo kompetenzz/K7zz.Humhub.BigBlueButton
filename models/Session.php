@@ -9,6 +9,7 @@ use humhub\modules\file\converter\PreviewImage;
 use humhub\modules\file\models\File;
 use humhub\modules\user\components\User as UserComponent;
 use humhub\modules\user\models\User;
+use humhub\modules\content\widgets\richtext\RichText;
 use k7zz\humhub\bbb\widgets\WallEntry;
 use k7zz\humhub\bbb\enums\Layouts;
 use k7zz\humhub\bbb\permissions\{
@@ -79,6 +80,21 @@ class Session extends ContentActiveRecord
     public function getContentDescription()
     {
         return $this->description ?: Yii::t('BbbModule.base', 'Live video session with BigBlueButton');
+    }
+
+    // Searchable Attributes / Information
+    public function getSearchAttributes()
+    {
+        $attrs = array(
+            'title' => $this->title,
+            'description' => $this->description
+        );
+        $ts = [];
+        foreach ($this->content->topics as $topic) {
+            $ts[] = $topic->name;
+        }
+        $attrs['topics'] = implode(' ', $ts);
+        return $attrs;
     }
 
     /**
@@ -266,6 +282,13 @@ class Session extends ContentActiveRecord
             $this->ensurePublicToken();
         }
         return parent::beforeSave($insert);
+    }
+
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+
+        RichText::postProcess($this->description, $this);
     }
 
 }

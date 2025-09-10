@@ -16,6 +16,7 @@ use k7zz\humhub\bbb\models\Session;
 use humhub\modules\user\models\User;
 use yii\helpers\Inflector;
 use yii\web\NotFoundHttpException;
+use humhub\modules\topic\models\Topic;
 
 /**
  * Form model for creating and updating BBB sessions.
@@ -46,12 +47,16 @@ class SessionForm extends Model
     private ?Session $record = null;
     public $visibility;
     public $hidden;
+    /**
+     * @var
+     */
+    public $topics = [];
     public ?ContentContainerActiveRecord $contentContainer;
     private int $creatorId;
     public bool $moderateByPermissions = true;
     public bool $publicJoin = false;
     public bool $joinByPermissions = true;
-    public bool $joinCanStart = true;
+    public bool $joinCanStart = false;
     public bool $joinCanModerate = false;
     public bool $hasWaitingRoom = false;
     public bool $allowRecording = true;
@@ -81,10 +86,11 @@ class SessionForm extends Model
         parent::init();
 
         // Nur beim Anlegen (id == null) vorschlagen
-        if ($this->id === null) {
+        if ($this->id == null) {
             $this->moderator_pw = Yii::$app->security->generateRandomString(10);
             $this->attendee_pw = Yii::$app->security->generateRandomString(10);
         }
+
     }
 
     /* ---------- Fabrik-Methoden ---------- */
@@ -164,6 +170,8 @@ class SessionForm extends Model
         $model->layout = $session->layout;
         $model->visibility = $session->content->visibility;
         $model->hidden = $session->content->hidden;
+        $model->topics = $session->content->getTags(Topic::class);
+
 
         Yii::error("Loading pdf" . $session->presentation_file_id);
         // pdf and it's preview image
@@ -240,6 +248,7 @@ class SessionForm extends Model
             [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled', 'hidden'], 'boolean'],
             ['layout', 'required'],
             ['layout', 'in', 'range' => Layouts::values()],
+            ['topics', 'safe'],
             [
                 'visibility',
                 'in',
@@ -283,6 +292,7 @@ class SessionForm extends Model
             $session->content->visibility = $this->visibility;
             $session->content->hidden = $this->hidden;
         }
+        Topic::attach($session->content, $this->topics);
 
         $session->id = $this->id;
         $session->name = $this->name;

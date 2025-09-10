@@ -9,7 +9,10 @@ use humhub\modules\ui\form\widgets\ContentHiddenCheckbox;
 use humhub\modules\ui\form\widgets\ContentVisibilitySelect;
 use humhub\modules\user\widgets\UserPickerField;
 use humhub\modules\content\widgets\richtext\RichTextField;
+use humhub\modules\topic\widgets\TopicPicker;
+use humhub\widgets\ContentTagDropDown;
 use k7zz\humhub\bbb\models\forms\SessionForm;
+use k7zz\humhub\bbb\models\Session;
 use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
@@ -89,6 +92,11 @@ $title = $spaceTitle . ($model->id
                                         'Optional detailed description of the session and it\'s purpose.'
                                     )); ?>
                             </div>
+                            <div class="form-group">
+                                <?= $f->field($model, 'topics')->widget(TopicPicker::class, [
+                                    'contentContainer' => $contentContainer ?? null
+                                ]); ?>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
@@ -96,8 +104,8 @@ $title = $spaceTitle . ($model->id
                                     Layouts::options(),
                                     [
                                         'item' => function ($index, $label, $name, $checked, $value) {
-                                        $desc = Layouts::descriptions()[$value] ?? '';
-                                        return "
+                                            $desc = Layouts::descriptions()[$value] ?? '';
+                                            return "
                                             <div class='radio'>
                                                 <label>
                                                     <input type='radio' name='$name' value='$value' " . ($checked ? 'checked' : '') . ">
@@ -106,31 +114,10 @@ $title = $spaceTitle . ($model->id
                                                 </label>
                                             </div>
                                         ";
-                                    }
+                                        }
                                     ]
                                 ); ?>
                             </div>
-
-                            <?php /** Passwords not used anymore
-
-<div class="form-group">
-<?= $f->field($model, 'moderator_pw')
-->textInput(['maxlength' => true])
-->hint(Yii::t(
-'BbbModule.base',
-'Use this safe suggestion.'
-)); ?>
-</div>
-<div class="form-group">
-
-<?= $f->field($model, 'attendee_pw')
-->textInput(['maxlength' => true])
-->hint(Yii::t(
-'BbbModule.base',
-'Use this safe suggestion.'
-)); ?>
-</div>
-*/ ?>
                         </div>
                     </div>
                     <div class="row">
@@ -204,8 +191,8 @@ $title = $spaceTitle . ($model->id
                                     ?>
                                 </div>
                             </div>
-
                         </div>
+
                         <div class="col-md-6">
                             <div class="form-group">
                                 <?= $f->field($model, 'hasWaitingRoom')->checkbox([
