@@ -254,8 +254,7 @@ class SessionService
      */
     public function publishRecording(string $recordId, bool $publish = false): bool
     {
-        $params = new PublishRecordingsParameters($recordId);
-        $params->setPublish($publish);
+        $params = new PublishRecordingsParameters($recordId, $publish);
 
         try {
             $response = $this->bbb->publishRecordings($params);

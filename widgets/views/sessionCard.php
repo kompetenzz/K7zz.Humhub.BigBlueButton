@@ -111,9 +111,11 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
                     </span>
                 <?php endif; ?>
             </div>
-            <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="panel-footer" style="padding-top: 10px">
-                <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer, 'canAdminister' => $model->canAdminister()]) ?>
-            </div>
+            <?php if ($model->canAdminister()): ?>
+                <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="panel-footer" style="padding-top: 10px">
+                    <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer, 'canAdminister' => $model->canAdminister()]) ?>
+                </div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 
@@ -123,7 +125,7 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
 $getRecordingsCountUrlBase = '/bbb/session/recordings-count';
 $getRecordingsCountUrl = $this->context->contentContainer
     ? $this->context->contentContainer->createUrl($getRecordingsCountUrlBase, ['id' => $model->id])
-    : Url::to($getRecordingsCountUrlBase, ['id' => $model->id]);
+    : Url::to($getRecordingsCountUrlBase . "?id=" . $model->id);
 $this->registerJs(<<<JS
 
 $.getJSON('{$getRecordingsCountUrl}', function(recordingsCount) {

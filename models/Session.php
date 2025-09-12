@@ -64,6 +64,21 @@ class Session extends ContentActiveRecord
     /** @var bool Whether to auto-add to wall (optional). */
     public $autoAddToWall = true; // optional
 
+
+    public function getUrl()
+    {
+        $relUrl = '/bbb/sessions?highlight=' . $this->id;
+        return $this->content->container ? $this->content->container->createUrl($relUrl) : \yii\helpers\Url::to($relUrl);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIcon()
+    {
+        return 'fa-video-camera';
+    }
+
     /**
      * Returns the display name for the session content.
      * @return string
@@ -90,8 +105,10 @@ class Session extends ContentActiveRecord
             'description' => $this->description
         );
         $ts = [];
-        foreach ($this->content->topics as $topic) {
-            $ts[] = $topic->name;
+        foreach ($this->content->tags as $tag) {
+            if ($tag->module_id === 'topic') {
+                $ts[] = $tag->name;
+            }
         }
         $attrs['topics'] = implode(' ', $ts);
         return $attrs;

@@ -1,10 +1,10 @@
 <?php
 /**
- * Partial: Compact Recording-entry Bootstrap card-footer
+ *  Recording-Item for card-footer
  *
- * Erwartet:
- * @var object $rec            // Methoden: getRecord()->getRecordId(), getUrl(), hasImagePreviews(), getImagePreviews(), getDate(), getTime(), getDuration(), isPublished(), title?
+ * @var object $rec
  * @var bool   $canAdminister
+ * @var \humhub\modules\content\components\ContentContainerActiveRecord $contentContainer
  */
 
 use yii\helpers\Html;
@@ -28,35 +28,32 @@ $confirmPublish = Yii::t('BbbModule.base', 'Are you sure you want to publish thi
 $confirmDepub = Yii::t('BbbModule.base', 'Are you sure you want to depublish this recording?');
 
 $iconVideo = Icon::get('video');
-$iconPlay = Icon::get('play');
 $iconClock = Icon::get('clock');
 $iconOpen = Icon::get('external-link');
 $iconEye = Icon::get('eye');
 $iconEyeSlash = Icon::get('eye-slash');
 
-// Mini-Vorschau (falls vorhanden) sehr klein für Footer
+// Play-Glyph (Fallback statt Icon::get('play'))
+$playGlyph = Html::tag('span', '▶', ['class' => 'text-muted mr-1 me-1', 'aria-hidden' => 'true']);
+
+// Mini-Thumb (sehr klein im Footer)
 $thumbHtml = '';
 if ($rec->hasImagePreviews()) {
-    $preview = $rec->getImagePreviews()[0];
-    $thumbHtml = Html::img(
-        $preview->getUrl(),
-        [
-            'alt' => $preview->getAlt() ?? ($rec->getRecord()->getName() ?? 'Recording'),
-            'class' => 'rounded border flex-shrink-0',
-            'style' => 'width:56px;height:18px;object-fit:cover;'
-        ]
-    );
+    $p = $rec->getImagePreviews()[0];
+    $thumbHtml = Html::img($p->getUrl(), [
+        'alt' => $p->getAlt() ?? ($rec->getRecord()->getName() ?? 'Recording'),
+        'class' => 'rounded border',
+        'style' => 'width:28px;height:18px;object-fit:cover;',
+    ]);
 } else {
-    $thumbHtml = Html::tag('span', $iconVideo, ['class' => 'flex-shrink-0']);
+    $thumbHtml = Html::tag('span', $iconVideo);
 }
 ?>
-
-<div id="<?= Html::encode($itemDomId) ?>"
-    class="bbb-recording-item d-flex align-items-center justify-content-between gap-2 py-1"
-    data-publish-url="<?= Html::encode($publishUrl) ?>"
+<!-- ROOT-ZEILE: eine Zeile, Buttons rechts -->
+<div id="<?= Html::encode($itemDomId) ?>" class="bbb-recording-item d-flex align-items-center flex-nowrap py-1"
     data-record-id="<?= Html::encode($rec->getRecord()->getRecordId()) ?>">
 
-    <!-- Links: Mini-Thumb + Titel + Meta -->
+    <!-- LINKS: Thumbnail + Text (darf schrumpfen) -->
     <div class="d-flex align-items-center flex-grow-1 overflow-hidden" style="min-width:0;">
         <div class="mr-2 me-2 flex-shrink-0">
             <?= $thumbHtml ?>
@@ -66,7 +63,7 @@ if ($rec->hasImagePreviews()) {
             <?php if ($rec->getUrl()): ?>
                 <a href="<?= Html::encode($rec->getUrl()) ?>" class="text-reset text-decoration-none" target="_blank"
                     title="<?= Html::encode($playTooltip) ?>">
-                    <span class="mr-1 me-1"><?= $iconPlay ?></span>
+                    <?= $playGlyph ?>
                     <span class="text-truncate d-inline-block" style="max-width:100%;">
                         <?= Html::encode($rec->title ?? Yii::t('BbbModule.base', 'Recording')) ?>
                     </span>
@@ -91,7 +88,7 @@ if ($rec->hasImagePreviews()) {
         </span>
     </div>
 
-    <!-- RECHTS: Actions; bleiben immer rechts, nicht umbrechen -->
+    <!-- RECHTS: Actions (POST-Forms; optional per JS async) -->
     <div class="d-flex align-items-center ml-auto ms-auto" style="white-space:nowrap; flex:0 0 auto;">
         <?php if ($rec->getUrl()): ?>
             <a href="<?= Html::encode($rec->getUrl()) ?>" target="_blank"
@@ -99,54 +96,101 @@ if ($rec->hasImagePreviews()) {
                 <?= $iconOpen ?>
             </a>
         <?php endif; ?>
+
+        <?php if ($canAdminister): ?>
+            <?php if ($rec->isPublished()): ?>
+                <?php // Depublish (POST) ?>
+                <?= Html::beginForm($publishUrl, 'post', [
+                    'class' => 'm-0 p-0 d-inline-block bbb-publish-form',
+                    'data-async' => '1', // JS-Enhancement
+                    'onsubmit' => "return confirm('" . Html::encode($confirmDepub) . "');"
+                ]) ?>
+                <?= Html::hiddenInput('recordId', $rec->getRecord()->getRecordId()) ?>
+                <?= Html::hiddenInput('publish', 'false') ?>
+                <?= Html::submitButton($iconEyeSlash, [
+                    'class' => 'btn btn-warning btn-sm py-0',
+                    'title' => $depublishLabel,
+                    'encode' => false, // Icons nicht escapen
+                ]) ?>
+                <?= Html::endForm() ?>
+            <?php else: ?>
+                <?php // Publish (POST) ?>
+                <?= Html::beginForm($publishUrl, 'post', [
+                    'class' => 'm-0 p-0 d-inline-block bbb-publish-form',
+                    'data-async' => '1',
+                    'onsubmit' => "return confirm('" . Html::encode($confirmPublish) . "');"
+                ]) ?>
+                <?= Html::hiddenInput('recordId', $rec->getRecord()->getRecordId()) ?>
+                <?= Html::hiddenInput('publish', 'true') ?>
+                <?= Html::submitButton($iconEye, [
+                    'class' => 'btn btn-success btn-sm py-0',
+                    'title' => $publishLabel,
+                    'encode' => false,
+                ]) ?>
+                <?= Html::endForm() ?>
+            <?php endif; ?>
+        <?php endif; ?>
     </div>
 </div>
 
 <?php
-// Kleines, itemspezifisches JS für Publish/Depublish (kompakt & footer-tauglich)
+// Optionales JS-Enhancement: macht die POST-Forms asynchron und toggelt UI ohne Reload.
+// Fallback: ohne JS ist es ein normaler POST mit Seitenreload.
+$publishedBadgeJs = addslashes($publishedBadge);
+$unpublishedBadgeJs = addslashes($unpublishedBadge);
+$iconEyeJs = addslashes($iconEye);
+$iconEyeSlashJs = addslashes($iconEyeSlash);
+
 $js = <<<JS
-;(function(){
-  var root = $('#{$itemDomId}');
-  if (!root.length) return;
+    ;(function(){
+      var root = $('#{$itemDomId}');
+      if (!root.length) return;
+      var client = humhub.require('client');
+    
+      root.find('form.bbb-publish-form[data-async="1"]').off('submit').on('submit', function(e){
+        e.preventDefault();
+        var form = $(this);
+        var btn  = form.find('button[type="submit"], input[type="submit"]');
+        var data = form.serialize();
+        var url  = form.attr('action');
+        btn.prop('disabled', true);
 
-  root.find('.bbb-publish-toggle').off('click').on('click', function(e){
-    e.preventDefault();
-    var btn = $(this);
-    var publishUrl = root.data('publish-url');
-    var recordId   = root.data('record-id');
-    var publish    = String(btn.data('publish')) === 'true';
-    var confirmMsg = btn.data('confirm');
-    if (confirmMsg && !confirm(confirmMsg)) return;
+        client.post(url, { data: data })
+          .then(function(resp){
+            if (!resp || !resp.success) {
+              var msg = (resp && resp.message) || 'Error';
+              humhub.modules.ui.notification && humhub.modules.ui.notification.show(msg, {type:'danger'});
+              return;
+            }
+            // UI toggeln
+            var badge = root.find('.bbb-recording-state');
+            var publishField = form.find('input[name="publish"]');
+            var wasPublish = (publishField.val() === 'true');
+    
+            if (wasPublish) {
+              // Gerade published -> jetzt Depublish-Form anzeigen
+              badge.removeClass('bg-secondary').addClass('bg-success').text('{$publishedBadgeJs}');
+              // Button zu "Depublish" umbauen
+              publishField.val('false');
+              btn.removeClass('btn-success').addClass('btn-warning')
+                 .attr('title','{$depublishLabel}')
+                 .html('{$iconEyeSlashJs}');
+            } else {
+              // Gerade depublished -> jetzt Publish-Form anzeigen
+              badge.removeClass('bg-success').addClass('bg-secondary').text('{$unpublishedBadgeJs}');
+              publishField.val('true');
+              btn.removeClass('btn-warning').addClass('btn-success')
+                 .attr('title','{$publishLabel}')
+                 .html('{$iconEyeJs}');
+            }
+    
+            humhub.modules.ui.notification && humhub.modules.ui.notification.show(resp.message || 'OK', {type:'success'});
+          })
+          .catch(function(e){
+            humhub.modules.ui.notification && humhub.modules.ui.notification.show('Request failed', {type:'danger'});
+          });
+      });
+    })();
+    JS;
 
-    btn.prop('disabled', true);
-    $.post(publishUrl, {recordId: recordId, publish: publish, _csrf: yii.getCsrfToken()})
-      .done(function(resp){
-        if (!resp || !resp.success) {
-          var msg = (resp && resp.message) || 'Error';
-          humhub.modules.ui.notification && humhub.modules.ui.notification.show(msg, {type:'danger'});
-          return;
-        }
-        var badge = root.find('.bbb-recording-state');
-        if (publish) {
-          badge.removeClass('bg-secondary').addClass('bg-success').text('{$publishedBadge}');
-          btn.removeClass('btn-success').addClass('btn-warning')
-             .data('publish', false)
-             .attr('title','{$depublishLabel}')
-             .html('{$iconEyeSlash}');
-        } else {
-          badge.removeClass('bg-success').addClass('bg-secondary').text('{$unpublishedBadge}');
-          btn.removeClass('btn-warning').addClass('btn-success')
-             .data('publish', true)
-             .attr('title','{$publishLabel}')
-             .html('{$iconEye}');
-        }
-        humhub.modules.ui.notification && humhub.modules.ui.notification.show(resp.message || 'OK', {type:'success'});
-      })
-      .fail(function(){
-        humhub.modules.ui.notification && humhub.modules.ui.notification.show('Request failed', {type:'danger'});
-      })
-      .always(function(){ btn.prop('disabled', false); });
-  });
-})();
-JS;
 $this->registerJs($js, \yii\web\View::POS_READY);

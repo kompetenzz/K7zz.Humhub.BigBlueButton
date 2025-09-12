@@ -2,12 +2,16 @@
 
 namespace k7zz\humhub\bbb\controllers;
 
+use humhub\components\access\ControllerAccess;
+
 use k7zz\humhub\bbb\models\forms\SessionForm;
 use k7zz\humhub\bbb\models\Session;
 use k7zz\humhub\bbb\models\Recording;
 use k7zz\humhub\bbb\models\JoinInfo;
+
 use Yii;
 use yii\helpers\Url;
+use yii\filters\VerbFilter;
 use yii\web\{ForbiddenHttpException, NotFoundHttpException, ServerErrorHttpException};
 
 /**
@@ -233,10 +237,10 @@ class SessionController extends BaseContentController
     /**
      * Returns the number of recordings for a session as JSON.
      * @param int|null $id
-     * @return int
+     * @return Yii\web\Response
      * @throws NotFoundHttpException
      */
-    public function actionRecordingsCount(?int $id = null): int
+    public function actionRecordingsCount(?int $id = null)
     {
         if ($id === null) {
             throw new NotFoundHttpException();
@@ -252,19 +256,18 @@ class SessionController extends BaseContentController
             $this->svc->getRecordings($id, $this->contentContainer),
             fn($r) => $session->canAdminister()// || !empty($r->getPlaybackUrl())
         );
-        return count($recordings);
+        return $this->asJson(count($recordings));
     }
 
     /**
      * Toggles the publish state of a recording.
      * @param string $recordId
      * @param bool $publish
-     * @return bool
+     * @return Yii\web\Response
      */
-    public function actionPublishRecording(string $recordId, bool $publish = false): bool
+    public function actionPublishRecording(string $recordId, bool $publish = false)
     {
-        Yii::error($recordId);
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        return $this->svc->publishRecording($recordId, $publish);
+        return $this->asJson($this->svc->publishRecording($recordId, $publish));
     }
 }
