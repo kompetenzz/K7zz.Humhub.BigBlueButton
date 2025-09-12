@@ -173,32 +173,24 @@ class SessionForm extends Model
         $model->topics = $session->content->getTags(Topic::class);
 
 
-        Yii::error("Loading pdf" . $session->presentation_file_id);
         // pdf and it's preview image
         if ($session->presentation_file_id > 0) {
-            Yii::error("Loading pdf with id: " . $session->presentation_file_id, 'bbb');
             $model->presentation_file_id = $session->presentation_file_id;
             $model->presentationFile = $session->getPresentationFile(); // Lazy-Loading der Präsentation
             if ($session->presentation_preview_file_id > 0) {
-                Yii::error("Loading presentation preview image with id: " . $session->presentation_preview_file_id, 'bbb');
                 $model->presentationPreviewImageFile = $session->getPresentationPreviewImageFile(); // Lazy-Loading des Bildes
-                Yii::error("Loaded " . $model->presentationPreviewImageFile->file_name . "-" . $model->presentationPreviewImageFile->getUrl(), 'bbb');
                 $presentationPreviewImage = new PreviewImage();
                 if ($presentationPreviewImage->applyFile($model->presentationPreviewImageFile)) {
-                    Yii::error("Applied prese ntation preview image for session edit: " . ($model->presentationPreviewImageFile ? $model->presentationPreviewImageFile->getUrl() : 'no file'), 'bbb');
                     $model->presentationPreviewImage = $presentationPreviewImage; // Vorschau-Bild für die Thumbnail-Anzeige
                 }
             }
         }
-        Yii::error("Loading image file for session edit: " . ($session->image_file_id ? $session->image_file_id : 'no file'), 'bbb');
+
         if ($session->image_file_id > 0) {
-            Yii::error("Loading image file for session edit: " . ($session->image_file_id ? $session->image_file_id : 'no file'), 'bbb');
             $model->image_file_id = $session->image_file_id;
             $model->imageFile = $session->getImageFile(); // Lazy-Loading des Bildes
             $previewImage = new PreviewImage();
-            Yii::error("Loading image file for session edit: " . ($model->imageFile ? $model->imageFile->getUrl() : 'no file'), 'bbb');
             if ($previewImage->applyFile($model->imageFile)) {
-                Yii::error("Applied image file for session edit: " . $model->imageFile->getUrl(), 'bbb');
                 $model->previewImage = $previewImage; // Vorschau-Bild für die Thumbnail-Anzeige
             }
         }
@@ -265,7 +257,6 @@ class SessionForm extends Model
         $result = parent::load($data, $formName);
         $iU = UploadedFile::getInstance($this, 'imageUpload');
         if ($iU) {
-            Yii::error("Image uploaded: " . $iU->name, 'bbb');
             $this->imageUpload = $iU;
         }
         $pU = UploadedFile::getInstance($this, 'presentationUpload');
@@ -313,14 +304,12 @@ class SessionForm extends Model
         $this->saveBlobRefs($session);
 
         if (!$session->save()) {
-            Yii::error("Could not save session.", 'bbb');
             return false;
         }
         $this->id = $session->id;
         $this->record = $session;
 
         if (!$this->assignUsers($session)) {
-            Yii::error("Could not assign users to session.", 'bbb');
             return false;
         }
         return true;

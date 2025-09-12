@@ -27,6 +27,7 @@ use yii\web\{ForbiddenHttpException, NotFoundHttpException, ServerErrorHttpExcep
  */
 class SessionController extends BaseContentController
 {
+
     /**
      * Redirects to the edit action for a given session ID.
      * @param int|null $id
@@ -261,13 +262,13 @@ class SessionController extends BaseContentController
 
     /**
      * Toggles the publish state of a recording.
-     * @param string $recordId
-     * @param bool $publish
      * @return Yii\web\Response
      */
-    public function actionPublishRecording(string $recordId, bool $publish = false)
+    public function actionPublishRecording()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        return $this->asJson($this->svc->publishRecording($recordId, $publish));
+        $recordId = Yii::$app->request->post('recordId');
+        $publish = Yii::$app->request->post('publish');
+        return $this->asJson($this->svc->publishRecording($recordId, $publish == "true"));
     }
 }
