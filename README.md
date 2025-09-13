@@ -5,10 +5,13 @@ This module integrates a BigBlueButton (BBB) video conferencing solution into yo
 Grateful to benefit from the georgeous [official BBB API](https://github.com/bigbluebutton/bigbluebutton-api-php).
 
 ## Features
-- Seamless integration of BigBlueButton meetings in HumHub
+- Seamless integration of BigBlueButton meetings in HumHub wih stream, search and tagging
 - Create and join video conference sessions from spaces or user profiles
-- Permission management for starting and joining sessions
+- Permission management for managing, starting and joining sessions
+- Create public join links
 - Customizable via configuration for globals and container contexts
+- Set BBB session options (layout, recording, presentation, waiting room)
+- View and publish recordings
 
 ## Screenshots
 ![Screenshot space config](docs/screenshots/space-config.png)

@@ -1,6 +1,10 @@
 {
     "name": "k7zz/humhub-bbb",
     "description": "kompetenzZ BigBlueButton Module for HumHub",
+    "version": "0.8.1",
+    "extra": {
+        "humhub-min-version": "1.17.0"
+    },
     "type": "library",
     "repositories": [
         {
@@ -31,9 +35,5 @@
         "conference",
         "module"
     ],
-    "homepage": "https://github.com/kompetenzz/k7zz.HumHub.BigBlueButton",
-    "version": "0.8.0",
-    "extra": {
-        "humhub-min-version": "1.14"
-    }
+    "homepage": "https://github.com/kompetenzz/k7zz.HumHub.BigBlueButton"
 }
