@@ -1,0 +1,67 @@
+name: release-marketplace
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release-marketplace:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure tags
+        run: git fetch --tags --force
+
+      - name: Derive tag name
+        id: tag
+        run: echo "TAG=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      # Stage: gesamten Repo-Inhalt in ./bbb/ spiegeln (mit sinnvollen Ausschlüssen)
+      - name: Stage files under bbb/
+        run: |
+          STAGE="$(mktemp -d)"
+          mkdir -p "$STAGE/bbb"
+
+          # Alle Dateien in bbb/ kopieren, Entwicklungsordner ausschließen
+          rsync -a ./ "$STAGE/bbb/" \
+            --exclude ".git" \
+            --exclude ".github" \
+            --exclude "node_modules" \
+            --exclude ".idea" \
+            --exclude ".vscode" \
+            --exclude "*.log" \
+            --exclude "*.cache" \
+            --exclude ".DS_Store"
+
+          # (Optional) weitere Ausschlüsse hier ergänzen, z. B. tests/, docs/, runtime/, vendor/ …
+
+          echo "STAGE=$STAGE" >> $GITHUB_ENV
+
+      - name: Create marketplace ZIP (contains top-level bbb/)
+        run: |
+          NAME="${{ github.event.repository.name }}"
+          TAG="${{ steps.tag.outputs.TAG }}"
+          ARCHIVE="${NAME}-marketplace-${TAG}.zip"
+          echo "Packaging ${ARCHIVE} …"
+          cd "$STAGE"
+          zip -r "$GITHUB_WORKSPACE/$ARCHIVE" bbb
+          echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
+
+      - name: Upload ZIP to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.TAG }}
+          name: "Marketplace release ${{ steps.tag.outputs.TAG }}"
+          body: "Automatisches ZIP: alle Release-Dateien im Ordner 'bbb/'"
+          files: ${{ env.ARCHIVE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
