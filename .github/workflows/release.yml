@@ -18,6 +18,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Ensure all tags are fetched
+        run: |
+          git fetch --tags --force
+
       - name: Setup Node (for changelog generation)
         uses: actions/setup-node@v4
         with:
@@ -28,16 +32,17 @@ jobs:
         uses: TriPSs/conventional-changelog-action@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          preset: "angular"            # Conventional Commits
-          output-file: "CHANGELOG.md"  # hält ein CHANGELOG.md aktuell (optional)
-          skip-tag: true               # wir erstellen das Release selbst
+          preset: "angular"        # Conventional Commits
+          skip-tag: true           # Wir erstellen das Release selbst
+          skip-commit: true        # WICHTIG: nicht ins Repo zurückschreiben!
+          skip-on-empty: true      # Wenn keine passenden Commits: nicht fehlschlagen
           tag-prefix: "v"
           release-count: 0
 
       - name: Show generated release notes (debug)
         run: |
           echo "=== Release Notes Preview ==="
-          echo "${{ steps.changelog.outputs.clean_changelog }}"
+          echo "${{ steps.changelog.outputs.clean_changelog || '<<empty>>' }}"
 
       - name: Derive tag name
         id: tag
@@ -49,8 +54,10 @@ jobs:
         shell: bash
         run: |
           if [ -f composer.json ]; then
-            VER=$(jq -r '.version // empty' composer.json || true)
-            if [ -n "$VER" ]; then echo "VERSION=$VER" >> "$GITHUB_OUTPUT"; fi
+            if command -v jq >/dev/null 2>&1; then
+              VER=$(jq -r '.version // empty' composer.json || true)
+              if [ -n "$VER" ]; then echo "VERSION=$VER" >> "$GITHUB_OUTPUT"; fi
+            fi
           fi
 
       - name: Create package tar.gz
@@ -59,8 +66,6 @@ jobs:
           TAG="${{ steps.tag.outputs.TAG }}"
           ARCHIVE="${NAME}-${TAG}.tar.gz"
           echo "Packaging ${ARCHIVE}…"
-
-          # Sinnvolle Default-Ausschlüsse (anpassbar)
           tar --exclude-vcs \
               --exclude='.github' \
               --exclude='node_modules' \
@@ -70,7 +75,6 @@ jobs:
               --exclude='*.cache' \
               --exclude='.DS_Store' \
               -czf "$ARCHIVE" .
-
           echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
 
       - name: Publish GitHub Release
