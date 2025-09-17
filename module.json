@@ -3,7 +3,7 @@
     "name": "BigBlueButton",
     "description": "Integrate your BBB instance.",
     "keywords": [],
-    "version": "0.8.2",
+    "version": "0.8.7",
     "humhub": {
         "minVersion": "1.17.0"
     }
