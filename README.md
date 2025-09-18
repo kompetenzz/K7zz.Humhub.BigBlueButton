@@ -14,30 +14,11 @@ Grateful to benefit from the georgeous [official BBB API](https://github.com/big
 - View and publish recordings
 
 ## Screenshots
-![Screenshot space config](docs/screenshots/space-config.png)
-
-<hr>
-
-![Screenshot global sessions](docs/screenshots/global-sessions.png)
-
-<hr>
-
-![Screenshot space sessions](docs/screenshots/space-sessions.png)
-
-<hr>
-
-![Screenshot session edit form](docs/screenshots/session-settings.png)
-
-<hr>
-
-![Permissions screen](docs/screenshots/permissions.png)
-
-<hr>
-
-![Screenshot global config](docs/screenshots/global-config.png)
-
+See folder docs/screenshots/ or marketplace "Screenshots" tab.
 
 ## Installation
+Use official humhub marketplace or
+
 1. Copy the `bbb` module directory into your `humhub/modules-custom/` folder.
 2. Install dependencies via composer.
 3. Enable the module in the HumHub administration area.
