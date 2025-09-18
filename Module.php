@@ -25,8 +25,9 @@ use yii\helpers\Url;
 
 class Module extends ContentContainerModule
 {
-    public $guid = 'bbb';                     // ganz wichtig
+    public $guid = 'bbb';
     public $controllerNamespace = __NAMESPACE__ . '\controllers';
+    public $resourcesPath = 'resources';
 
     public function init()
     {
