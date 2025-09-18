@@ -32,10 +32,10 @@ jobs:
         uses: TriPSs/conventional-changelog-action@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          preset: "angular"        # Conventional Commits
-          skip-tag: true           # Wir erstellen das Release selbst
-          skip-commit: true        # WICHTIG: nicht ins Repo zurückschreiben!
-          skip-on-empty: true      # Wenn keine passenden Commits: nicht fehlschlagen
+          preset: "angular"        
+          skip-tag: true           
+          skip-commit: true        
+          skip-on-empty: true      
           tag-prefix: "v"
           release-count: 0
 
@@ -48,7 +48,6 @@ jobs:
         id: tag
         run: echo "TAG=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
 
-      # Optional: Version aus composer.json lesen (falls vorhanden)
       - name: Read version from composer.json (optional)
         id: version
         shell: bash

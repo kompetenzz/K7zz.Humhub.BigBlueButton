@@ -25,13 +25,11 @@ jobs:
         id: tag
         run: echo "TAG=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
 
-      # Stage: gesamten Repo-Inhalt in ./bbb/ spiegeln (mit sinnvollen Ausschlüssen)
       - name: Stage files under bbb/
         run: |
           STAGE="$(mktemp -d)"
           mkdir -p "$STAGE/bbb"
 
-          # Alle Dateien in bbb/ kopieren, Entwicklungsordner ausschließen
           rsync -a ./ "$STAGE/bbb/" \
             --exclude ".git" \
             --exclude ".github" \
@@ -41,8 +39,6 @@ jobs:
             --exclude "*.log" \
             --exclude "*.cache" \
             --exclude ".DS_Store"
-
-          # (Optional) weitere Ausschlüsse hier ergänzen, z. B. tests/, docs/, runtime/, vendor/ …
 
           echo "STAGE=$STAGE" >> $GITHUB_ENV
 
@@ -61,7 +57,7 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.TAG }}
           name: "Marketplace release ${{ steps.tag.outputs.TAG }}"
-          body: "Automatisches ZIP: alle Release-Dateien im Ordner 'bbb/'"
+          body: "Automagic ZIP for Humhub marketplace with base folder 'bbb/'"
           files: ${{ env.ARCHIVE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
