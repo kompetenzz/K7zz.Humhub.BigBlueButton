@@ -3,8 +3,27 @@
     "name": "BigBlueButton",
     "description": "Integrate your BBB instance.",
     "keywords": [],
-    "version": "0.8.1",
+    "version": "0.8.8",
+    "homepage": "https://github.com/kompetenzz/K7zz.Humhub.BigBlueButton",
     "humhub": {
         "minVersion": "1.17.0"
-    }
+    },
+    "screenshots": [
+        "docs/screenshots/global-config.png",
+        "docs/screenshots/global-sessions.png",
+        "docs/screenshots/space-config.png",
+        "docs/screenshots/space-sessions.png",
+        "docs/screenshots/session-settings.png",
+        "docs/screenshots/permissions.png"
+    ],
+    "authors": [
+        {
+            "name": "Niels Heinemann",
+            "email": "heinemann@kompetenzz.de"
+        },
+        {
+            "name": "Claudia Wiewel",
+            "email": "wiewel@kompetenzz.de"
+        }
+    ]
 }
