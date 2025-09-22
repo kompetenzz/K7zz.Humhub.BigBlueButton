@@ -170,8 +170,9 @@ class SessionForm extends Model
         $model->layout = $session->layout;
         $model->visibility = $session->content->visibility;
         $model->hidden = $session->content->hidden;
-        $model->topics = $session->content->getTags(Topic::class);
-
+        if ($model->contentContainer !== null) {
+            $model->topics = $session->content->getTags(Topic::class);
+        }
 
         // pdf and it's preview image
         if ($session->presentation_file_id > 0) {
@@ -282,8 +283,9 @@ class SessionForm extends Model
             $session->content->container = $this->contentContainer;
             $session->content->visibility = $this->visibility;
             $session->content->hidden = $this->hidden;
+            Topic::attach($session->content, $this->topics);
         }
-        Topic::attach($session->content, $this->topics);
+
 
         $session->id = $this->id;
         $session->name = $this->name;

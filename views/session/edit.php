@@ -92,11 +92,13 @@ $title = $spaceTitle . ($model->id
                                         'Optional detailed description of the session and it\'s purpose.'
                                     )); ?>
                             </div>
-                            <div class="form-group">
-                                <?= $f->field($model, 'topics')->widget(TopicPicker::class, [
-                                    'contentContainer' => $contentContainer ?? null
-                                ]); ?>
-                            </div>
+                            <?php if ($this->context->contentContainer !== null): ?>
+                                <div class="form-group">
+                                    <?= $f->field($model, 'topics')->widget(TopicPicker::class, [
+                                        'contentContainer' => $this->context->contentContainer
+                                    ]); ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
@@ -104,8 +106,8 @@ $title = $spaceTitle . ($model->id
                                     Layouts::options(),
                                     [
                                         'item' => function ($index, $label, $name, $checked, $value) {
-                                            $desc = Layouts::descriptions()[$value] ?? '';
-                                            return "
+                                        $desc = Layouts::descriptions()[$value] ?? '';
+                                        return "
                                             <div class='radio'>
                                                 <label>
                                                     <input type='radio' name='$name' value='$value' " . ($checked ? 'checked' : '') . ">
@@ -114,7 +116,7 @@ $title = $spaceTitle . ($model->id
                                                 </label>
                                             </div>
                                         ";
-                                        }
+                                    }
                                     ]
                                 ); ?>
                             </div>
