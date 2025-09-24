@@ -124,10 +124,12 @@ $title = $spaceTitle . ($model->id
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <?= $f->field($model, 'visibility')->widget(ContentVisibilitySelect::class) ?>
-                            <?php if (!$model->id) {
-                                echo $f->field($model, 'hidden')->widget(ContentHiddenCheckbox::class);
-                            } ?>
+                            <?= $f->field($model, 'visibility')->widget(ContentVisibilitySelect::class, ['contentOwner' => 'record']) ?>
+                            <?= $f->field($model, 'hidden')->widget(ContentHiddenCheckbox::class)
+                                ->hint(Yii::t(
+                                    'BbbModule.base',
+                                    'Control who can see this session.'
+                                )); ?>
                             <div class="form-group" id="public-join-box">
                                 <?= $f->field($model, 'publicJoin')->checkbox([
                                     'id' => 'public-join-toggle',

@@ -281,10 +281,10 @@ class SessionForm extends Model
         ]);
         if ($this->contentContainer !== null) {
             $session->content->container = $this->contentContainer;
-            $session->content->visibility = $this->visibility;
-            $session->content->hidden = $this->hidden;
             Topic::attach($session->content, $this->topics);
         }
+        $session->content->visibility = $this->visibility;
+        $session->content->hidden = $this->hidden;
 
 
         $session->id = $this->id;
@@ -308,6 +308,7 @@ class SessionForm extends Model
         if (!$session->save()) {
             return false;
         }
+        $session->content->save();
         $this->id = $session->id;
         $this->record = $session;
 
