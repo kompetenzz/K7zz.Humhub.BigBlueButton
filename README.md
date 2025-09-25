@@ -2,7 +2,7 @@
 
 This module integrates a BigBlueButton (BBB) video conferencing solution into your HumHub installation. It allows users to create, join, and manage BBB meetings directly within HumHub spaces and user profiles.
 
-Grateful to benefit from the georgeous [official BBB API](https://github.com/bigbluebutton/bigbluebutton-api-php).
+Thankful to benefit from the georgeous [official BBB API](https://github.com/bigbluebutton/bigbluebutton-api-php) and it's even better [littleredbutton-fork](https://github.com/littleredbutton/bigbluebutton-api-php).
 
 ## Features
 - Seamless integration of BigBlueButton meetings in HumHub wih stream, search and tagging
