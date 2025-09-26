@@ -63,8 +63,23 @@ $canCreate = $this->context->contentContainer
     </div>
 </div>
 <?php
-/* JS, um den User-Picker live ein- und auszublenden */
+
 $this->registerJs("
     if (top != self) top.location.href = location.href;    
 ", \yii\web\View::POS_HEAD);
+
+$this->registerJs(<<<JS
+
+    const highlighted = document.querySelector('.card-bbb-sessions.highlight');
+
+    if (highlighted) {
+        highlighted.scrollIntoView({
+            behavior: 'smooth',  // sanftes Scrollen
+            block: 'center'      // mittig im Container
+        });
+    }
+JS
+    ,
+    \yii\web\View::POS_READY
+);
 ?>
