@@ -12,6 +12,8 @@ use humhub\libs\Html;
 /* @var $subNav string */
 /* @var $model \humhub\modules\custom_pages\models\forms\SettingsForm */
 
+$url = $this->context->contentContainer->createUrl('/bbb/sessions');
+
 ?>
 
 <div class="panel panel-default">
@@ -29,6 +31,10 @@ use humhub\libs\Html;
 
         <?php $form = ActiveForm::begin() ?>
         <div class="panel-body">
+            <p><?= Yii::t('BbbModule.config', 'You can always access the container sessions setup screen at') ?>
+                <a href="<?= $url ?>"><?= $url ?></a>.
+            </p>
+
             <?= $form->field($model, 'addNavItem')
                 ->checkbox(); ?>
 

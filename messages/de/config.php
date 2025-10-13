@@ -9,4 +9,8 @@ return [
     'Server URL' => 'Server-Adresss',
     'Settings' => 'Einstellungen',
     'Shared Secret' => 'Geteiltes Geheimnis',
+    'API Settings' => 'API-Einstellungen',
+    'Navigation' => 'Navigation',
+    'You can always access the container sessions setup screen at' => 'Der Bildschirm zur Einrichtung der Container-Sitzungen ist jederzeit erreichbar unter',
+    'You can always access the global sessions setup screen at' => 'Der Bildschirm zur Einrichtung der globalen Sitzungen ist jederzeit erreichbar unter',
 ];

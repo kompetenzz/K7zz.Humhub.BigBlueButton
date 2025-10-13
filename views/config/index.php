@@ -6,7 +6,8 @@
  */
 
 use yii\bootstrap\ActiveForm;
-
+use yii\helpers\Url;
+$url = Url::to('/bbb/sessions');
 ?>
 
 <div class="panel panel-default">
@@ -24,12 +25,17 @@ use yii\bootstrap\ActiveForm;
 
         <?php $form = ActiveForm::begin() ?>
         <div class="panel-body">
+            <h3></h3><?= Yii::t('BbbModule.config', 'API Settings') ?></h3>
             <?= $form->field($model, 'bbbUrl')
                 ->textInput(options: ['placeholder' => 'https://bbb.example.org/bigbluebutton/']); ?>
 
             <?= $form->field($model, 'bbbSecret')
                 ->passwordInput(['autocomplete' => 'new-password']); ?>
 
+            <h3><?= Yii::t('BbbModule.config', 'Navigation') ?></h3>
+            <p><?= Yii::t('BbbModule.config', 'You can always access the global sessions setup screen at') ?>
+                <a href="<?= $url ?>"><?= $url ?></a>.
+            </p>
             <?= $form->field($model, 'addNavItem')
                 ->checkbox(); ?>
 

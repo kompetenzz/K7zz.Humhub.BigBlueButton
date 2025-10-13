@@ -22,6 +22,7 @@ return [
     'Change session image.' => '',
     'Close now' => '',
     'Conference sessions' => '',
+    'Control who can see this session.' => '',
     'Copy public access URL to clipboard' => '',
     'Could not delete session.' => '',
     'Could not save image reference to database.' => '',
