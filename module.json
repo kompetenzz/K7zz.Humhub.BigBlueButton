@@ -2,7 +2,7 @@
     "id": "bbb",
     "name": "BigBlueButton",
     "description": "Integrate your BBB instance.",
-    "version": "0.9.3",
+    "version": "0.9.4",
     "homepage": "https://github.com/kompetenzz/K7zz.Humhub.BigBlueButton",
     "humhub": {
         "minVersion": "1.17.0"

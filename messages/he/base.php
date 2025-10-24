@@ -25,6 +25,8 @@ return [
     'Control who can see this session.' => '',
     'Copy public access URL to clipboard' => '',
     'Could not delete session.' => '',
+    'Could not read image file.' => '',
+    'Could not read presentation file.' => '',
     'Could not save image reference to database.' => '',
     'Could not save presentation reference to database.' => '',
     'Could not start session "{title}".' => '',

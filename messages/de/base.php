@@ -95,5 +95,7 @@ return [
     'You can now close this window.' => 'Du kannst dieses Fenster jetzt schließen.',
     'You will be redirected when the session starts.' => 'Sie werden umgeleitet, wenn die Sitzung beginnt.',
     'Your name' => 'Ihr Name',
-    'Control who can see this session.' => '',
+    'Control who can see this session.' => 'Verwalten, wer diese Sitzung sehen kann.',
+    'Could not read image file.' => 'Konnte Bilddatei nicht lesen.',
+    'Could not read presentation file.' => 'Konnte Präsentationsdatei nicht lesen.',
 ];

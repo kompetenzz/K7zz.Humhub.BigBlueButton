@@ -348,13 +348,20 @@ class SessionForm extends Model
         $humhubFile->file_name = $this->imageUpload->baseName . '.' . $this->imageUpload->extension;
         $humhubFile->mime_type = $this->imageUpload->type;
         $humhubFile->size = $this->imageUpload->size;
+        $humhubFile->object_id = $session->id;
 
         if (!$humhubFile->save()) {
             // Wenn die File‐Metadaten nicht gespeichert werden können, abbrechen
             $this->addError('image', Yii::t('BbbModule.base', 'Could not save image reference to database.'));
             return false;
         }
-        $humhubFile->setStoredFileContent(file_get_contents($this->imageUpload->tempName));
+        $cntnt = file_get_contents($this->imageUpload->tempName);
+        if ($cntnt === false) {
+            $this->addError('image', Yii::t('BbbModule.base', 'Could not read image file.'));
+            return false;
+        }
+
+        $humhubFile->setStoredFileContent($cntnt);
 
         if (!$editImage) {
             $session->image_file_id = $humhubFile->id;
@@ -376,13 +383,19 @@ class SessionForm extends Model
         $humhubPresentationFile->file_name = $this->presentationUpload->baseName . '.' . $this->presentationUpload->extension;
         $humhubPresentationFile->mime_type = $this->presentationUpload->type;
         $humhubPresentationFile->size = $this->presentationUpload->size;
+        $humhubPresentationFile->object_id = $session->id;
 
         if (!$humhubPresentationFile->save()) {
             // Wenn die File‐Metadaten nicht gespeichert werden können, abbrechen
             $this->addError('presentation', Yii::t('BbbModule.base', 'Could not save presentation reference to database.'));
             return false;
         }
-        $humhubPresentationFile->setStoredFileContent(file_get_contents($path));
+        $cntnt = file_get_contents($path);
+        if ($cntnt === false) {
+            $this->addError('presentation', Yii::t('BbbModule.base', 'Could not read presentation file.'));
+            return false;
+        }
+        $humhubPresentationFile->setStoredFileContent($cntnt);
 
         if (!$editPresentation) {
             $session->presentation_file_id = $humhubPresentationFile->id;
