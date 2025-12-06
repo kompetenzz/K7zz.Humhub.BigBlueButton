@@ -92,13 +92,11 @@ $title = $spaceTitle . ($model->id
                                         'Optional detailed description of the session and it\'s purpose.'
                                     )); ?>
                             </div>
-                            <?php if ($this->context->contentContainer !== null): ?>
-                                <div class="form-group">
-                                    <?= $f->field($model, 'topics')->widget(TopicPicker::class, [
-                                        'contentContainer' => $this->context->contentContainer
-                                    ]); ?>
-                                </div>
-                            <?php endif; ?>
+                            <div class="form-group">
+                                <?= $f->field($model, 'topics')->widget(TopicPicker::class, [
+                                    'contentContainer' => $this->context->contentContainer
+                                ]); ?>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
@@ -106,8 +104,8 @@ $title = $spaceTitle . ($model->id
                                     Layouts::options(),
                                     [
                                         'item' => function ($index, $label, $name, $checked, $value) {
-                                        $desc = Layouts::descriptions()[$value] ?? '';
-                                        return "
+                                            $desc = Layouts::descriptions()[$value] ?? '';
+                                            return "
                                             <div class='radio'>
                                                 <label>
                                                     <input type='radio' name='$name' value='$value' " . ($checked ? 'checked' : '') . ">
@@ -116,7 +114,7 @@ $title = $spaceTitle . ($model->id
                                                 </label>
                                             </div>
                                         ";
-                                    }
+                                        }
                                     ]
                                 ); ?>
                             </div>
@@ -262,42 +260,59 @@ $title = $spaceTitle . ($model->id
                                         'Optional image for this session. Recommended size: 800x600px.'
                                     )); ?>
                             </div>
+                            <?php
+                            if ($model->cameraBgPreviewImage !== null) { ?>
+                                <img src="<?= $model->cameraBgPreviewImage->getUrl() ?>"
+                                    class="img-responsive img-thumbnail"
+                                    alt="<?= Yii::t('BbbModule.base', 'Camera background image') ?>"
+                                    style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
+                            <?php } ?>
+                            <div class="form-group">
+                                <?= $f->field($model, 'cameraBgImageUpload')
+                                    ->fileInput()
+                                    ->label($model->cameraBgPreviewImage
+                                        ? Yii::t('BbbModule.base', 'Change camera background image.')
+                                        : Yii::t('BbbModule.base', 'Upload camera background image.'))
+                                    ->hint(Yii::t(
+                                        'BbbModule.base',
+                                        'Optional background image for user cameras. Recommended size: at least 800x600px.'
+                                    )); ?>
+                            </div>
                         </div>
                     </div>
+                    <div class="panel-footer">
+                        <?= Html::submitButton(
+                            Yii::t('BbbModule.base', 'Save'),
+                            ['class' => 'btn btn-primary']
+                        ); ?>
+                        <?= Html::a(
+                            Yii::t('BbbModule.base', 'Cancel'),
+                            [$cancelUrl],
+                            ['class' => 'btn btn-default']
+                        ); ?>
+                    </div>
+
+                    <?php ActiveForm::end(); ?>
+
+                    <?php
+                    /* JS, um den User-Picker live ein- und auszublenden */
+                    $this->registerJs("
+                        function toggleControls() {
+                            $('#user-picker-box').toggle(!$('#join-by-permissions-toggle').is(':checked'));
+                            $('#moderator-picker-box').toggle(!$('#moderate-by-permissions-toggle').is(':checked'));
+                        }
+
+                        $(document).ready(() => {
+                            $('#join-by-permissions-toggle, #moderate-by-permissions-toggle')
+                                .on('change', () => toggleControls());
+
+                            toggleControls(); // initial call
+                        });
+                    ");
+                    ?>
+
                 </div>
-                <div class="panel-footer">
-                    <?= Html::submitButton(
-                        Yii::t('BbbModule.base', 'Save'),
-                        ['class' => 'btn btn-primary']
-                    ); ?>
-                    <?= Html::a(
-                        Yii::t('BbbModule.base', 'Cancel'),
-                        [$cancelUrl],
-                        ['class' => 'btn btn-default']
-                    ); ?>
-                </div>
-
-                <?php ActiveForm::end(); ?>
-
-                <?php
-                /* JS, um den User-Picker live ein- und auszublenden */
-                $this->registerJs("
-                    function toggleControls() {
-                        $('#user-picker-box').toggle(!$('#join-by-permissions-toggle').is(':checked'));
-                        $('#moderator-picker-box').toggle(!$('#moderate-by-permissions-toggle').is(':checked'));
-                    }
-
-                    $(document).ready(() => {
-                        $('#join-by-permissions-toggle, #moderate-by-permissions-toggle')
-                            .on('change', () => toggleControls());
-
-                        toggleControls(); // initial call
-                    });
-                ");
-                ?>
-
             </div>
-
         </div>
     </div>
 </div>

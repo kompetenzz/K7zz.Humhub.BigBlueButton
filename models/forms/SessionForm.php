@@ -81,6 +81,13 @@ class SessionForm extends Model
     public $imageUpload = null; // Form upload
     public ?PreviewImage $previewImage = null; // Thumbnail
 
+    // Camera bg image
+    public ?int $camera_bg_image_file_id = null; // DB ref
+    public ?File $cameraBgImageFile = null; // DB record
+    /** @var UploadedFile|string|null */
+    public $cameraBgImageUpload = null; // Form upload
+    public ?PreviewImage $cameraBgPreviewImage = null; // Thumbnail
+
     public function init()
     {
         parent::init();
@@ -195,6 +202,15 @@ class SessionForm extends Model
                 $model->previewImage = $previewImage; // Vorschau-Bild für die Thumbnail-Anzeige
             }
         }
+
+        if ($session->camera_bg_image_file_id > 0) {
+            $model->camera_bg_image_file_id = $session->camera_bg_image_file_id;
+            $model->cameraBgImageFile = $session->getCameraBgImageFile(); // Lazy-Loading des Bildes
+            $cameraBgPreviewImage = new PreviewImage();
+            if ($cameraBgPreviewImage->applyFile($model->cameraBgImageFile)) {
+                $model->cameraBgPreviewImage = $cameraBgPreviewImage; // Vorschau-Bild für die Thumbnail-Anzeige
+            }
+        }
         return $model;
     }
 
@@ -235,9 +251,10 @@ class SessionForm extends Model
             ['name', 'match', 'pattern' => '/^' . self::SLUG_PATTERN . '$/', 'message' => Yii::t('BbbModule.base', 'Only lowercase letters, numbers and hyphens are allowed.')],
             [['description'], 'string'],
             [['attendeeRefs', 'moderatorRefs'], 'each', 'rule' => ['string']],
-            [['image_file_id', 'presentation_file_id', 'presentation_preview_file_id'], 'integer'],
+            [['image_file_id', 'presentation_file_id', 'presentation_preview_file_id', 'camera_bg_image_file_id'], 'integer'],
             ['imageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
             ['presentationUpload', 'file', 'extensions' => 'pdf', 'maxSize' => 40 * 1024 * 1024], // max. 40 MB
+            ['cameraBgImageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 800, 'minHeight' => 400],
             [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled', 'hidden'], 'boolean'],
             ['layout', 'required'],
             ['layout', 'in', 'range' => Layouts::values()],
@@ -264,6 +281,10 @@ class SessionForm extends Model
         if ($pU) {
             $this->presentationUpload = $pU;
         }
+        $cU = UploadedFile::getInstance($this, 'cameraBgImageUpload');
+        if ($cU) {
+            $this->cameraBgImageUpload = $cU;
+        }
         return $result;
     }
 
@@ -278,10 +299,10 @@ class SessionForm extends Model
             'uuid' => uniqid('bbb-sess-'),
             'creator_user_id' => $this->creatorId,
             'created_at' => time(),
+
         ]);
         if ($this->contentContainer !== null) {
             $session->content->container = $this->contentContainer;
-            Topic::attach($session->content, $this->topics);
         }
         $session->content->visibility = $this->visibility;
         $session->content->hidden = $this->hidden;
@@ -312,6 +333,8 @@ class SessionForm extends Model
         $this->id = $session->id;
         $this->record = $session;
 
+        Topic::attach($session->content, $this->topics);
+
         if (!$this->assignUsers($session)) {
             return false;
         }
@@ -327,6 +350,13 @@ class SessionForm extends Model
             }
         }
 
+        // camera background image
+        if ($this->cameraBgImageUpload instanceof UploadedFile) {
+            if (!$this->saveCameraBgImage($session)) {
+                Yii::error("Could not save uploaded camera background image.", 'bbb');
+            }
+        }
+
         // Pdf presentation
         if ($this->presentationUpload instanceof UploadedFile) {
             if (!$this->savePresentation($session)) {
@@ -335,6 +365,7 @@ class SessionForm extends Model
         }
         return true;
     }
+
 
     private function saveSessionImage(Session $session): bool
     {
@@ -365,6 +396,40 @@ class SessionForm extends Model
 
         if (!$editImage) {
             $session->image_file_id = $humhubFile->id;
+            $session->fileManager->attach($humhubFile->guid);
+        }
+        return true;
+    }
+
+    private function saveCameraBgImage(Session $session): bool
+    {
+        $editImage = $session->camera_bg_image_file_id > 0;
+        if ($editImage) {
+            $humhubFile = $session->getCameraBgImageFile();
+        } else {
+            $humhubFile = new File();
+        }
+
+        $humhubFile->file_name = $this->cameraBgImageUpload->baseName . '.' . $this->cameraBgImageUpload->extension;
+        $humhubFile->mime_type = $this->cameraBgImageUpload->type;
+        $humhubFile->size = $this->cameraBgImageUpload->size;
+        $humhubFile->object_id = $session->id;
+
+        if (!$humhubFile->save()) {
+            // Wenn die File‐Metadaten nicht gespeichert werden können, abbrechen
+            $this->addError('cameraBgImage', Yii::t('BbbModule.base', 'Could not save camera background image reference to database.'));
+            return false;
+        }
+        $cntnt = file_get_contents($this->cameraBgImageUpload->tempName);
+        if ($cntnt === false) {
+            $this->addError('cameraBgImage', Yii::t('BbbModule.base', 'Could not read camera background image file.'));
+            return false;
+        }
+
+        $humhubFile->setStoredFileContent($cntnt);
+
+        if (!$editImage) {
+            $session->camera_bg_image_file_id = $humhubFile->id;
             $session->fileManager->attach($humhubFile->guid);
         }
         return true;

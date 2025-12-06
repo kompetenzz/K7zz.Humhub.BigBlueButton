@@ -53,9 +53,13 @@ class SessionService
      * @param ContentContainerActiveRecord|null $container
      * @return \yii\db\ActiveQuery
      */
-    private function getQueryStarter(ContentContainerActiveRecord $container = null)
+    private function getQueryStarter(?ContentContainerActiveRecord $container = null, bool $everyWhere = false)
     {
-        return Session::find()->contentContainer($container);
+        if ($everyWhere) {
+            return Session::find();
+        }
+        return Session::find()
+            ->contentContainer($container);
     }
 
     /* ------------------------------------------------------------------ */
@@ -90,13 +94,13 @@ class SessionService
      * @param ContentContainerActiveRecord|null $container
      * @return Session|null
      */
-    public function get(?int $id = null, ContentContainerActiveRecord $container = null): ?Session
+    public function get(?int $id = null, ContentContainerActiveRecord $container = null, bool $everyWhere = false): ?Session
     {
         if ($id === null) {
             return null;
         }
 
-        $query = $this->getQueryStarter($container)
+        $query = $this->getQueryStarter($container, $everyWhere)
             ->alias('session')
             ->joinWith('content')
             ->where(['session.id' => $id, 'session.deleted_at' => null]);
@@ -137,6 +141,16 @@ class SessionService
                 'link' => $anonymousJoinUrl
             ]);
         }
+        $moderatorInfo = Yii::t(
+            'BbbModule.base',
+            'You are the moderator of this session. As such, you have additional permissions and responsibilities compared to regular participants.'
+            . ' Moderators can not be randomly assigned to breakout rooms!'
+        );
+
+        $moderatorInfo .= ($s->has_waitingroom ?
+            Yii::t('BbbModule.base', ' Participants will be placed in the waiting room until a moderator accepts them.') :
+            Yii::t('BbbModule.base', ' Participants will enter directly.'));
+
         $p = (new CreateMeetingParameters($s->uuid, $s->title))
             ->setRecord((bool) $s->allow_recording)
             ->setAllowStartStopRecording((bool) $s->allow_recording)
@@ -144,20 +158,23 @@ class SessionService
             ->setMuteOnStart((bool) $s->mute_on_entry)
             ->setAllowModsToUnmuteUsers(true)
             ->setAllowModsToEjectCameras(true)
+            ->setAllowPromoteGuestToModerator(true)
+            ->setBreakout(false)
             ->setMeetingKeepEvents(true)
             ->setGuestPolicy(
                 $s->has_waitingroom ? "ASK_MODERATOR" : "ALWAYS_ACCEPT"
             )
+            ->setModeratorOnlyMessage($moderatorInfo)
             ->setLogoutURL(Yii::$app->urlManager->createAbsoluteUrl($exitUrl . "?highlight=" . $s->id))
             ->setMeetingLayout($s->layout);
 
         if ($s->presentation_file_id > 0) {
-            $presentationUrl = Url::to('/bbb/public/download', true) . "?token=" . $s->public_token . "&type=presentation";
+            $presentationUrl = Url::to('/bbb/public/download', true) . "?id=" . $s->id . "&type=presentation";
 
             $p->addPresentation($presentationUrl, file_get_contents($presentationUrl), $s->name . "_presentation.pdf");
         }
 
-        $r = $this->bbb->createMeeting($p);          // mehrfach aufrufbar
+        $r = $this->bbb->createMeeting($p);
         if (!$r->success()) {
             Yii::error("BBB-CreateMeeting failed for session {$s->name} ({$s->id}): " . $r->getMessage(), 'bbb');
             return null;
@@ -179,8 +196,17 @@ class SessionService
             $moderator ? Role::MODERATOR : Role::VIEWER
         ))
             ->setUserID(Yii::$app->user->identity->email);
-        if (Yii::$app->user->identity->getProfileImage())
+        if (Yii::$app->user->identity->getProfileImage()) {
             $jp->setAvatarURL(Url::to(Yii::$app->user->identity->getProfileImage()->getUrl(), true));
+        }
+        if ($session->camera_bg_image_file_id > 0) {
+            $cameraBgImageUrl = Url::to('/bbb/public/download', true)
+                . "?id=" . $session->id
+                . "&type=camera-bg-image&inline=true&embeddable=true";
+            $jp->setWebcamBackgroundURL($cameraBgImageUrl);
+        }
+
+
         return $this->bbb->getJoinMeetingURL($jp);
     }
 

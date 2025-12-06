@@ -48,6 +48,10 @@ class Session extends ContentActiveRecord
                 $this->outputImage = $previewImage;
             }
         }
+        if ($this->camera_bg_image_file_id !== null) {
+            $bg_image = $this->getCameraBgImageFile();
+            $previewImage = new PreviewImage();
+        }
     }
 
     /**
@@ -229,6 +233,7 @@ class Session extends ContentActiveRecord
                     'deleted_at',
                     'ord',
                     'image_file_id',
+                    'camera_bg_image_file_id',
                     'presentation_file_id',
                     'presentation_preview_file_id'
                 ],
@@ -263,19 +268,26 @@ class Session extends ContentActiveRecord
                 $q->andWhere(['role' => 'moderator']);
             });
     }
+    public function getFile(string $ref): File|null
+    {
+        return $this
+            ->hasOne(File::class, ['id' => $ref])
+            ->one();
+    }
+
+    public function getCameraBgImageFile(): File|null
+    {
+        return $this->getFile('camera_bg_image_file_id');
+    }
 
     public function getImageFile(): File|null
     {
-        return $this
-            ->hasOne(File::class, ['id' => 'image_file_id'])
-            ->one();
+        return $this->getFile('image_file_id');
     }
 
     public function getPresentationFile(): File|null
     {
-        return $this
-            ->hasOne(File::class, ['id' => 'presentation_file_id'])
-            ->one();
+        return $this->getFile('presentation_file_id');
     }
 
     public function getPresentationPreviewImageFile(): File|null

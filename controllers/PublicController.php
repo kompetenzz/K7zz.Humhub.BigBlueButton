@@ -68,17 +68,40 @@ class PublicController extends Controller
         return $this->redirect($joinUrl);
     }
 
-    public function actionDownload(string $token, string $type = "presentation"): Response
-    {
-        $session = Session::find()->where(['public_token' => $token])->one();
-        if (!$session)
-            throw new NotFoundHttpException(Yii::t('BbbModule.base', 'No such session.'));
-
+    public function actionDownload(
+        ?int $id = null,
+        string $type = "presentation",
+        bool $inline = false,
+        bool $embeddable = false
+    ): Response {
+        if ($id === null) {
+            throw new NotFoundHttpException();
+        }
+        $session = $this->svc->get($id, everyWhere: true)
+            ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
+        $file = null;
         if ($type === "presentation" && $session->presentation_file_id) {
             $file = $session->getPresentationFile();
-            if ($file) {
-                return Yii::$app->response->sendFile($file->getStore()->get(), $file->file_name, ['inline' => false]);
-            }
         }
+
+        if ($type === "camera-bg-image" && $session->camera_bg_image_file_id) {
+            $file = $session->getCameraBgImageFile();
+        }
+
+        if ($file) {
+            if ($embeddable) {
+                Yii::$app->response->headers->set('Access-Control-Allow-Origin', '*');
+                Yii::$app->response->headers->set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+            }
+            return Yii::$app->response->sendFile(
+                $file->getStore()->get(),
+                $file->file_name,
+                [
+                    'inline' => $inline,
+                    'mimeType' => $file->mime_type,
+                ]
+            );
+        }
+        throw new NotFoundHttpException();
     }
 }

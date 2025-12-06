@@ -22,6 +22,7 @@ if ($this->context->contentContainer) {
 }
 $highlightClass = $model->id === $highlightId ? 'highlight' : '';
 $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseUrl . '/images/conference.png';
+$membersJoinLink = $routePrefix . '/join/' . $model->name;
 
 ?>
 
@@ -49,16 +50,16 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
             </p>
         </div>
         <?php if ($model->canJoin()): ?>
-
             <!-- Fußzeile mit Action-Links-->
             <div class="panel-footer" style="padding-top: 10px">
                 <?php if ($running && $model->canJoin()): ?>
+                    <!-- Join Button -->
                     <?= Html::a(
                         Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Join'),
                         '#',
                         [
                             'class' => 'btn btn-primary btn-sm bbb-launch-window',
-                            'data-url' => $routePrefix . '/join/' . $model->name,
+                            'data-url' => $membersJoinLink,
                             'title' => Yii::t('BbbModule.base', 'Join session'),
                         ]
                     ) ?>
@@ -72,11 +73,24 @@ $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseU
                             'title' => Yii::t('BbbModule.base', 'Start session'),
                         ]
                     ) ?>     <?php endif; ?>
+                <!-- Join link to copy and share -->
+                <span id="bbb-members-url-<?= $model->id ?>" class="hidden"><?= Url::to([$membersJoinLink], true) ?></span>
+                <?= Html::a(
+                    Icon::get('lock') . ' ' . Yii::t('BbbModule.base', 'Members join link'),
+                    '#',
+                    [
+                        'class' => 'btn btn-danger btn-sm',
+                        'title' => Yii::t('BbbModule.base', 'Copy members access URL to clipboard'),
+                        'data-action-click' => 'copyToClipboard', // HumHub Action
+                        'data-action-target' => '#bbb-members-url-' . $model->id
+                    ]
+                ) ?>
+
                 <?php if ($model->public_join && $model->public_token): ?>
                     <span id="bbb-public-url-<?= $model->id ?>"
                         class="hidden"><?= Url::to(['/bbb/public/join', 'token' => $model->public_token], true) ?></span>
                     <?= Html::a(
-                        Icon::get('link') . ' ' . Yii::t('BbbModule.base', 'Join link'),
+                        Icon::get('link') . ' ' . Yii::t('BbbModule.base', 'Public Join link'),
                         '#',
                         [
                             'class' => 'btn btn-success btn-sm',

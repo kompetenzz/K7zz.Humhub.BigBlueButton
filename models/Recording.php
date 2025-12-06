@@ -23,6 +23,7 @@ class Recording
 
     public function getFormat(): PlaybackFormat|null
     {
+        //        Yii::error($this->record->getPlaybackFormats());
         if ($this->format === null) {
             $this->format = $this->record->getPlaybackFormats()[0] ?? null;
         }
