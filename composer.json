@@ -1,7 +1,7 @@
 {
     "name": "k7zz/humhub-bbb",
     "description": "kompetenzZ BigBlueButton Module for HumHub",
-    "version": "0.9.8",
+    "version": "0.9.9",
     "extra": {
         "humhub-min-version": "1.17.0"
     },
