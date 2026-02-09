@@ -164,15 +164,36 @@ class SessionController extends BaseContentController
     }
 
     /**
-     * Joins a BBB session (redirects to join URL).
+     * Joins a BBB session. If not running, shows a waiting page with session overview.
      * @param int|null $id
-     * @return \yii\web\Response
+     * @return string|\yii\web\Response
      * @throws NotFoundHttpException|ForbiddenHttpException
      */
     public function actionJoin(?int $id = null)
     {
-        $joinInfo = $this->prepareJoin($id);
-        return Yii::$app->response->redirect($joinInfo->url, 303, true);
+        if ($id === null) {
+            throw new NotFoundHttpException();
+        }
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
+
+        if (!$session->canJoin()) {
+            throw new ForbiddenHttpException();
+        }
+
+        if (!$this->svc->isRunning($session->uuid)) {
+            return $this->render('join', [
+                'session' => $session,
+                'canStart' => $session->canStart(),
+                'startUrl' => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
+            ]);
+        }
+
+        $joinUrl = $this->svc->joinUrl(
+            $session,
+            $session->isModerator() || $session->join_can_moderate,
+        );
+        return Yii::$app->response->redirect($joinUrl, 303, true);
     }
 
     /**

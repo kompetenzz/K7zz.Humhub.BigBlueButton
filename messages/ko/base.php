@@ -2,7 +2,7 @@
 
 return [
     ' Participants will be placed in the waiting room until a moderator accepts them.' => '',
-    ' Participants will enter directly' => '',
+    ' Participants will enter directly.' => '',
     'A live session' => '',
     'Adds sessions to this container.' => '',
     'Adds sessions to this space.' => '',
@@ -94,6 +94,7 @@ return [
     'Start session' => '',
     'Stopped' => '',
     'The meeting has ended.' => '',
+    'The session has not started yet. This page will refresh automatically.' => '',
     'This name has already been taken.' => '',
     'Upload camera background image.' => '',
     'Upload presentation file.' => '',

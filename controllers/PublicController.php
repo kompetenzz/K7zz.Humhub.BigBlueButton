@@ -54,7 +54,7 @@ class PublicController extends Controller
 
         if ($msg || !$name || mb_strlen(trim($name)) < 2) {
             return $this->render('join', [
-                'title' => $session->title,
+                'session' => $session,
                 'token' => $token,
                 'msg' => $msg,
                 'reload' => $reload ?? false,

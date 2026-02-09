@@ -1,6 +1,8 @@
 <?php
 
 return [
+    ' Participants will be placed in the waiting room until a moderator accepts them.' => ' Teilnehmer*innen werden im Warteraum platziert, bis ein Moderator sie akzeptiert.',
+    ' Participants will enter directly.' => ' Teilnehmer*innen treten direkt bei.',
     'A live session' => 'Eine Videokonferenz',
     'Adds sessions to this container.' => 'Videokonferenz zu diesem Bereich hinzufügen.',
     'Adds sessions to this space.' => 'Videokonferenzen zu diesem Space hinzufügen.',
@@ -102,11 +104,10 @@ return [
     'Waiting room' => 'Warteraum',
     'You are moderator' => 'Du hast Moderationsrechte',
     'You are not allowed to start session "{title}".' => 'Du bist nicht berechtigt, die Videokonferenz "{title}" zu starten.',
+    'You are the moderator of this session. As such, you have additional permissions and responsibilities compared to regular participants. Moderators can not be randomly assigned to breakout rooms!' => 'Du bist der Moderator dieser Sitzung. Daher hast du zusätzliche Berechtigungen und Verantwortlichkeiten im Vergleich zu regulären Teilnehmer*innen. Moderatoren können nicht zufällig auf Breakout-Räume verteilt werden!',
     'You can create a new session by clicking the button above.' => 'Du kannst eine neue Videokonferenz erstellen, indem du auf die Schaltfläche oben klickst.',
     'You can now close this window.' => 'Du kannst dieses Fenster jetzt schließen.',
     'You will be redirected when the session starts.' => 'Du wirst umgeleitet, wenn die Sitzung beginnt.',
     'Your name' => 'Dein Name',
-    ' Participants will be placed in the waiting room until a moderator accepts them.' => ' Teilnehmer*innen werden im Warteraum platziert, bis ein Moderator sie akzeptiert.',
-    ' Participants will enter directly.' => ' Teilnehmer*innen treten direkt bei.',
-    'You are the moderator of this session. As such, you have additional permissions and responsibilities compared to regular participants. Moderators can not be randomly assigned to breakout rooms!' => 'Du bist der Moderator dieser Sitzung. Daher hast du zusätzliche Berechtigungen und Verantwortlichkeiten im Vergleich zu regulären Teilnehmer*innen. Moderatoren können nicht zufällig auf Breakout-Räume verteilt werden!',
+    'The session has not started yet. This page will refresh automatically.' => 'Die Sitzung hat noch nicht begonnen. Diese Seite wird automatisch aktualisiert.',
 ];
