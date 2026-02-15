@@ -5,7 +5,7 @@
     "version": "0.18.0",
     "homepage": "https://github.com/kompetenzz/K7zz.Humhub.BigBlueButton",
     "humhub": {
-        "minVersion": "1.18.0"
+        "minVersion": "1.18.1"
     },
     "screenshots": [
         "docs/screenshots/global-config.png",
