@@ -16,12 +16,12 @@ $iframe = '<iframe src="' . Html::encode($joinInfo->url) . '" allow="fullscreen;
     <?php } else { ?>
         <div id="layout-content">
             <div class="container-fluid">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+                <div class="card">
+                    <div class="card-header">
                         <strong><?= Html::encode($joinInfo->title) ?></strong>
                     </div>
 
-                    <div class="panel-body" style="padding:0">
+                    <div class="card-body" style="padding:0">
                         <?= $iframe; ?>
                     </div>
                 </div>

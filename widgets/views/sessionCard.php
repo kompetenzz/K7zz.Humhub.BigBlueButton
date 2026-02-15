@@ -27,33 +27,29 @@ $membersJoinLink = $routePrefix . '/join/' . $model->name;
 ?>
 
 <div id="sessioncard-<?= $model->id ?>"
-    class="card card card-space col-lg-3 col-md-4 col-sm-6 col-xs-12 card-bbb-sessions <?= $highlightClass ?>">
-    <div class="card-panel">
-        <div class="card-heading panel-heading">
-            <img class="" alt="<?= Yii::t('BbbModule.base', 'Session image') ?>" style="max-height: 200px; width: 100%"
-                src="<?= Html::encode($imageUrl) ?>" />
-        </div>
-        <div class="card-body panel-body">
+    class="col-lg-3 col-md-4 col-sm-6 col-12 card-bbb-sessions <?= $highlightClass ?>">
+    <div class="card">
+        <img class="card-img-top" alt="<?= Yii::t('BbbModule.base', 'Session image') ?>" style="max-height: 200px; object-fit: cover;"
+            src="<?= Html::encode($imageUrl) ?>" />
+        <div class="card-body">
             <h5 class="card-title"><?= $model->title ?>
-                <span class="pull-right">
+                <span class="float-end">
                     <?= $running
                         ? '<span class="text-success" title="' . Yii::t('BbbModule.base', 'Running') . '">' . Icon::get('play') . '</span>'
                         : '<span class="text-warning" title="' . Yii::t('BbbModule.base', 'Stopped') . '">' . Icon::get('pause') . '</span>' ?>
                     <?php if ($model->isModerator()): ?>
                         <span class="text-info"
                             title="<?= Yii::t('BbbModule.base', 'You are moderator') ?>"><?= Icon::get('user-secret') ?></span>
-                    </span>
-                <?php endif; ?>
+                    <?php endif; ?>
+                </span>
             </h5>
             <p class="card-text">
                 <?= RichText::output($model->description) ?>
             </p>
         </div>
         <?php if ($model->canJoin()): ?>
-            <!-- Fußzeile mit Action-Links-->
-            <div class="panel-footer" style="padding-top: 10px">
+            <div class="card-footer">
                 <?php if ($running && $model->canJoin()): ?>
-                    <!-- Join Button -->
                     <?= Html::a(
                         Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Join'),
                         '#',
@@ -72,37 +68,38 @@ $membersJoinLink = $routePrefix . '/join/' . $model->name;
                             'data-url' => $routePrefix . '/start/' . $model->name . '?embed=0',
                             'title' => Yii::t('BbbModule.base', 'Start session'),
                         ]
-                    ) ?>     <?php endif; ?>
-                <!-- Join link to copy and share -->
-                <span id="bbb-members-url-<?= $model->id ?>" class="hidden"><?= Url::to([$membersJoinLink], true) ?></span>
+                    ) ?>
+                <?php endif; ?>
+
+                <span id="bbb-members-url-<?= $model->id ?>" class="d-none"><?= Url::to([$membersJoinLink], true) ?></span>
                 <?= Html::a(
                     Icon::get('lock') . ' ' . Yii::t('BbbModule.base', 'Members join link'),
                     '#',
                     [
                         'class' => 'btn btn-danger btn-sm',
                         'title' => Yii::t('BbbModule.base', 'Copy members access URL to clipboard'),
-                        'data-action-click' => 'copyToClipboard', // HumHub Action
+                        'data-action-click' => 'copyToClipboard',
                         'data-action-target' => '#bbb-members-url-' . $model->id
                     ]
                 ) ?>
 
                 <?php if ($model->public_join && $model->public_token): ?>
                     <span id="bbb-public-url-<?= $model->id ?>"
-                        class="hidden"><?= Url::to(['/bbb/public/join', 'token' => $model->public_token], true) ?></span>
+                        class="d-none"><?= Url::to(['/bbb/public/join', 'token' => $model->public_token], true) ?></span>
                     <?= Html::a(
                         Icon::get('link') . ' ' . Yii::t('BbbModule.base', 'Public Join link'),
                         '#',
                         [
                             'class' => 'btn btn-success btn-sm',
                             'title' => Yii::t('BbbModule.base', 'Copy public access URL to clipboard'),
-                            'data-action-click' => 'copyToClipboard', // HumHub Action
+                            'data-action-click' => 'copyToClipboard',
                             'data-action-target' => '#bbb-public-url-' . $model->id
                         ]
                     ) ?>
                 <?php endif; ?>
 
                 <?php if ($model->canAdminister()): ?>
-                    <span class="pull-right">
+                    <span class="float-end">
                         <?= Html::a(
                             Icon::get('pencil'),
                             $routePrefix . '/edit/' . $model->name,
@@ -126,13 +123,12 @@ $membersJoinLink = $routePrefix . '/join/' . $model->name;
                 <?php endif; ?>
             </div>
             <?php if ($model->canAdminister()): ?>
-                <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="panel-footer" style="padding-top: 10px">
+                <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="card-footer">
                     <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer, 'canAdminister' => $model->canAdminister()]) ?>
                 </div>
             <?php endif; ?>
         <?php endif; ?>
     </div>
-
 </div>
 
 <?php

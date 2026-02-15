@@ -5,15 +5,15 @@
  * @var k7zz\humhub\bbb\models\forms\SettingsForm $model  The settings form model
  */
 
-use yii\bootstrap\ActiveForm;
+use humhub\modules\ui\form\widgets\ActiveForm;
 use yii\helpers\Url;
 $url = Url::to('/bbb/sessions');
 ?>
 
-<div class="panel panel-default">
-    <div class="panel-heading"><?= Yii::t('BbbModule.config', '<strong>Bigbluebutton</strong> Integration'); ?></div>
+<div class="card">
+    <div class="card-header"><?= Yii::t('BbbModule.config', '<strong>Bigbluebutton</strong> Integration'); ?></div>
 
-    <div class="panel-body">
+    <div class="card-body">
         <div class="clearfix">
             <h4><?= Yii::t('BbbModule.config', 'Settings') ?></h4>
             <div class="help-block">
@@ -24,7 +24,7 @@ $url = Url::to('/bbb/sessions');
         <hr>
 
         <?php $form = ActiveForm::begin() ?>
-        <div class="panel-body">
+        <div class="card-body">
             <h3></h3><?= Yii::t('BbbModule.config', 'API Settings') ?></h3>
             <?= $form->field($model, 'bbbUrl')
                 ->textInput(options: ['placeholder' => 'https://bbb.example.org/bigbluebutton/']); ?>

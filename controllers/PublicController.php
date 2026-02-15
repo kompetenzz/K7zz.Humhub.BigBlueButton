@@ -39,7 +39,7 @@ class PublicController extends Controller
         ];
     }
 
-    public function actionJoin(string $token, string $name = null)
+    public function actionJoin(string $token, ?string $name = null)
     {
         $session = Session::find()->where(['public_token' => $token])->one();
         $msg = '';

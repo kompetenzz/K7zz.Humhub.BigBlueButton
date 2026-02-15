@@ -5,7 +5,7 @@
  * @var k7zz\humhub\bbb\models\forms\ContainerSettingsForm $model  The container settings form model
  */
 
-use yii\bootstrap\ActiveForm;
+use humhub\modules\ui\form\widgets\ActiveForm;
 use humhub\libs\Html;
 
 /* @var $this \humhub\modules\ui\view\components\View *
@@ -16,10 +16,10 @@ $url = $this->context->contentContainer->createUrl('/bbb/sessions');
 
 ?>
 
-<div class="panel panel-default">
-    <div class="panel-heading"><?= Yii::t('BbbModule.config', '<strong>Bigbluebutton</strong> Integration'); ?></div>
+<div class="card">
+    <div class="card-header"><?= Yii::t('BbbModule.config', '<strong>Bigbluebutton</strong> Integration'); ?></div>
 
-    <div class="panel-body">
+    <div class="card-body">
         <div class="clearfix">
             <h4><?= Yii::t('BbbModule.config', 'Settings') ?></h4>
             <div class="help-block">
@@ -30,7 +30,7 @@ $url = $this->context->contentContainer->createUrl('/bbb/sessions');
         <hr>
 
         <?php $form = ActiveForm::begin() ?>
-        <div class="panel-body">
+        <div class="card-body">
             <p><?= Yii::t('BbbModule.config', 'You can always access the container sessions setup screen at') ?>
                 <a href="<?= $url ?>"><?= $url ?></a>.
             </p>

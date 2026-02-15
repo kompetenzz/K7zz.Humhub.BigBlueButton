@@ -35,8 +35,8 @@ $title = $spaceTitle . ($model->id
 <div class="content">
     <div id="layout-content">
         <div class="container-fluid">
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     <h1><?= Html::encode($title) ?></h1>
                 </div>
 
@@ -52,7 +52,7 @@ $title = $spaceTitle . ($model->id
                     ],
                 ]); ?>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -106,7 +106,7 @@ $title = $spaceTitle . ($model->id
                                         'item' => function ($index, $label, $name, $checked, $value) {
                                             $desc = Layouts::descriptions()[$value] ?? '';
                                             return "
-                                            <div class='radio'>
+                                            <div class='form-check'>
                                                 <label>
                                                     <input type='radio' name='$name' value='$value' " . ($checked ? 'checked' : '') . ">
                                                         <strong>$label</strong><br>
@@ -225,7 +225,7 @@ $title = $spaceTitle . ($model->id
                                 <label><?= Yii::t('BbbModule.base', 'Current presentation') ?></label>
                                 <?php if ($model->presentationPreviewImage !== null) { ?>
                                     <img src="<?= $model->presentationPreviewImage->getUrl() ?>"
-                                        class="img-responsive img-thumbnail"
+                                        class="img-fluid img-thumbnail"
                                         alt="<?= Yii::t('BbbModule.base', 'PDF preview') ?>"
                                         style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
                                 <?php } ?>
@@ -245,7 +245,7 @@ $title = $spaceTitle . ($model->id
                             </div>
                             <?php
                             if ($model->previewImage !== null) { ?>
-                                <img src="<?= $model->previewImage->getUrl() ?>" class="img-responsive img-thumbnail"
+                                <img src="<?= $model->previewImage->getUrl() ?>" class="img-fluid img-thumbnail"
                                     alt="<?= Yii::t('BbbModule.base', 'Session image') ?>"
                                     style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
                             <?php } ?>
@@ -263,7 +263,7 @@ $title = $spaceTitle . ($model->id
                             <?php
                             if ($model->cameraBgPreviewImage !== null) { ?>
                                 <img src="<?= $model->cameraBgPreviewImage->getUrl() ?>"
-                                    class="img-responsive img-thumbnail"
+                                    class="img-fluid img-thumbnail"
                                     alt="<?= Yii::t('BbbModule.base', 'Camera background image') ?>"
                                     style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
                             <?php } ?>
@@ -280,7 +280,7 @@ $title = $spaceTitle . ($model->id
                             </div>
                         </div>
                     </div>
-                    <div class="panel-footer">
+                    <div class="card-footer">
                         <?= Html::submitButton(
                             Yii::t('BbbModule.base', 'Save'),
                             ['class' => 'btn btn-primary']
@@ -288,7 +288,7 @@ $title = $spaceTitle . ($model->id
                         <?= Html::a(
                             Yii::t('BbbModule.base', 'Cancel'),
                             [$cancelUrl],
-                            ['class' => 'btn btn-default']
+                            ['class' => 'btn btn-secondary']
                         ); ?>
                     </div>
 

@@ -70,7 +70,7 @@ if ($rec->hasImagePreviews()) {
         <?php endif; ?>
         <?php if ($canAdminister): ?>
             <?= Html::beginForm($publishUrl, 'post', [
-                'class' => 'm-0 p-0 d-block bbb-publish-form pull-right ',
+                'class' => 'm-0 p-0 d-block bbb-publish-form float-end ',
                 'data-async' => '1',
             ]) ?>
             <?= Html::hiddenInput('recordId', $rec->getRecord()->getRecordId()) ?>

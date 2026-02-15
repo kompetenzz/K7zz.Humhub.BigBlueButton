@@ -19,17 +19,17 @@ $imageUrl = ($session && $session->outputImage)
 <div id="layout-content">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
-                <div class="panel panel-default">
+            <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
+                <div class="card">
                     <?php if ($session): ?>
-                        <div class="panel-heading" style="padding: 0; overflow: hidden;">
+                        <div class="card-header" style="padding: 0; overflow: hidden;">
                             <img src="<?= Html::encode($imageUrl) ?>"
                                  alt="<?= Html::encode($session->title) ?>"
                                  style="width: 100%; max-height: 300px; object-fit: cover; display: block;">
                         </div>
                     <?php endif; ?>
 
-                    <div class="panel-body">
+                    <div class="card-body">
                         <h2 style="margin-top: 5px;">
                             <i class="fa fa-video-camera"></i>
                             <?= Html::encode($session->title ?? Yii::t('BbbModule.base', 'Join session')) ?>
@@ -66,7 +66,7 @@ $imageUrl = ($session && $session->outputImage)
                                            placeholder="<?= Yii::t('BbbModule.base', 'Your name') ?>"
                                            autofocus>
                                 </div>
-                                <button class="btn btn-primary btn-lg btn-block">
+                                <button class="btn btn-primary btn-lg w-100">
                                     <i class="fa fa-sign-in"></i>
                                     <?= Yii::t('BbbModule.base', 'Join now') ?>
                                 </button>

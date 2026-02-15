@@ -22,20 +22,20 @@ $canCreate = $this->context->contentContainer
     : Yii::$app->user->can(Admin::class);
 
 ?>
-<div class="container-fluid container-cards container-bbb-sessions">
-    <div class="panel panel-default">
-        <div class="panel-heading">
+<div class="container-fluid container-bbb-sessions">
+    <div class="card">
+        <div class="card-header">
             <?php if ($canCreate) { ?>
                 <?= Html::a(
                     Icon::get('plus') . ' ' . Yii::t('BbbModule.base', 'Create session'),
                     $createUrl,
-                    ['class' => 'btn btn-primary pull-right', 'style' => 'margin: 10px']
+                    ['class' => 'btn btn-primary float-end', 'style' => 'margin: 10px']
                 ); ?>
             <?php } ?>
             <strong><?= Yii::t('BbbModule.base', 'Conference sessions') ?></strong>
         </div>
 
-        <div class="panel-body">
+        <div class="card-body">
             <p>
                 <?= Yii::t('BbbModule.base', 'Here you can manage your conference sessions.'); ?>
             </p>
@@ -46,7 +46,7 @@ $canCreate = $this->context->contentContainer
             <?= Yii::t('BbbModule.base', 'No conference sessions found.'); ?>
         </div>
     <?php } ?>
-    <div class="row cards align-items-start">
+    <div class="row g-3 align-items-start">
         <?php foreach ($rows as $row): ?>
             <?= SessionCard::widget([
                 'session' => $row['model'],
@@ -56,8 +56,8 @@ $canCreate = $this->context->contentContainer
             ]) ?>
         <?php endforeach; ?>
     </div>
-    <div class="panel panel-default">
-        <div class="panel-body">
+    <div class="card">
+        <div class="card-body">
             <?= Yii::t('BbbModule.base', 'You can create a new session by clicking the button above.'); ?>
         </div>
     </div>

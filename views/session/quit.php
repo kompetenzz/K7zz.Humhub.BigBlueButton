@@ -10,8 +10,8 @@ use yii\helpers\Html;
 <div class="content">
     <div id="layout-content">
         <div class="container-fluid">
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     <h1>Action handles response. Quit view unused <?= Html::encode($session->title) ?></h1>
                 </div>
             </div>
