@@ -220,18 +220,22 @@ $title = $spaceTitle . ($model->id
                                             'All users will be muted when entering the session.'
                                         )); ?>
                             </div>
-                            <?php
-                            if ($model->presentationFile !== null) { ?>
-                                <label><?= Yii::t('BbbModule.base', 'Current presentation') ?></label>
-                                <?php if ($model->presentationPreviewImage !== null) { ?>
-                                    <img src="<?= $model->presentationPreviewImage->getUrl() ?>"
-                                        class="img-fluid img-thumbnail"
-                                        alt="<?= Yii::t('BbbModule.base', 'PDF preview') ?>"
-                                        style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
-                                <?php } ?>
-                                <span><?= $model->presentationFile->file_name ?>
-                                    (<?= round($model->presentationFile->size / 1024 / 1024, 2); ?>MB)</span>
-                            <?php } ?>
+                            <?php if ($model->presentationFile !== null): ?>
+                                <div class="mb-3 p-2 border rounded">
+                                    <label><?= Yii::t('BbbModule.base', 'Current presentation') ?></label>
+                                    <?php if ($model->presentationPreviewImage !== null): ?>
+                                        <img src="<?= $model->presentationPreviewImage->getUrl() ?>"
+                                            class="img-fluid img-thumbnail"
+                                            alt="<?= Yii::t('BbbModule.base', 'PDF preview') ?>"
+                                            style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
+                                    <?php endif; ?>
+                                    <div><?= Html::encode($model->presentationFile->file_name) ?>
+                                        (<?= round($model->presentationFile->size / 1024 / 1024, 2); ?>MB)</div>
+                                    <?= $f->field($model, 'removePresentation')->checkbox([
+                                        'label' => Yii::t('BbbModule.base', 'Remove presentation'),
+                                    ])->label(false) ?>
+                                </div>
+                            <?php endif; ?>
                             <div class="form-group">
                                 <?= $f->field($model, 'presentationUpload')
                                     ->fileInput()
@@ -243,12 +247,17 @@ $title = $spaceTitle . ($model->id
                                         'Optional presentation for this session. Use pdf in landscape mode.'
                                     )); ?>
                             </div>
-                            <?php
-                            if ($model->previewImage !== null) { ?>
-                                <img src="<?= $model->previewImage->getUrl() ?>" class="img-fluid img-thumbnail"
-                                    alt="<?= Yii::t('BbbModule.base', 'Session image') ?>"
-                                    style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
-                            <?php } ?>
+                            <?php if ($model->previewImage !== null): ?>
+                                <div class="mb-3 p-2 border rounded">
+                                    <label><?= Yii::t('BbbModule.base', 'Current session image') ?></label>
+                                    <img src="<?= $model->previewImage->getUrl() ?>" class="img-fluid img-thumbnail"
+                                        alt="<?= Yii::t('BbbModule.base', 'Session image') ?>"
+                                        style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
+                                    <?= $f->field($model, 'removeImage')->checkbox([
+                                        'label' => Yii::t('BbbModule.base', 'Remove session image'),
+                                    ])->label(false) ?>
+                                </div>
+                            <?php endif; ?>
                             <div class="form-group">
                                 <?= $f->field($model, 'imageUpload')
                                     ->fileInput()
@@ -260,13 +269,18 @@ $title = $spaceTitle . ($model->id
                                         'Optional image for this session. Recommended size: 800x600px.'
                                     )); ?>
                             </div>
-                            <?php
-                            if ($model->cameraBgPreviewImage !== null) { ?>
-                                <img src="<?= $model->cameraBgPreviewImage->getUrl() ?>"
-                                    class="img-fluid img-thumbnail"
-                                    alt="<?= Yii::t('BbbModule.base', 'Camera background image') ?>"
-                                    style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
-                            <?php } ?>
+                            <?php if ($model->cameraBgPreviewImage !== null): ?>
+                                <div class="mb-3 p-2 border rounded">
+                                    <label><?= Yii::t('BbbModule.base', 'Camera background image') ?></label>
+                                    <img src="<?= $model->cameraBgPreviewImage->getUrl() ?>"
+                                        class="img-fluid img-thumbnail"
+                                        alt="<?= Yii::t('BbbModule.base', 'Camera background image') ?>"
+                                        style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
+                                    <?= $f->field($model, 'removeCameraBgImage')->checkbox([
+                                        'label' => Yii::t('BbbModule.base', 'Remove camera background'),
+                                    ])->label(false) ?>
+                                </div>
+                            <?php endif; ?>
                             <div class="form-group">
                                 <?= $f->field($model, 'cameraBgImageUpload')
                                     ->fileInput()

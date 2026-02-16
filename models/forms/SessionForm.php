@@ -88,6 +88,11 @@ class SessionForm extends Model
     public $cameraBgImageUpload = null; // Form upload
     public ?PreviewImage $cameraBgPreviewImage = null; // Thumbnail
 
+    // Remove flags
+    public bool $removeImage = false;
+    public bool $removePresentation = false;
+    public bool $removeCameraBgImage = false;
+
     public function init()
     {
         parent::init();
@@ -255,7 +260,7 @@ class SessionForm extends Model
             ['imageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
             ['presentationUpload', 'file', 'extensions' => 'pdf', 'maxSize' => 40 * 1024 * 1024], // max. 40 MB
             ['cameraBgImageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 800, 'minHeight' => 400],
-            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled', 'hidden'], 'boolean'],
+            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled', 'hidden', 'removeImage', 'removePresentation', 'removeCameraBgImage'], 'boolean'],
             ['layout', 'required'],
             ['layout', 'in', 'range' => Layouts::values()],
             ['topics', 'safe'],
@@ -344,26 +349,48 @@ class SessionForm extends Model
     private function saveBlobRefs(Session $session): bool
     {
         // session image
-        if ($this->imageUpload instanceof UploadedFile) {
+        if ($this->removeImage && $session->image_file_id > 0) {
+            $this->deleteFileRef($session, 'image_file_id');
+        } elseif ($this->imageUpload instanceof UploadedFile) {
             if (!$this->saveSessionImage($session)) {
                 Yii::error("Could not save uploaded session image.", 'bbb');
             }
         }
 
         // camera background image
-        if ($this->cameraBgImageUpload instanceof UploadedFile) {
+        if ($this->removeCameraBgImage && $session->camera_bg_image_file_id > 0) {
+            $this->deleteFileRef($session, 'camera_bg_image_file_id');
+        } elseif ($this->cameraBgImageUpload instanceof UploadedFile) {
             if (!$this->saveCameraBgImage($session)) {
                 Yii::error("Could not save uploaded camera background image.", 'bbb');
             }
         }
 
         // Pdf presentation
-        if ($this->presentationUpload instanceof UploadedFile) {
+        if ($this->removePresentation && $session->presentation_file_id > 0) {
+            $this->deleteFileRef($session, 'presentation_file_id');
+            $this->deleteFileRef($session, 'presentation_preview_file_id');
+        } elseif ($this->presentationUpload instanceof UploadedFile) {
             if (!$this->savePresentation($session)) {
                 Yii::error("Could not save uploaded presentation file.", 'bbb');
             }
         }
         return true;
+    }
+
+    /**
+     * Deletes a file reference from the session and removes the file record.
+     */
+    private function deleteFileRef(Session $session, string $attribute): void
+    {
+        $fileId = $session->$attribute;
+        if ($fileId > 0) {
+            $file = File::findOne($fileId);
+            if ($file) {
+                $file->delete();
+            }
+            $session->$attribute = null;
+        }
     }
 
 
