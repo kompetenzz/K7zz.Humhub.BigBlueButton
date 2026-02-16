@@ -7,7 +7,6 @@ use Yii;
 class Recording
 {
     private $record;
-    private $format;
     private $startStamp;
     private $endStamp;
 
@@ -21,18 +20,25 @@ class Recording
         return $this->record;
     }
 
-    public function getFormat(): PlaybackFormat|null
+    /**
+     * @return PlaybackFormat[]
+     */
+    public function getFormats(): array
     {
-        //        Yii::error($this->record->getPlaybackFormats());
-        if ($this->format === null) {
-            $this->format = $this->record->getPlaybackFormats()[0] ?? null;
-        }
-        return $this->format;
+        return $this->record->getPlaybackFormats();
+    }
+
+    /**
+     * Returns the primary (first) format, used for thumbnail previews.
+     */
+    public function getPrimaryFormat(): ?PlaybackFormat
+    {
+        return $this->record->getPlaybackFormats()[0] ?? null;
     }
 
     public function getUrl(): ?string
     {
-        return $this->getFormat()?->getUrl();
+        return $this->getPrimaryFormat()?->getUrl();
     }
 
     public function getDate(): string
@@ -72,13 +78,12 @@ class Recording
 
     public function getImagePreviews(): array
     {
-        return $this->getFormat()?->getImagePreviews() ?? [];
+        return $this->getPrimaryFormat()?->getImagePreviews() ?? [];
     }
 
     public function hasImagePreviews(): bool
     {
-        $previews = $this->getImagePreviews();
-        return !empty($previews);
+        return !empty($this->getImagePreviews());
     }
 
     public function isPublished(): bool
@@ -86,4 +91,33 @@ class Recording
         return $this->record->getState() === 'published';
     }
 
+    /**
+     * Returns a human-readable label for a playback format type.
+     */
+    public static function formatLabel(string $type): string
+    {
+        return match ($type) {
+            'presentation' => Yii::t('BbbModule.base', 'Presentation'),
+            'video' => Yii::t('BbbModule.base', 'Video'),
+            'podcast' => Yii::t('BbbModule.base', 'Podcast'),
+            'screenshare' => Yii::t('BbbModule.base', 'Screenshare'),
+            'notes' => Yii::t('BbbModule.base', 'Notes'),
+            default => ucfirst($type),
+        };
+    }
+
+    /**
+     * Returns a FontAwesome icon class for a playback format type.
+     */
+    public static function formatIcon(string $type): string
+    {
+        return match ($type) {
+            'presentation' => 'fa-desktop',
+            'video' => 'fa-film',
+            'podcast' => 'fa-microphone',
+            'screenshare' => 'fa-window-maximize',
+            'notes' => 'fa-file-text-o',
+            default => 'fa-play-circle',
+        };
+    }
 }

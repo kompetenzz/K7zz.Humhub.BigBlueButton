@@ -218,24 +218,24 @@ class SessionService
     }
 
     /**
-     * Retrieves all recordings for a session, if the user can administer it.
+     * Retrieves recordings for a session.
+     * Admins see all recordings, members only published ones.
      * @param int|null $id
      * @param ContentContainerActiveRecord|null $container
      * @return array
      */
-    public function getRecordings(?int $id = null, ContentContainerActiveRecord $container = null): array
+    public function getRecordings(?int $id = null, ?ContentContainerActiveRecord $container = null): array
     {
         $session = $this->get($id, $container);
         if (!$session) {
             return [];
         }
-        if (!$session->canAdminister())
-            return []; // ATM only for admins
 
         $params = new GetRecordingsParameters();
         $params->setMeetingID($session->uuid);
-        if (!$session->canAdminister())
-            $params->setState('published'); // nur veröffentlichte Aufzeichnungen
+        if (!$session->canAdminister()) {
+            $params->setState('published');
+        }
         try {
             $response = $this->bbb->getRecordings($params);
             if ($response && $response->success()) {

@@ -274,10 +274,7 @@ class SessionController extends BaseContentController
         if (!$session->canJoin()) {
             return 0;
         }
-        $recordings = array_filter(
-            $this->svc->getRecordings($id, $this->contentContainer),
-            fn($r) => $session->canAdminister()// || !empty($r->getPlaybackUrl())
-        );
+        $recordings = $this->svc->getRecordings($id, $this->contentContainer);
         return $this->asJson(count($recordings));
     }
 

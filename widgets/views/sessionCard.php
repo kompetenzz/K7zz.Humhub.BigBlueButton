@@ -122,7 +122,7 @@ $membersJoinLink = $routePrefix . '/join/' . $model->name;
                     </span>
                 <?php endif; ?>
             </div>
-            <?php if ($model->canAdminister()): ?>
+            <?php if ($model->canJoin()): ?>
                 <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="card-footer">
                     <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer, 'canAdminister' => $model->canAdminister()]) ?>
                 </div>

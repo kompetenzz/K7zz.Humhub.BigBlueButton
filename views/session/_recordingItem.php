@@ -2,17 +2,17 @@
 /**
  *  Recording-Item for card-footer
  *
- * @var object $rec
+ * @var \k7zz\humhub\bbb\models\Recording $rec
  * @var bool   $canAdminister
  * @var \humhub\modules\content\components\ContentContainerActiveRecord $contentContainer
  */
 
+use k7zz\humhub\bbb\models\Recording;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use humhub\modules\ui\icon\widgets\Icon;
 
 if (!$rec->isPublished() && !$canAdminister) {
-    // Don't show not-published recordings to non-admins
     return;
 }
 
@@ -27,115 +27,104 @@ $durationLabel = Yii::t('BbbModule.base', 'Duration');
 $publishLabel = Yii::t('BbbModule.base', 'Publish recording');
 $depublishLabel = Yii::t('BbbModule.base', 'Depublish recording');
 
-$iconVideo = Icon::get('video');
 $iconClock = Icon::get('clock');
-$iconOpen = Icon::get('external-link');
 $iconEye = Icon::get('eye');
 $iconEyeSlash = Icon::get('eye-slash');
 
-// Mini-Thumb (sehr klein im Footer)
-$thumbHtml = '';
-if ($rec->hasImagePreviews()) {
-    $p = $rec->getImagePreviews()[0];
-    $thumbHtml = Html::img($p->getUrl(), [
-        'alt' => $p->getAlt() ?? ($rec->getRecord()->getName() ?? 'Recording'),
-        'class' => 'rounded border',
-        'style' => 'width:80%;object-fit:cover;',
-    ]);
-} else {
-    $thumbHtml = Html::tag('span', $iconVideo);
-}
+$formats = $rec->getFormats();
 ?>
-<!-- ROOT-ZEILE: eine Zeile, Buttons rechts -->
-<div id="<?= Html::encode($itemDomId) ?>" class="bbb-recording-item d-flex align-items-center flex-nowrap py-1"
+
+<div id="<?= Html::encode($itemDomId) ?>" class="bbb-recording-item d-flex align-items-center flex-wrap gap-2 py-2"
     data-record-id="<?= Html::encode($rec->getRecord()->getRecordId()) ?>">
 
-    <span class="text-muted small ml-2 ms-2">
-        <b><?= Html::encode($rec->getDate()) ?>, <?= Html::encode($rec->getTime()) ?></b> •
+    <span class="text-muted small">
+        <b><?= Html::encode($rec->getDate()) ?>, <?= Html::encode($rec->getTime()) ?></b>
         <span title="<?= Html::encode($durationLabel) ?>">
             <?= $iconClock ?> <?= Html::encode($rec->getDuration()) ?>
         </span>
     </span>
 
-    <div>
-        <?php if ($rec->getUrl()): ?>
-            <a href="<?= Html::encode($rec->getUrl()) ?>" class="text-reset text-decoration-none" target="_blank"
-                title="<?= Html::encode($playTooltip) ?>">
-                <?= $thumbHtml ?>
+    <span class="d-inline-flex gap-1 flex-wrap">
+        <?php foreach ($formats as $format): ?>
+            <a href="<?= Html::encode($format->getUrl()) ?>"
+               class="btn btn-outline-primary btn-sm"
+               target="_blank"
+               title="<?= Html::encode(Recording::formatLabel($format->getType())) ?> – <?= Html::encode($playTooltip) ?>">
+                <i class="fa <?= Recording::formatIcon($format->getType()) ?>"></i>
+                <?= Html::encode(Recording::formatLabel($format->getType())) ?>
             </a>
-        <?php else: ?>
-            <span class="text-muted text-truncate d-inline-block" style="max-width:100%;">
-                <?= $thumbHtml ?>
-            </span>
+        <?php endforeach; ?>
+        <?php if (empty($formats)): ?>
+            <span class="text-muted small"><?= Yii::t('BbbModule.base', 'No playback available') ?></span>
         <?php endif; ?>
-        <?php if ($canAdminister): ?>
-            <?= Html::beginForm($publishUrl, 'post', [
-                'class' => 'm-0 p-0 d-block bbb-publish-form float-end ',
-                'data-async' => '1',
-            ]) ?>
-            <?= Html::hiddenInput('recordId', $rec->getRecord()->getRecordId()) ?>
-            <?= Html::hiddenInput('publish', $rec->isPublished() ? 'false' : 'true') ?>
-            <?= Html::submitButton($rec->isPublished() ? $iconEyeSlash : $iconEye, [
-                'class' => 'btn btn-success btn-sm',
-                'title' => $rec->isPublished() ? $depublishLabel : $publishLabel,
-                'encode' => false,
-            ]) ?>
-            <?= Html::endForm() ?>
-        <?php endif; ?>
-    </div>
+    </span>
+
+    <?php if ($canAdminister): ?>
+        <?= Html::beginForm($publishUrl, 'post', [
+            'class' => 'd-inline bbb-publish-form',
+            'data-async' => '1',
+        ]) ?>
+        <?= Html::hiddenInput('recordId', $rec->getRecord()->getRecordId()) ?>
+        <?= Html::hiddenInput('publish', $rec->isPublished() ? 'false' : 'true') ?>
+        <?= Html::submitButton($rec->isPublished() ? $iconEyeSlash : $iconEye, [
+            'class' => 'btn btn-sm ' . ($rec->isPublished() ? 'btn-success' : 'btn-warning'),
+            'title' => $rec->isPublished() ? $depublishLabel : $publishLabel,
+            'encode' => false,
+        ]) ?>
+        <?= Html::endForm() ?>
+    <?php endif; ?>
 </div>
 
 <?php
-
 $iconEyeJs = addslashes($iconEye);
 $iconEyeSlashJs = addslashes($iconEyeSlash);
 
 $js = <<<JS
-    ;(function(){
-      var root = $('#{$itemDomId}');
-      if (!root.length) return;
-      var client = humhub.require('client');
-    
-      root.find('form.bbb-publish-form[data-async="1"]').off('submit').on('submit', function(e){
-        e.preventDefault();
-        var form = $(this);
-        var btn  = form.find('button[type="submit"], input[type="submit"]');
-        var data = form.serialize();
-        var url  = form.attr('action'); 
-        btn.prop('disabled', true);
+;(function(){
+  var root = $('#{$itemDomId}');
+  if (!root.length) return;
+  var client = humhub.require('client');
 
-        client.post(url, { data: data })
-          .then(function(resp){
-            btn.prop('disabled', false);
-            if (!resp || resp.status != 200) {
-              var msg = (resp && resp.message) || 'Error';
-              humhub.modules.ui.notification && humhub.modules.ui.notification.show(msg, {type:'danger'});
-              return;
-            }
+  root.find('form.bbb-publish-form[data-async="1"]').off('submit').on('submit', function(e){
+    e.preventDefault();
+    var form = $(this);
+    var btn  = form.find('button[type="submit"], input[type="submit"]');
+    var data = form.serialize();
+    var url  = form.attr('action');
+    btn.prop('disabled', true);
 
-            var publishField = form.find('input[name="publish"]');
-            var wasPublic = (publishField.val() === 'true');
+    client.post(url, { data: data })
+      .then(function(resp){
+        btn.prop('disabled', false);
+        if (!resp || resp.status != 200) {
+          var msg = (resp && resp.message) || 'Error';
+          humhub.modules.ui.notification && humhub.modules.ui.notification.show(msg, {type:'danger'});
+          return;
+        }
 
-            if (wasPublic) {
-              publishField.val('false');
-              btn.removeClass('btn-success').addClass('btn-warning')
-                 .attr('title','{$depublishLabel}')
-                 .html('{$iconEyeSlashJs}');
-            } else {
-              publishField.val('true');
-              btn.removeClass('btn-warning').addClass('btn-success')
-                 .attr('title','{$publishLabel}')
-                 .html('{$iconEyeJs}');
-            }
-    
-            humhub.modules.ui.notification && humhub.modules.ui.notification.show(resp.message || 'OK', {type:'success'});
-          })
-          .catch(function(e){
-            console.error('Request failed:', e);
-            humhub.modules.ui.notification && humhub.modules.ui.notification.show('Request failed', {type:'danger'});
-          });
+        var publishField = form.find('input[name="publish"]');
+        var wasPublic = (publishField.val() === 'true');
+
+        if (wasPublic) {
+          publishField.val('false');
+          btn.removeClass('btn-success').addClass('btn-warning')
+             .attr('title','{$depublishLabel}')
+             .html('{$iconEyeSlashJs}');
+        } else {
+          publishField.val('true');
+          btn.removeClass('btn-warning').addClass('btn-success')
+             .attr('title','{$publishLabel}')
+             .html('{$iconEyeJs}');
+        }
+
+        humhub.modules.ui.notification && humhub.modules.ui.notification.show(resp.message || 'OK', {type:'success'});
+      })
+      .catch(function(e){
+        console.error('Request failed:', e);
+        humhub.modules.ui.notification && humhub.modules.ui.notification.show('Request failed', {type:'danger'});
       });
-    })();
-    JS;
+  });
+})();
+JS;
 
 $this->registerJs($js, \yii\web\View::POS_READY);
