@@ -53,6 +53,8 @@ class Recording
      */
     private function rewriteUrl(string $url): string
     {
+        print ("Rewriting URL: -$url-\n");
+        $url = trim($url); // BBB XML may include surrounding whitespace
         $bbbUrl = rtrim(Yii::$app->getModule('bbb')->settings->get('bbbUrl') ?? '', '/');
         if (!$bbbUrl || !$url) {
             return $url;
@@ -63,11 +65,11 @@ class Recording
             return $url;
         }
         $scheme = $bbbParts['scheme'] ?? $parts['scheme'] ?? 'http';
-        $host   = $bbbParts['host']   ?? $parts['host']   ?? '';
-        $port   = isset($bbbParts['port']) ? ':' . $bbbParts['port'] : '';
-        $path   = $parts['path']     ?? '';
-        $query  = isset($parts['query'])    ? '?' . $parts['query']    : '';
-        $frag   = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
+        $host = $bbbParts['host'] ?? $parts['host'] ?? '';
+        $port = isset($bbbParts['port']) ? ':' . $bbbParts['port'] : '';
+        $path = $parts['path'] ?? '';
+        $query = isset($parts['query']) ? '?' . $parts['query'] : '';
+        $frag = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
 
         return $scheme . '://' . $host . $port . $path . $query . $frag;
     }
