@@ -279,14 +279,23 @@ class SessionController extends BaseContentController
     }
 
     /**
-     * Toggles the publish state of a recording.
-     * @return Yii\web\Response
+     * Toggles the publish state of a single recording format.
+     * POST params: recordId, formatType, publish ('true'/'false')
+     * @return \yii\web\Response
      */
     public function actionPublishRecording()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        $recordId = Yii::$app->request->post('recordId');
-        $publish = Yii::$app->request->post('publish');
-        return $this->asJson($this->svc->publishRecording($recordId, $publish == "true"));
+        $recordId   = Yii::$app->request->post('recordId');
+        $formatType = Yii::$app->request->post('formatType');
+        $publish    = Yii::$app->request->post('publish') === 'true';
+
+        if (!$recordId || !$formatType) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson(['error' => 'Missing recordId or formatType']);
+        }
+
+        $ok = $this->svc->publishRecordingFormat($recordId, $formatType, $publish);
+        return $this->asJson(['status' => $ok ? 200 : 500]);
     }
 }

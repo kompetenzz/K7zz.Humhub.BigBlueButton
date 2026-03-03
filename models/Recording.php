@@ -38,7 +38,38 @@ class Recording
 
     public function getUrl(): ?string
     {
-        return $this->getPrimaryFormat()?->getUrl();
+        $url = $this->getPrimaryFormat()?->getUrl();
+        return $url ? $this->rewriteUrl($url) : null;
+    }
+
+    public function getFormatUrl(\BigBlueButton\Core\PlaybackFormat $format): string
+    {
+        return $this->rewriteUrl($format->getUrl());
+    }
+
+    /**
+     * Rewrites a BBB recording URL so that scheme, host and port match
+     * the configured BBB server URL (the server may return 127.0.0.1 internally).
+     */
+    private function rewriteUrl(string $url): string
+    {
+        $bbbUrl = rtrim(Yii::$app->getModule('bbb')->settings->get('bbbUrl') ?? '', '/');
+        if (!$bbbUrl || !$url) {
+            return $url;
+        }
+        $bbbParts = parse_url($bbbUrl);
+        $parts = parse_url($url);
+        if (!$bbbParts || !$parts) {
+            return $url;
+        }
+        $scheme = $bbbParts['scheme'] ?? $parts['scheme'] ?? 'http';
+        $host   = $bbbParts['host']   ?? $parts['host']   ?? '';
+        $port   = isset($bbbParts['port']) ? ':' . $bbbParts['port'] : '';
+        $path   = $parts['path']     ?? '';
+        $query  = isset($parts['query'])    ? '?' . $parts['query']    : '';
+        $frag   = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
+
+        return $scheme . '://' . $host . $port . $path . $query . $frag;
     }
 
     public function getDate(): string
@@ -86,9 +117,26 @@ class Recording
         return !empty($this->getImagePreviews());
     }
 
-    public function isPublished(): bool
+    public function isFormatPublished(PlaybackFormat $format): bool
     {
-        return $this->record->getState() === 'published';
+        return RecordingFormat::isPublished($this->record->getRecordId(), $format->getType());
+    }
+
+    /**
+     * Returns only formats that are published (for non-admin display).
+     * @return PlaybackFormat[]
+     */
+    public function getPublishedFormats(): array
+    {
+        return array_values(array_filter(
+            $this->record->getPlaybackFormats(),
+            fn(PlaybackFormat $f) => $this->isFormatPublished($f)
+        ));
+    }
+
+    public function hasAnyPublishedFormat(): bool
+    {
+        return !empty($this->getPublishedFormats());
     }
 
     /**

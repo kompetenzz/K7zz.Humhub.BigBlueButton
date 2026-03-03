@@ -12,6 +12,7 @@ use BigBlueButton\Parameters\{
     PublishRecordingsParameters,
     UpdateRecordingsParameters
 };
+use k7zz\humhub\bbb\models\RecordingFormat;
 use BigBlueButton\Enum\Role;
 use humhub\modules\content\components\ContentContainerActiveRecord;
 use yii\helpers\Url;
@@ -233,9 +234,6 @@ class SessionService
 
         $params = new GetRecordingsParameters();
         $params->setMeetingID($session->uuid);
-        if (!$session->canAdminister()) {
-            $params->setState('published');
-        }
         try {
             $response = $this->bbb->getRecordings($params);
             if ($response && $response->success()) {
@@ -273,22 +271,16 @@ class SessionService
     }
 
     /**
-     * Publishes or unpublishes a BBB recording by its record ID.
-     * @param string $recordId
-     * @param bool $publish
+     * Publishes or unpublishes a single format of a BBB recording.
+     * Visibility is tracked in our own DB (bbb_recording_format).
+     * @param string $recordId   BBB record ID
+     * @param string $formatType e.g. 'presentation', 'video'
+     * @param bool   $publish
      * @return bool
      */
-    public function publishRecording(string $recordId, bool $publish = false): bool
+    public function publishRecordingFormat(string $recordId, string $formatType, bool $publish): bool
     {
-        $params = new PublishRecordingsParameters($recordId, $publish);
-
-        try {
-            $response = $this->bbb->publishRecordings($params);
-            return $response->getReturnCode() === 'SUCCESS';
-        } catch (\Exception $e) {
-            Yii::error("BBB-PublishRecordings failed for record {$recordId}: " . $e->getMessage(), 'bbb');
-            return false;
-        }
+        return RecordingFormat::setPublished($recordId, $formatType, $publish);
     }
 
 }
