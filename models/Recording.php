@@ -53,7 +53,6 @@ class Recording
      */
     private function rewriteUrl(string $url): string
     {
-        print ("Rewriting URL: -$url-\n");
         $url = trim($url); // BBB XML may include surrounding whitespace
         $bbbUrl = rtrim(Yii::$app->getModule('bbb')->settings->get('bbbUrl') ?? '', '/');
         if (!$bbbUrl || !$url) {
