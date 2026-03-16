@@ -25,13 +25,13 @@ $publishUrl = $this->context->contentContainer
     ? $this->context->contentContainer->createUrl($publishUrlPath)
     : Url::to($publishUrlPath);
 
-$playTooltip   = Yii::t('BbbModule.base', 'Play recording in new window');
-$publishLabel  = Yii::t('BbbModule.base', 'Publish');
+$playTooltip = Yii::t('BbbModule.base', 'Play recording in new window');
+$publishLabel = Yii::t('BbbModule.base', 'Publish');
 $depublishLabel = Yii::t('BbbModule.base', 'Depublish');
 $durationLabel = Yii::t('BbbModule.base', 'Duration');
 
-$iconClock    = Icon::get('clock');
-$iconEye      = Icon::get('eye');
+$iconClock = Icon::get('clock-o');
+$iconEye = Icon::get('eye');
 $iconEyeSlash = Icon::get('eye-slash');
 ?>
 
@@ -40,7 +40,7 @@ $iconEyeSlash = Icon::get('eye-slash');
 
     <span class="text-muted small">
         <b><?= Html::encode($rec->getDate()) ?>, <?= Html::encode($rec->getTime()) ?></b>
-        <span title="<?= Html::encode($durationLabel) ?>">
+        <br><span title="<?= Html::encode($durationLabel) ?>">
             <?= $iconClock ?> <?= Html::encode($rec->getDuration()) ?>
         </span>
     </span>
@@ -48,33 +48,33 @@ $iconEyeSlash = Icon::get('eye-slash');
     <span class="d-inline-flex gap-1 flex-wrap align-items-center">
         <?php foreach ($formats as $format):
             $isPublished = $rec->isFormatPublished($format);
-            if (!$canAdminister && !$isPublished) continue;
+            if (!$canAdminister && !$isPublished)
+                continue;
             $formatType = $format->getType();
             $formatDomId = $itemDomId . '-fmt-' . Html::encode($formatType);
-        ?>
+            ?>
             <span id="<?= $formatDomId ?>" class="d-inline-flex align-items-center gap-1">
-                <a href="<?= Html::encode($rec->getFormatUrl($format)) ?>"
-                   class="btn btn-outline-primary btn-sm"
-                   target="_blank"
-                   title="<?= Html::encode(Recording::formatLabel($formatType)) ?> – <?= Html::encode($playTooltip) ?>">
+                <a href="<?= Html::encode($rec->getFormatUrl($format)) ?>" class="btn btn-outline-primary btn-sm"
+                    target="_blank"
+                    title="<?= Html::encode(Recording::formatLabel($formatType)) ?> – <?= Html::encode($playTooltip) ?>">
                     <i class="fa <?= Recording::formatIcon($formatType) ?>"></i>
                     <?= Html::encode(Recording::formatLabel($formatType)) ?>
                 </a>
 
                 <?php if ($canAdminister): ?>
                     <?= Html::beginForm($publishUrl, 'post', [
-                        'class'      => 'd-inline bbb-publish-form',
+                        'class' => 'd-inline bbb-publish-form',
                         'data-async' => '1',
-                        'data-fmt'   => Html::encode($formatType),
-                        'data-dom'   => $formatDomId,
+                        'data-fmt' => Html::encode($formatType),
+                        'data-dom' => $formatDomId,
                     ]) ?>
-                    <?= Html::hiddenInput('recordId',   $rec->getRecord()->getRecordId()) ?>
+                    <?= Html::hiddenInput('recordId', $rec->getRecord()->getRecordId()) ?>
                     <?= Html::hiddenInput('formatType', $formatType) ?>
-                    <?= Html::hiddenInput('publish',    $isPublished ? 'false' : 'true') ?>
+                    <?= Html::hiddenInput('publish', $isPublished ? 'false' : 'true') ?>
                     <?= Html::submitButton($isPublished ? $iconEyeSlash : $iconEye, [
-                        'class'   => 'btn btn-sm ' . ($isPublished ? 'btn-success' : 'btn-warning'),
-                        'title'   => $isPublished ? $depublishLabel : $publishLabel,
-                        'encode'  => false,
+                        'class' => 'btn btn-sm ' . ($isPublished ? 'btn-success' : 'btn-warning'),
+                        'title' => $isPublished ? $depublishLabel : $publishLabel,
+                        'encode' => false,
                     ]) ?>
                     <?= Html::endForm() ?>
                 <?php endif; ?>
@@ -88,7 +88,7 @@ $iconEyeSlash = Icon::get('eye-slash');
 </div>
 
 <?php
-$iconEyeJs      = addslashes($iconEye);
+$iconEyeJs = addslashes($iconEye);
 $iconEyeSlashJs = addslashes($iconEyeSlash);
 
 $js = <<<JS

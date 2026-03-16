@@ -29,7 +29,7 @@ $membersJoinLink = $routePrefix . '/join/' . $model->name;
 <div id="sessioncard-<?= $model->id ?>"
     class="col-lg-3 col-md-4 col-sm-6 col-12 card-bbb-sessions <?= $highlightClass ?>">
     <div class="card">
-        <img class="card-img-top" alt="<?= Yii::t('BbbModule.base', 'Session image') ?>" style="max-height: 200px; object-fit: cover;"
+        <img class="card-img-top" alt="<?= Yii::t('BbbModule.base', 'Session image') ?>" style=""
             src="<?= Html::encode($imageUrl) ?>" />
         <div class="card-body">
             <h5 class="card-title"><?= $model->title ?>
@@ -83,7 +83,7 @@ $membersJoinLink = $routePrefix . '/join/' . $model->name;
                     ]
                 ) ?>
 
-                <?php if ($model->public_join && $model->public_token): ?>
+                <?php if ($model->canAdminister() && $model->public_join && $model->public_token): ?>
                     <span id="bbb-public-url-<?= $model->id ?>"
                         class="d-none"><?= Url::to(['/bbb/public/join', 'token' => $model->public_token], true) ?></span>
                     <?= Html::a(

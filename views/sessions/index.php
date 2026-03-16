@@ -23,23 +23,18 @@ $canCreate = $this->context->contentContainer
 
 ?>
 <div class="container-fluid container-bbb-sessions">
-    <div class="card">
+    <div class="card mb-3 bg-white">
         <div class="card-header">
             <?php if ($canCreate) { ?>
                 <?= Html::a(
                     Icon::get('plus') . ' ' . Yii::t('BbbModule.base', 'Create session'),
                     $createUrl,
-                    ['class' => 'btn btn-primary float-end', 'style' => 'margin: 10px']
+                    ['class' => 'btn btn-secondary float-end', 'style' => 'margin: 10px']
                 ); ?>
             <?php } ?>
-            <strong><?= Yii::t('BbbModule.base', 'Conference sessions') ?></strong>
+            <h1><?= Yii::t('BbbModule.base', 'Conference sessions') ?></h1>
         </div>
 
-        <div class="card-body">
-            <p>
-                <?= Yii::t('BbbModule.base', 'Here you can manage your conference sessions.'); ?>
-            </p>
-        </div>
     </div>
     <?php if (empty($rows)) { ?>
         <div class="alert alert-info">
@@ -56,9 +51,11 @@ $canCreate = $this->context->contentContainer
             ]) ?>
         <?php endforeach; ?>
     </div>
-    <div class="card">
+    <div class="card mt-3 bg-white">
         <div class="card-body">
-            <?= Yii::t('BbbModule.base', 'You can create a new session by clicking the button above.'); ?>
+            <?php if (empty($rows)) { ?>
+                <?= Yii::t('BbbModule.base', 'You can create a new session by clicking the button above.'); ?>
+            <?php } ?>
         </div>
     </div>
 </div>

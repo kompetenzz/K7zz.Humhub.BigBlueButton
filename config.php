@@ -1,5 +1,5 @@
 <?php
-use humhub\components\Application;
+use yii\base\Application;
 use humhub\modules\space\widgets\Menu;
 use humhub\modules\user\widgets\ProfileMenu;
 use humhub\widgets\TopMenu;

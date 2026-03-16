@@ -338,8 +338,10 @@ class SessionForm extends Model
         $this->id = $session->id;
         $this->record = $session;
 
-        Topic::attach($session->content, $this->topics);
-
+        if ($session->content->container !== null) {
+            Topic::attach($session->content, $this->topics);
+        }
+        
         if (!$this->assignUsers($session)) {
             return false;
         }
