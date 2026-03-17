@@ -10,6 +10,7 @@ use k7zz\humhub\bbb\assets\BBBAssets;
 /* @var $startUrl string */
 
 $bundle = BBBAssets::register($this);
+$this->title = $session->title;
 $imageUrl = $session->outputImage
     ? $session->outputImage->getUrl()
     : $bundle->baseUrl . '/images/conference.png';

@@ -11,6 +11,7 @@ use yii\helpers\Url;
 /* @var $reload bool|null */
 
 $bundle = BBBAssets::register($this);
+$this->title = ($session && $session->title) ? $session->title : Yii::t('BbbModule.base', 'Join session');
 $action = Url::to(['/bbb/public/join', 'token' => $token]);
 $imageUrl = ($session && $session->image_file_id)
     ? Url::to(['/bbb/public/download', 'id' => $session->id, 'type' => 'image', 'inline' => true])
