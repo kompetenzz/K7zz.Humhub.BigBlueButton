@@ -12,8 +12,8 @@ use yii\helpers\Url;
 
 $bundle = BBBAssets::register($this);
 $action = Url::to(['/bbb/public/join', 'token' => $token]);
-$imageUrl = ($session && $session->outputImage)
-    ? $session->outputImage->getUrl()
+$imageUrl = ($session && $session->image_file_id)
+    ? Url::to(['/bbb/public/download', 'id' => $session->id, 'type' => 'image', 'inline' => true])
     : $bundle->baseUrl . '/images/conference.png';
 ?>
 <div id="layout-content">

@@ -88,6 +88,10 @@ class PublicController extends Controller
             $file = $session->getCameraBgImageFile();
         }
 
+        if ($type === "image" && $session->image_file_id) {
+            $file = $session->getImageFile();
+        }
+
         if ($file) {
             if ($embeddable) {
                 Yii::$app->response->headers->set('Access-Control-Allow-Origin', '*');
