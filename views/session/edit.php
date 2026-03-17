@@ -20,7 +20,7 @@ use k7zz\humhub\bbb\assets\BBBAssets;
 use k7zz\humhub\bbb\enums\Layouts;
 
 $bundle = BBBAssets::register($this);
-$this->title = $model->title ?: Yii::t('BbbModule.base', 'New Session');
+$this->setPageTitle($model->title ?: Yii::t('BbbModule.base', 'New Session'));
 
 $spaceTitle = $this->context->contentContainer
     ? $this->context->contentContainer->getDisplayName() . ": "

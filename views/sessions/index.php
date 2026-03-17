@@ -13,7 +13,7 @@ use k7zz\humhub\bbb\widgets\SessionCard;
 use k7zz\humhub\bbb\permissions\Admin;
 use humhub\modules\ui\icon\widgets\Icon;
 use yii\helpers\Url;
-$this->title = Yii::t('BbbModule.base', 'Sessions');
+$this->setPageTitle(Yii::t('BbbModule.base', 'Sessions'));
 $createUrl = $this->context->contentContainer
     ? $this->context->contentContainer->createUrl('/bbb/session/create')
     : Url::to('/bbb/session/create');

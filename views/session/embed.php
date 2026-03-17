@@ -7,7 +7,7 @@
  */
 
 use yii\helpers\Html;
-$this->title = $title;
+$this->setPageTitle($title);
 $raw = true;
 $iframe = '<iframe src="' . Html::encode($joinInfo->url) . '" allow="fullscreen; camera *; microphone *, display-capture *" allowfullscreen style="border:0;width:100%;height:80vh;"></iframe>';
 ?>
