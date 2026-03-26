@@ -24,9 +24,8 @@ $imageUrl = ($session && $session->image_file_id)
                 <div class="card">
                     <?php if ($session): ?>
                         <div class="card-header" style="padding: 0; overflow: hidden;">
-                            <img src="<?= Html::encode($imageUrl) ?>"
-                                 alt="<?= Html::encode($session->title) ?>"
-                                 style="width: 100%; max-height: 300px; object-fit: cover; display: block;">
+                            <img src="<?= Html::encode($imageUrl) ?>" alt="<?= Html::encode($session->title) ?>"
+                                style="min-width: 360px;min-height: 200px; object-fit: cover; display: block;">
                         </div>
                     <?php endif; ?>
 
@@ -62,10 +61,8 @@ $imageUrl = ($session && $session->image_file_id)
                                 <input type="hidden" name="token" value="<?= Html::encode($token) ?>">
                                 <div class="form-group">
                                     <label for="name"><?= Yii::t('BbbModule.base', 'Your name') ?></label>
-                                    <input id="name" name="name" class="form-control input-lg"
-                                           required minlength="2" maxlength="60"
-                                           placeholder="<?= Yii::t('BbbModule.base', 'Your name') ?>"
-                                           autofocus>
+                                    <input id="name" name="name" class="form-control input-lg" required minlength="2"
+                                        maxlength="60" placeholder="<?= Yii::t('BbbModule.base', 'Your name') ?>" autofocus>
                                 </div>
                                 <button class="btn btn-primary btn-lg w-100">
                                     <i class="fa fa-sign-in"></i>

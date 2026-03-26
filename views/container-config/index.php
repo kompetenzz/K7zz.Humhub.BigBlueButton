@@ -7,6 +7,7 @@
 
 use humhub\modules\ui\form\widgets\ActiveForm;
 use humhub\libs\Html;
+use humhub\modules\ui\icon\widgets\Icon;
 
 /* @var $this \humhub\modules\ui\view\components\View *
 /* @var $subNav string */
@@ -40,11 +41,33 @@ $url = $this->context->contentContainer->createUrl('/bbb/sessions');
 
             <?= $form->field($model, 'navItemLabel')
                 ->textInput() ?>
+
+            <?= $form->field($model, 'sidebarSortOrder')
+                ->textInput(['type' => 'number', 'min' => 1, 'max' => 9000])
+                ->hint(Yii::t('BbbModule.config', 'Position of the BBB widget in the right sidebar. Lower = higher up. Reference: Activities = 10, Members = 30. Default = 1 (top), unsorted widgets = 9000.')) ?>
         </div>
 
         <button class="btn btn-primary" data-ui-loader><?= Yii::t('base', 'Save') ?></button>
 
         <?php ActiveForm::end() ?>
+
+        <hr>
+
+        <h4><?= Yii::t('BbbModule.config', 'Default Session') ?></h4>
+        <p class="help-block">
+            <?= Yii::t('BbbModule.config', 'Creates a default BBB session for this space with the title "{title}" and shows it in the sidebar.', [
+                'title' => $this->context->contentContainer->getDisplayName() . ' (Default-Session)',
+            ]) ?>
+        </p>
+        <?= Html::a(
+            Icon::get('plus') . ' ' . Yii::t('BbbModule.config', 'Create default session'),
+            $this->context->contentContainer->createUrl('/bbb/container-config/create-default-session'),
+            [
+                'class' => 'btn btn-secondary',
+                'data-method' => 'post',
+                'data-confirm' => Yii::t('BbbModule.config', 'Create a default BBB session for this space?'),
+            ]
+        ) ?>
     </div>
 
 

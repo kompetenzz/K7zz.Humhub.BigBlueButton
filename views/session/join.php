@@ -21,9 +21,8 @@ $imageUrl = $session->outputImage
             <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
                 <div class="card">
                     <div class="card-header" style="padding: 0; overflow: hidden;">
-                        <img src="<?= Html::encode($imageUrl) ?>"
-                             alt="<?= Html::encode($session->title) ?>"
-                             style="width: 100%; max-height: 300px; object-fit: cover; display: block;">
+                        <img src="<?= Html::encode($imageUrl) ?>" alt="<?= Html::encode($session->title) ?>"
+                            style="min-width: 360px;min-height: 200px; object-fit: cover; display: block;">
                     </div>
 
                     <div class="card-body">

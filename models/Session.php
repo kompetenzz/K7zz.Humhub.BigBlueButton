@@ -235,11 +235,11 @@ class Session extends ContentActiveRecord
                     'image_file_id',
                     'camera_bg_image_file_id',
                     'presentation_file_id',
-                    'presentation_preview_file_id'
+                    'presentation_preview_file_id',
                 ],
                 'integer'
             ],
-            [['enabled', 'public_join', 'allow_recording'], 'boolean'],
+            [['enabled', 'public_join', 'allow_recording', 'show_in_sidebar', 'is_space_default'], 'boolean'],
             [['public_token'], 'string', 'max' => 64],
             ['layout', 'required'],
             ['layout', 'in', 'range' => Layouts::values()],

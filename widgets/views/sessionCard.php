@@ -32,7 +32,13 @@ $membersJoinLink = $routePrefix . '/join/' . $model->name;
         <img class="card-img-top" alt="<?= Yii::t('BbbModule.base', 'Session image') ?>" style=""
             src="<?= Html::encode($imageUrl) ?>" />
         <div class="card-body">
-            <h5 class="card-title"><?= $model->title ?>
+            <h5 class="card-title"><?= Html::encode($model->title) ?>
+                <?php if ($model->is_space_default): ?>
+                    <span class="badge bg-secondary ms-1"
+                          title="<?= Yii::t('BbbModule.base', 'Space default session') ?>">
+                        <?= Yii::t('BbbModule.base', 'Default') ?>
+                    </span>
+                <?php endif; ?>
                 <span class="float-end">
                     <?= $running
                         ? '<span class="text-success" title="' . Yii::t('BbbModule.base', 'Running') . '">' . Icon::get('play') . '</span>'

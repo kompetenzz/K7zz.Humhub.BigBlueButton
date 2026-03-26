@@ -62,6 +62,8 @@ class SessionForm extends Model
     public bool $allowRecording = true;
     public bool $muteOnEntry = false;
     public bool $enabled = true;
+    public bool $showInSidebar = false;
+    public bool $isSpaceDefault = false;
     public string $layout = Layouts::CUSTOM_LAYOUT;
 
     // pdf Presentation - an uploaded file in PDF format
@@ -180,6 +182,8 @@ class SessionForm extends Model
         $model->contentContainer = $session->content->container;
         $model->creatorId = $session->creator_user_id;
         $model->layout = $session->layout;
+        $model->showInSidebar = (bool)$session->show_in_sidebar;
+        $model->isSpaceDefault = (bool)$session->is_space_default;
         $model->visibility = $session->content->visibility;
         $model->hidden = $session->content->hidden;
         if ($model->contentContainer !== null) {
@@ -260,7 +264,7 @@ class SessionForm extends Model
             ['imageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
             ['presentationUpload', 'file', 'extensions' => 'pdf', 'maxSize' => 40 * 1024 * 1024], // max. 40 MB
             ['cameraBgImageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 800, 'minHeight' => 400],
-            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled', 'hidden', 'removeImage', 'removePresentation', 'removeCameraBgImage'], 'boolean'],
+            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled', 'hidden', 'showInSidebar', 'isSpaceDefault', 'removeImage', 'removePresentation', 'removeCameraBgImage'], 'boolean'],
             ['layout', 'required'],
             ['layout', 'in', 'range' => Layouts::values()],
             ['topics', 'safe'],
@@ -327,6 +331,8 @@ class SessionForm extends Model
         $session->mute_on_entry = $this->muteOnEntry;
         $session->layout = $this->layout;
         $session->enabled = $this->enabled;
+        $session->show_in_sidebar = $this->showInSidebar;
+        $session->is_space_default = $this->isSpaceDefault;
         $session->updated_at = time();
 
         $this->saveBlobRefs($session);

@@ -7,6 +7,7 @@ use humhub\modules\content\components\ContentContainerControllerAccess;
 use humhub\modules\space\models\Space;
 use humhub\modules\user\models\User;
 use k7zz\humhub\bbb\models\forms\ContainerSettingsForm;
+use k7zz\humhub\bbb\models\forms\SessionForm;
 use Yii;
 
 /**
@@ -40,5 +41,29 @@ class ContainerConfigController extends ContentContainerController
         return $this->render('index', [
             'model' => $model,
         ]);
+    }
+
+    /**
+     * Creates a default BBB session for this container if it does not exist yet.
+     *
+     * Title: "<SpaceName> (Default-Session)", show_in_sidebar = true.
+     */
+    public function actionCreateDefaultSession()
+    {
+        $container = $this->contentContainer;
+        $title = $container->getDisplayName() . ' (Default-Session)';
+
+        $form = SessionForm::create($container);
+        $form->title = $title;
+        $form->showInSidebar = true;
+
+        if ($form->save()) {
+            $this->view->saved();
+        } else {
+            Yii::error('Could not create default BBB session: ' . json_encode($form->getErrors()), 'bbb');
+            $this->view->error(Yii::t('BbbModule.base', 'Could not create default session.'));
+        }
+
+        return $this->redirect($container->createUrl('/bbb/container-config'));
     }
 }

@@ -4,9 +4,11 @@ namespace k7zz\humhub\bbb;
 
 use humhub\modules\content\components\ContentContainerActiveRecord;
 use humhub\helpers\ControllerHelper;
+use humhub\modules\space\widgets\Sidebar;
 use humhub\modules\ui\menu\MenuLink;
 use humhub\modules\ui\menu\widgets\LeftNavigation;
 use humhub\widgets\TopMenu;
+use k7zz\humhub\bbb\widgets\SidebarSessionWidget;
 use k7zz\humhub\bbb\models\forms\ContainerSettingsForm;
 use Yii;
 use yii\helpers\Html;
@@ -122,6 +124,25 @@ class Events
             self::initContainerNav($profileMenu->user, $profileMenu);
         } catch (\Throwable $e) {
             Yii::error($e);
+        }
+    }
+
+    public static function onSpaceSidebarInit($event)
+    {
+        try {
+            /** @var Sidebar $sidebar */
+            $sidebar = $event->sender;
+            if (empty($sidebar->space) || !$sidebar->space->moduleManager->isEnabled('bbb')) {
+                return;
+            }
+            $settings = new ContainerSettingsForm(['contentContainer' => $sidebar->space]);
+            $sidebar->addWidget(
+                SidebarSessionWidget::class,
+                ['contentContainer' => $sidebar->space],
+                ['sortOrder' => $settings->sidebarSortOrder]
+            );
+        } catch (\Throwable $e) {
+            Yii::error($e, 'bbb');
         }
     }
 

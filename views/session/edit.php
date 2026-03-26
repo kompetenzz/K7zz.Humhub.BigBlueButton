@@ -129,6 +129,15 @@ $title = $spaceTitle . ($model->id
                                     'BbbModule.base',
                                     'Control who can see this session.'
                                 )); ?>
+                            <div class="form-group">
+                                <?= $f->field($model, 'showInSidebar')->checkbox([
+                                    'label' => Yii::t('BbbModule.base', 'Show in right column'),
+                                ])->hint(Yii::t('BbbModule.base', 'Displays this session in the right sidebar panel of the space.')); ?>
+                            <div class="form-group">
+                                <?= $f->field($model, 'isSpaceDefault')->checkbox([
+                                    'label' => Yii::t('BbbModule.base', 'Space default session'),
+                                ])->hint(Yii::t('BbbModule.base', 'Marks this as the default session for this space. The title will be hidden in the sidebar.')); ?>
+                            </div>
                             <div class="form-group" id="public-join-box">
                                 <?= $f->field($model, 'publicJoin')->checkbox([
                                     'id' => 'public-join-toggle',

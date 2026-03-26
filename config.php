@@ -1,6 +1,7 @@
 <?php
 use yii\base\Application;
 use humhub\modules\space\widgets\Menu;
+use humhub\modules\space\widgets\Sidebar;
 use humhub\modules\user\widgets\ProfileMenu;
 use humhub\widgets\TopMenu;
 use k7zz\humhub\bbb\Events;
@@ -15,6 +16,7 @@ return [
         ['class' => TopMenu::class, 'event' => TopMenu::EVENT_INIT, 'callback' => [Events::class, 'onTopMenuInit']],
         ['class' => Menu::class, 'event' => Menu::EVENT_INIT, 'callback' => [Events::class, 'onSpaceMenuInit']],
         ['class' => ProfileMenu::class, 'event' => ProfileMenu::EVENT_INIT, 'callback' => [Events::class, 'onProfileMenuInit']],
+        ['class' => Sidebar::class, 'event' => Sidebar::EVENT_INIT, 'callback' => [Events::class, 'onSpaceSidebarInit']],
     ],
     'urlManagerRules' => [
         ['class' => 'k7zz\humhub\bbb\components\SessionUrlRule'],
