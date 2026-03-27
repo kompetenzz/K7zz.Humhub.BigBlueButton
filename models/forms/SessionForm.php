@@ -182,13 +182,11 @@ class SessionForm extends Model
         $model->contentContainer = $session->content->container;
         $model->creatorId = $session->creator_user_id;
         $model->layout = $session->layout;
-        $model->showInSidebar = (bool)$session->show_in_sidebar;
-        $model->isSpaceDefault = (bool)$session->is_space_default;
+        $model->showInSidebar = (bool) $session->show_in_sidebar;
+        $model->isSpaceDefault = (bool) $session->is_space_default;
         $model->visibility = $session->content->visibility;
         $model->hidden = $session->content->hidden;
-        if ($model->contentContainer !== null) {
-            $model->topics = $session->content->getTags(Topic::class);
-        }
+        $model->topics = $session->content->getTags(Topic::class);
 
         // pdf and it's preview image
         if ($session->presentation_file_id > 0) {
@@ -344,10 +342,8 @@ class SessionForm extends Model
         $this->id = $session->id;
         $this->record = $session;
 
-        if ($session->content->container !== null) {
-            Topic::attach($session->content, $this->topics);
-        }
-        
+        Topic::attach($session->content, $this->topics);
+
         if (!$this->assignUsers($session)) {
             return false;
         }
