@@ -1,0 +1,29 @@
+## v0.19.2 – 2026-03-27
+
+### New
+
+- **Session detail page**: Each session now has its own page showing the image, description, topics and status — accessible by clicking the session tile or title.
+- **Smarter waiting room**: Members waiting for a session to start no longer experience repeated page reloads. As soon as the session starts, a "Join now" button appears automatically.
+- **Join in a new window**: The "Join now" button opens the video conference in a new window, keeping the current page in the background.
+- **Recordings on the session page**: Available recordings are now also shown on the session detail page.
+- **Guest links wait too**: Guests joining via a public link also get the smart waiting room with an automatic "Join now" button when the session starts.
+- **Sidebar widgets for global dashboard**: Use the new sidebar widget settings to display boxes of space sessions in the global dashboard.
+- **Live indicator badge** for running sessions in the sidebar widget
+
+
+### Improved
+
+- Fixed an issue where recordings could load indefinitely on slow connections.
+- Shorter, cleaner URLs for session pages.
+- Global topics back working from current humub master on
+
+## v0.19.1 - 2026-03-25
+
+### New
+
+- **Sidebar widgets**: Use the new sidebar widget settings to display boxes of space sessions.
+
+### Improved
+
+- Better thumbnail image handling
+

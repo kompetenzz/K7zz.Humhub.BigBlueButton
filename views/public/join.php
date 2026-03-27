@@ -25,7 +25,7 @@ $imageUrl = ($session && $session->image_file_id)
                     <?php if ($session): ?>
                         <div class="card-header" style="padding: 0; overflow: hidden;">
                             <img src="<?= Html::encode($imageUrl) ?>" alt="<?= Html::encode($session->title) ?>"
-                                style="min-width: 360px;min-height: 200px; object-fit: cover; display: block;">
+                                style="width: 100%; height: auto; object-fit: cover; display: block;">
                         </div>
                     <?php endif; ?>
 
@@ -45,14 +45,41 @@ $imageUrl = ($session && $session->image_file_id)
                         <?php if ($msg): ?>
                             <div class="alert alert-danger"><?= Html::encode($msg) ?></div>
                             <?php if ($reload): ?>
-                                <div class="alert alert-info">
+                                <div id="bbb-public-waiting" class="alert alert-info">
                                     <i class="fa fa-spinner fa-spin"></i>
                                     <?= Yii::t('BbbModule.base', 'You will be redirected when the session starts.') ?>
                                 </div>
+                                <div id="bbb-public-join-ready" style="display:none;">
+                                    <div class="alert alert-success">
+                                        <i class="fa fa-check"></i>
+                                        <?= Yii::t('BbbModule.base', 'The session has started!') ?>
+                                    </div>
+                                    <a href="#" class="btn btn-success btn-lg w-100" id="bbb-public-join-btn">
+                                        <i class="fa fa-sign-in"></i>
+                                        <?= Yii::t('BbbModule.base', 'Join now') ?>
+                                    </a>
+                                </div>
                                 <script <?= Html::nonce() ?>>
-                                    setTimeout(() => {
-                                        window.location.reload();
-                                    }, 10000);
+                                    (function poll() {
+                                        setTimeout(function() {
+                                            fetch(<?= json_encode(Url::to(['/bbb/public/is-running', 'token' => $token])) ?>)
+                                                .then(function(r) { return r.json(); })
+                                                .then(function(data) {
+                                                    if (data.running) {
+                                                        document.getElementById('bbb-public-waiting').style.display = 'none';
+                                                        document.getElementById('bbb-public-join-ready').style.display = '';
+                                                    } else {
+                                                        poll();
+                                                    }
+                                                })
+                                                .catch(function() { poll(); });
+                                        }, 5000);
+                                    })();
+
+                                    document.getElementById('bbb-public-join-btn').addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        window.open(window.location.href, '_blank');
+                                    });
                                 </script>
                             <?php endif; ?>
                         <?php else: ?>

@@ -7,13 +7,10 @@
  * @var int    $highlightId                               ID of the session to highlight
  * @var \humhub\modules\content\components\ContentContainerActiveRecord|null $contentContainer  The content container (space/user) or null
  */
-use humhub\modules\content\widgets\richtext\RichText;
-use humhub\modules\custom_pages\modules\template\models\RichtextContent;
+use humhub\libs\Html;
 use humhub\modules\ui\icon\widgets\Icon;
 use k7zz\humhub\bbb\assets\BBBAssets;
-use k7zz\humhub\bbb\widgets\RecordingsList;
 use yii\helpers\Url;
-use humhub\libs\Html;
 
 $bundle = BBBAssets::register(view: $this);
 $routePrefix = '/bbb/session';
@@ -22,6 +19,7 @@ if ($this->context->contentContainer) {
 }
 $highlightClass = $model->id === $highlightId ? 'highlight' : '';
 $imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseUrl . '/images/conference.png';
+$detailsLink = $routePrefix . '/' . $model->name;
 $membersJoinLink = $routePrefix . '/join/' . $model->name;
 
 ?>
@@ -29,30 +27,13 @@ $membersJoinLink = $routePrefix . '/join/' . $model->name;
 <div id="sessioncard-<?= $model->id ?>"
     class="col-lg-3 col-md-4 col-sm-6 col-12 card-bbb-sessions <?= $highlightClass ?>">
     <div class="card">
-        <img class="card-img-top" alt="<?= Yii::t('BbbModule.base', 'Session image') ?>" style=""
-            src="<?= Html::encode($imageUrl) ?>" />
-        <div class="card-body">
-            <h5 class="card-title"><?= Html::encode($model->title) ?>
-                <?php if ($model->is_space_default): ?>
-                    <span class="badge bg-secondary ms-1"
-                          title="<?= Yii::t('BbbModule.base', 'Space default session') ?>">
-                        <?= Yii::t('BbbModule.base', 'Default') ?>
-                    </span>
-                <?php endif; ?>
-                <span class="float-end">
-                    <?= $running
-                        ? '<span class="text-success" title="' . Yii::t('BbbModule.base', 'Running') . '">' . Icon::get('play') . '</span>'
-                        : '<span class="text-warning" title="' . Yii::t('BbbModule.base', 'Stopped') . '">' . Icon::get('pause') . '</span>' ?>
-                    <?php if ($model->isModerator()): ?>
-                        <span class="text-info"
-                            title="<?= Yii::t('BbbModule.base', 'You are moderator') ?>"><?= Icon::get('user-secret') ?></span>
-                    <?php endif; ?>
-                </span>
-            </h5>
-            <p class="card-text">
-                <?= RichText::output($model->description) ?>
-            </p>
-        </div>
+        <?= $this->renderFile('@bbb/views/session/_sessionDetails.php', [
+            'model' => $model,
+            'running' => $running,
+            'imageUrl' => $imageUrl,
+            'linkUrl' => $detailsLink,
+            'top' => false,
+        ]) ?>
         <?php if ($model->canJoin()): ?>
             <div class="card-footer">
                 <?php if ($running && $model->canJoin()): ?>
@@ -128,27 +109,10 @@ $membersJoinLink = $routePrefix . '/join/' . $model->name;
                     </span>
                 <?php endif; ?>
             </div>
-            <?php if ($model->canJoin()): ?>
-                <div id="sessioncard-recordingsbox-<?= $model->id ?>" class="card-footer">
-                    <?= RecordingsList::widget(['sessionId' => $model->id, 'contentContainer' => $this->context->contentContainer, 'canAdminister' => $model->canAdminister()]) ?>
-                </div>
-            <?php endif; ?>
+            <?= $this->renderFile('@bbb/views/session/_recordingsBox.php', [
+                'model' => $model,
+                'contentContainer' => $this->context->contentContainer,
+            ]) ?>
         <?php endif; ?>
     </div>
 </div>
-
-<?php
-$getRecordingsCountUrlBase = '/bbb/session/recordings-count';
-$getRecordingsCountUrl = $this->context->contentContainer
-    ? $this->context->contentContainer->createUrl($getRecordingsCountUrlBase, ['id' => $model->id])
-    : Url::to($getRecordingsCountUrlBase . "?id=" . $model->id);
-$this->registerJs(<<<JS
-
-$.getJSON('{$getRecordingsCountUrl}', function(recordingsCount) {
-    $('#sessioncard-recordingsbox-{$model->id}').toggle(recordingsCount > 0);
-});
-JS
-    ,
-    \yii\web\View::POS_READY
-);
-?>

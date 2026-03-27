@@ -20,7 +20,7 @@ $errTxtJson = Json::htmlEncode($errTxt);
 $js = <<<JS
 ;(function() {
     var box = $('#'+ {$containerJson});
-    $.get({$ajaxUrlJson})
+    $.ajax({ url: {$ajaxUrlJson}, timeout: 10000 })
         .done(function(html){ box.html(html); })
         .fail(function(){ box.html('<div class="text-danger">' + {$errTxtJson} + '.</div>'); });
 })();

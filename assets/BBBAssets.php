@@ -27,7 +27,13 @@ class BBBAssets extends AssetBundle
             'images/*.jpg',
             'images/*.gif',
             'js/*.js',
+            'css/*.css',
         ],
+    ];
+
+    /** @inheritdoc */
+    public $css = [
+        'css/bbb.css',
     ];
 
     /** @inheritdoc */

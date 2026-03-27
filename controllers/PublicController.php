@@ -33,7 +33,7 @@ class PublicController extends Controller
             'access' => [
                 'class' => AccessControl::class,
                 'rules' => [
-                    ['allow' => true, 'actions' => ['join', 'download'], 'roles' => ['?', '@']],
+                    ['allow' => true, 'actions' => ['join', 'download', 'is-running'], 'roles' => ['?', '@']],
                 ],
             ],
         ];
@@ -66,6 +66,13 @@ class PublicController extends Controller
         $joinUrl = $this->svc->anonymousJoinUrl($session, $displayName);
 
         return $this->redirect($joinUrl);
+    }
+
+    public function actionIsRunning(string $token)
+    {
+        $session = Session::find()->where(['public_token' => $token])->one();
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        return ['running' => $session && $session->public_join && $this->svc->isRunning($session->uuid)];
     }
 
     public function actionDownload(

@@ -20,13 +20,19 @@ class SidebarSessionWidget extends Widget
 
     public function run(): string
     {
-        $sessions = Session::find()
-            ->contentContainer($this->contentContainer)
+        $query = Session::find()
             ->alias('session')
             ->joinWith('content')
             ->where(['session.deleted_at' => null, 'session.show_in_sidebar' => 1])
-            ->orderBy(['session.is_space_default' => SORT_DESC, 'session.title' => SORT_ASC])
-            ->all();
+            ->orderBy(['session.is_space_default' => SORT_DESC, 'session.title' => SORT_ASC]);
+
+        if ($this->contentContainer !== null) {
+            $query->contentContainer($this->contentContainer);
+        } else {
+            $query->andWhere(['content.contentcontainer_id' => null]);
+        }
+
+        $sessions = $query->all();
 
         $sessions = array_values(array_filter(
             $sessions,

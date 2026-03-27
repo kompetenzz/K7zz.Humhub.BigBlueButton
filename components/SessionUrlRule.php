@@ -51,7 +51,10 @@ class SessionUrlRule extends Component implements UrlRuleInterface, ContentConta
         }
 
         unset($params['id']);
-        $url = $route . '/' . $session->name;
+        $action = substr($route, strlen($this->routePrefix));
+        $url = ($action === 'index')
+            ? $this->routePrefix . $session->name
+            : $route . '/' . $session->name;
 
         if (!empty($params) && ($query = http_build_query($params)) !== '') {
             $url .= '?' . $query;
@@ -94,7 +97,10 @@ class SessionUrlRule extends Component implements UrlRuleInterface, ContentConta
         }
 
         unset($params['id']);
-        $url = $containerUrlPath . '/' . $route . '/' . $session->name;
+        $action = substr($route, strlen($this->routePrefix));
+        $url = ($action === 'index')
+            ? $containerUrlPath . '/' . $this->routePrefix . $session->name
+            : $containerUrlPath . '/' . $route . '/' . $session->name;
         if (!empty($params) && ($query = http_build_query($params)) !== '') {
             $url .= "?$query";
         }
@@ -126,16 +132,21 @@ class SessionUrlRule extends Component implements UrlRuleInterface, ContentConta
     private function getSessionRoute(string $path, array $getParams): array|bool
     {
         $parts = explode('/', $path);
-        $action = $parts[2] ?? null;
-        $name = $parts[3] ?? null;
-        $session = Session::find()
-            ->where(['name' => $name])
-            ->one();
-        if (isset($action) && isset($name) && $session !== null) {
-            $route = $this->routePrefix . $action;
-            $params = $getParams;
+
+        // bbb/session/<action>/<slug>  OR  bbb/session/<slug> (index shorthand)
+        if (isset($parts[3])) {
+            $action = $parts[2];
+            $name   = $parts[3];
+        } else {
+            $action = 'index';
+            $name   = $parts[2] ?? null;
+        }
+
+        $session = Session::find()->where(['name' => $name])->one();
+        if ($name !== null && $session !== null) {
+            $params       = $getParams;
             $params['id'] = $session->id;
-            return [$route, $params];
+            return [$this->routePrefix . $action, $params];
         }
 
         return false;

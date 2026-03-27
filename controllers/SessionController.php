@@ -29,17 +29,38 @@ class SessionController extends BaseContentController
 {
 
     /**
-     * Redirects to the edit action for a given session ID.
+     * Session landing page — shows session details and join button without auto-redirecting.
      * @param int|null $id
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException
+     * @return string
+     * @throws NotFoundHttpException|ForbiddenHttpException
      */
     public function actionIndex(?int $id = null)
     {
         if ($id === null) {
             throw new NotFoundHttpException();
         }
-        return $this->actionEdit($id);
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
+
+        if (!$session->canJoin()) {
+            throw new ForbiddenHttpException();
+        }
+
+        $running = $this->svc->isRunning($session->uuid);
+        $routeBase = fn($route, $params = []) => $this->contentContainer
+            ? $this->contentContainer->createUrl($route, $params)
+            : Url::to(array_merge([$route], $params));
+
+        return $this->render('index', [
+            'session'      => $session,
+            'running'      => $running,
+            'canStart'     => $session->canStart(),
+            'startUrl'     => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
+            'joinUrl'      => Url::to($routeBase('/bbb/session/join', ['id' => $session->id]), true),
+            'isRunningUrl' => $this->contentContainer
+                ? $this->contentContainer->createUrl('/bbb/session/is-running', ['id' => $session->id])
+                : Url::to(['/bbb/session/is-running', 'id' => $session->id]),
+        ]);
     }
 
     /**
@@ -181,18 +202,23 @@ class SessionController extends BaseContentController
             throw new ForbiddenHttpException();
         }
 
-        if (!$this->svc->isRunning($session->uuid)) {
-            return $this->render('join', [
-                'session' => $session,
-                'canStart' => $session->canStart(),
-                'startUrl' => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
-            ]);
-        }
-
         $joinUrl = $this->svc->joinUrl(
             $session,
             $session->isModerator() || $session->join_can_moderate,
         );
+
+        if (!$this->svc->isRunning($session->uuid)) {
+            return $this->render('join', [
+                'session'      => $session,
+                'canStart'     => $session->canStart(),
+                'startUrl'     => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
+                'joinUrl'      => $joinUrl,
+                'isRunningUrl' => $this->contentContainer
+                    ? $this->contentContainer->createUrl('/bbb/session/is-running', ['id' => $session->id])
+                    : Url::to(['/bbb/session/is-running', 'id' => $session->id]),
+            ]);
+        }
+
         return Yii::$app->response->redirect($joinUrl, 303, true);
     }
 
@@ -206,6 +232,30 @@ class SessionController extends BaseContentController
     {
         $joinInfo = $this->prepareJoin($id);
         return $this->render('embed', compact('joinInfo'));
+    }
+
+    /**
+     * Returns JSON whether a session is currently running.
+     * Used by the join-waiting page to poll without a full reload.
+     * @param int|null $id
+     * @return \yii\web\Response
+     * @throws NotFoundHttpException|ForbiddenHttpException
+     */
+    public function actionIsRunning(?int $id = null)
+    {
+        if ($id === null) {
+            throw new NotFoundHttpException();
+        }
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
+
+        if (!$session->canJoin()) {
+            throw new ForbiddenHttpException();
+        }
+
+        $running = $this->svc->isRunning($session->uuid);
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return $this->asJson(['running' => $running]);
     }
 
     /**

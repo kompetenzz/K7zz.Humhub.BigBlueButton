@@ -1,0 +1,24 @@
+.bbb-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+}
+
+.bbb-live-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: #fff;
+    border-radius: 50%;
+    animation: bbb-pulse 1.4s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes bbb-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.75); }
+}

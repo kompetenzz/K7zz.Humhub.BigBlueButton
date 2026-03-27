@@ -127,6 +127,19 @@ class Events
         }
     }
 
+    public static function onDashboardSidebarInit($event)
+    {
+        try {
+            $event->sender->addWidget(
+                SidebarSessionWidget::class,
+                ['contentContainer' => null],
+                ['sortOrder' => 10]
+            );
+        } catch (\Throwable $e) {
+            Yii::error($e, 'bbb');
+        }
+    }
+
     public static function onSpaceSidebarInit($event)
     {
         try {

@@ -31,11 +31,17 @@ $routePrefix = $contentContainer
         : $model->title;
     ?>
     <div class="panel panel-default bbb-sidebar-panel">
-        <div class="panel-heading">
-            <?= Icon::get('video-camera') ?><span style="margin-left: 10px;"><?= Html::encode($title) ?></span>
+        <div class="panel-heading" style="display:flex; align-items:center; justify-content:space-between;">
+            <span><?= Icon::get('video-camera') ?> <?= Html::encode($title) ?></span>
+            <?php if ($running): ?>
+                <span class="badge bg-success bbb-live-badge">
+                    <span class="bbb-live-dot"></span>
+                    <?= Yii::t('BbbModule.base', 'Live') ?>
+                </span>
+            <?php endif; ?>
         </div>
         <img src="<?= Html::encode($imageUrl) ?>" alt="<?= Html::encode($model->title) ?>"
-            style="width:100%; display:block;">
+            style="width: 100%; height: auto; object-fit: cover; display: block;">
         <div class="panel-body" style="padding-bottom: 8px;">
 
             <?= Html::encode($model->description) ?>
@@ -76,8 +82,8 @@ $routePrefix = $contentContainer
                             'data-action-target' => '#bbb-sidebar-members-url-' . $model->id,
                         ]
                     ) ?>
-                    <?php endif; ?>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
+    </div>
 <?php endforeach; ?>
