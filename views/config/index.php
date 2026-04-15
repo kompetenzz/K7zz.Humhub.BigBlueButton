@@ -25,7 +25,7 @@ $url = Url::to('/bbb/sessions');
 
         <?php $form = ActiveForm::begin() ?>
         <div class="card-body">
-            <h3></h3><?= Yii::t('BbbModule.config', 'API Settings') ?></h3>
+            <h3><?= Yii::t('BbbModule.config', 'API Settings') ?></h3>
             <?= $form->field($model, 'bbbUrl')
                 ->textInput(options: ['placeholder' => 'https://bbb.example.org/bigbluebutton/']); ?>
 
@@ -39,6 +39,11 @@ $url = Url::to('/bbb/sessions');
             <?= $form->field($model, 'addNavItem')
                 ->checkbox(); ?>
 
+            <div id="bbb-nav-admin-hint" class="alert alert-info"
+                style="display: <?= $model->addNavItem ? 'none' : '' ?>;">
+                <?= Yii::t('BbbModule.config', 'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the account dropdown.') ?>
+            </div>
+
             <?= $form->field($model, 'navItemLabel')
                 ->textInput() ?>
         </div>
@@ -46,6 +51,12 @@ $url = Url::to('/bbb/sessions');
         <button class="btn btn-primary" data-ui-loader><?= Yii::t('base', 'Save') ?></button>
 
         <?php ActiveForm::end() ?>
+
+        <script>
+            document.getElementById('settingsform-addnavitem').addEventListener('change', function () {
+                document.getElementById('bbb-nav-admin-hint').style.display = this.checked ? 'none' : '';
+            });
+        </script>
     </div>
 
 

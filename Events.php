@@ -4,10 +4,13 @@ namespace k7zz\humhub\bbb;
 
 use humhub\modules\content\components\ContentContainerActiveRecord;
 use humhub\helpers\ControllerHelper;
+use humhub\modules\space\widgets\HeaderControlsMenu;
 use humhub\modules\space\widgets\Sidebar;
 use humhub\modules\ui\menu\MenuLink;
 use humhub\modules\ui\menu\widgets\LeftNavigation;
+use humhub\modules\user\widgets\AccountTopMenu;
 use humhub\widgets\TopMenu;
+use k7zz\humhub\bbb\permissions\Admin;
 use k7zz\humhub\bbb\widgets\SidebarSessionWidget;
 use k7zz\humhub\bbb\models\forms\ContainerSettingsForm;
 use Yii;
@@ -124,6 +127,63 @@ class Events
             self::initContainerNav($profileMenu->user, $profileMenu);
         } catch (\Throwable $e) {
             Yii::error($e);
+        }
+    }
+
+    public static function onSpaceHeaderControlsMenuInit($event)
+    {
+        try {
+            /** @var HeaderControlsMenu $menu */
+            $menu = $event->sender;
+            $space = $menu->space;
+
+            if (empty($space) || !$space->moduleManager->isEnabled('bbb')) {
+                return;
+            }
+
+            $addNavItem = Yii::$app->getModule('bbb')->settings->contentContainer($space)->get('addNavItem', true);
+            if ($addNavItem) {
+                return;
+            }
+
+            if (!$space->can(Admin::class)) {
+                return;
+            }
+
+            $settings = new ContainerSettingsForm(['contentContainer' => $space]);
+            $menu->addEntry(new MenuLink([
+                'label' => Html::encode($settings->navItemLabel),
+                'url' => $space->createUrl('/bbb/sessions'),
+                'icon' => 'video-camera',
+                'sortOrder' => 500,
+            ]));
+        } catch (\Throwable $e) {
+            Yii::error($e, 'bbb');
+        }
+    }
+
+    public static function onAccountTopMenuInit($event)
+    {
+        try {
+            $addNavItem = Yii::$app->getModule('bbb')->settings->get('addNavItem', true);
+            if ($addNavItem) {
+                return;
+            }
+
+            if (!Yii::$app->user->isAdmin()) {
+                return;
+            }
+
+            /** @var AccountTopMenu $menu */
+            $menu = $event->sender;
+            $menu->addEntry(new MenuLink([
+                'label' => Html::encode(Yii::$app->getModule('bbb')->settings->get('navItemLabel', 'Live Sessions')),
+                'url' => ['/bbb/sessions'],
+                'icon' => 'video-camera',
+                'sortOrder' => 450,
+            ]));
+        } catch (\Throwable $e) {
+            Yii::error($e, 'bbb');
         }
     }
 

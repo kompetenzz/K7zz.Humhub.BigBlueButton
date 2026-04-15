@@ -39,6 +39,11 @@ $url = $this->context->contentContainer->createUrl('/bbb/sessions');
             <?= $form->field($model, 'addNavItem')
                 ->checkbox(); ?>
 
+            <div id="bbb-nav-admin-hint" class="alert alert-info"
+                style="display: <?= $model->addNavItem ? 'none' : '' ?>;">
+                <?= Yii::t('BbbModule.config', 'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the space gear menu.') ?>
+            </div>
+
             <?= $form->field($model, 'navItemLabel')
                 ->textInput() ?>
 
@@ -50,6 +55,12 @@ $url = $this->context->contentContainer->createUrl('/bbb/sessions');
         <button class="btn btn-primary" data-ui-loader><?= Yii::t('base', 'Save') ?></button>
 
         <?php ActiveForm::end() ?>
+
+        <script>
+            document.getElementById('containersettingsform-addnavitem').addEventListener('change', function () {
+                document.getElementById('bbb-nav-admin-hint').style.display = this.checked ? 'none' : '';
+            });
+        </script>
 
         <hr>
 

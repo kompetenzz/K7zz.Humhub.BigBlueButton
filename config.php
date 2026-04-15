@@ -1,8 +1,10 @@
 <?php
 use yii\base\Application;
 use humhub\modules\dashboard\widgets\Sidebar as DashboardSidebar;
+use humhub\modules\space\widgets\HeaderControlsMenu;
 use humhub\modules\space\widgets\Menu;
 use humhub\modules\space\widgets\Sidebar;
+use humhub\modules\user\widgets\AccountTopMenu;
 use humhub\modules\user\widgets\ProfileMenu;
 use humhub\widgets\TopMenu;
 use k7zz\humhub\bbb\Events;
@@ -17,6 +19,8 @@ return [
         ['class' => TopMenu::class, 'event' => TopMenu::EVENT_INIT, 'callback' => [Events::class, 'onTopMenuInit']],
         ['class' => Menu::class, 'event' => Menu::EVENT_INIT, 'callback' => [Events::class, 'onSpaceMenuInit']],
         ['class' => ProfileMenu::class, 'event' => ProfileMenu::EVENT_INIT, 'callback' => [Events::class, 'onProfileMenuInit']],
+        ['class' => HeaderControlsMenu::class, 'event' => HeaderControlsMenu::EVENT_INIT, 'callback' => [Events::class, 'onSpaceHeaderControlsMenuInit']],
+        ['class' => AccountTopMenu::class, 'event' => AccountTopMenu::EVENT_INIT, 'callback' => [Events::class, 'onAccountTopMenuInit']],
         ['class' => Sidebar::class, 'event' => Sidebar::EVENT_INIT, 'callback' => [Events::class, 'onSpaceSidebarInit']],
         ['class' => DashboardSidebar::class, 'event' => DashboardSidebar::EVENT_INIT, 'callback' => [Events::class, 'onDashboardSidebarInit']],
     ],

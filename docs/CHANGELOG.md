@@ -5,7 +5,7 @@
 ### Improved
 - Optimize waitingroom/join pages for members and guests
 - Live reflect session status (running/paused) in session views
-- 
+- Admins see bbb-sessions-page links in the account menu or space gear dropdown if menu items are disabled by config
 
 ## v0.19.2 – 2026-03-27
 
