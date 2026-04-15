@@ -52,11 +52,11 @@ class SessionController extends BaseContentController
             : Url::to(array_merge([$route], $params));
 
         return $this->render('index', [
-            'session'      => $session,
-            'running'      => $running,
-            'canStart'     => $session->canStart(),
-            'startUrl'     => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
-            'joinUrl'      => Url::to($routeBase('/bbb/session/join', ['id' => $session->id]), true),
+            'session' => $session,
+            'running' => $running,
+            'canStart' => $session->canStart(),
+            'startUrl' => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
+            'joinUrl' => Url::to($routeBase('/bbb/session/join', ['id' => $session->id]), true),
             'isRunningUrl' => $this->contentContainer
                 ? $this->contentContainer->createUrl('/bbb/session/is-running', ['id' => $session->id])
                 : Url::to(['/bbb/session/is-running', 'id' => $session->id]),
@@ -132,7 +132,7 @@ class SessionController extends BaseContentController
             return Yii::$app->response->redirect(Yii::$app->request->referrer);
 
         $actionName = $embed ? "embed" : "join";
-        return $this->redirect($this->getUrl("/bbb/session/{$actionName}/{$session->name}"));
+        return $this->redirect($this->getUrl(url: "/bbb/session/{$actionName}/{$session->name}"));
     }
 
     /**
@@ -209,10 +209,11 @@ class SessionController extends BaseContentController
 
         if (!$this->svc->isRunning($session->uuid)) {
             return $this->render('join', [
-                'session'      => $session,
-                'canStart'     => $session->canStart(),
-                'startUrl'     => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
-                'joinUrl'      => $joinUrl,
+                'session' => $session,
+                'canStart' => $session->canStart(),
+                'startUrl' => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
+                'joinUrl' => $joinUrl,
+                'running' => $this->svc->isRunning($session->uuid),
                 'isRunningUrl' => $this->contentContainer
                     ? $this->contentContainer->createUrl('/bbb/session/is-running', ['id' => $session->id])
                     : Url::to(['/bbb/session/is-running', 'id' => $session->id]),
@@ -336,9 +337,9 @@ class SessionController extends BaseContentController
     public function actionPublishRecording()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        $recordId   = Yii::$app->request->post('recordId');
+        $recordId = Yii::$app->request->post('recordId');
         $formatType = Yii::$app->request->post('formatType');
-        $publish    = Yii::$app->request->post('publish') === 'true';
+        $publish = Yii::$app->request->post('publish') === 'true';
 
         if (!$recordId || !$formatType) {
             Yii::$app->response->statusCode = 400;

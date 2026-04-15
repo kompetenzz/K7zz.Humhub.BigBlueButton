@@ -45,6 +45,13 @@ class PublicController extends Controller
         $msg = '';
         if (!$session) {
             $msg = Yii::t('BbbModule.base', 'No such session.');
+        } else if ($session->canJoin()) {
+            // Recognize member and redirect to internal session page (container-aware)
+            $container = $session->content->container;
+            $joinUrl = $container
+                ? $container->createUrl('/bbb/session/' . $session->name)
+                : Url::to("/bbb/session/{$session->name}");
+            return $this->redirect($joinUrl);
         } else if (!$session->public_join) {
             $msg = Yii::t('BbbModule.base', 'Session not public.');
         } else if (!$this->svc->isRunning($session->uuid)) {

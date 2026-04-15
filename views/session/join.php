@@ -9,6 +9,7 @@ use k7zz\humhub\bbb\assets\BBBAssets;
 /* @var $startUrl string */
 /* @var $isRunningUrl string */
 /* @var $joinUrl string */
+/* @var $running bool */
 
 $bundle = BBBAssets::register($this);
 $this->setPageTitle($session->title);
@@ -23,7 +24,7 @@ $imageUrl = $session->outputImage
                 <div class="card">
                     <?= $this->renderFile('@bbb/views/session/_sessionDetails.php', [
                         'session' => $session,
-                        'running' => false,
+                        'running' => $running,
                         'imageUrl' => $imageUrl,
                         'top' => true,
                     ]) ?>

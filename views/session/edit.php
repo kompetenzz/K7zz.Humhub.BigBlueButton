@@ -132,7 +132,10 @@ $title = $spaceTitle . ($model->id
                             <div class="form-group">
                                 <?= $f->field($model, 'showInSidebar')->checkbox([
                                     'label' => Yii::t('BbbModule.base', 'Show in right column'),
-                                ])->hint(Yii::t('BbbModule.base', 'Displays this session in the right sidebar panel of the space.')); ?>
+                                ])->hint($this->context->contentContainer
+                                    ? Yii::t('BbbModule.base', 'Displays this session in the right sidebar panel of the space.')
+                                    : Yii::t('BbbModule.base', 'Displays this session in the right column of the main dashboard.')
+                                ); ?>
                                 <div class="form-group">
                                     <?= $f->field($model, 'isSpaceDefault')->checkbox([
                                         'label' => Yii::t('BbbModule.base', $this->context->contentContainer ? 'Space default session' : 'Default session'),
