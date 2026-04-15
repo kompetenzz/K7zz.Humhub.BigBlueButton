@@ -38,7 +38,7 @@ $sessionLink = $routePrefix . '/' . $session->name;
                     ]) ?>
 
                     <div class="card-body">
-                        <div id="bbb-waiting">
+                        <div class="bbb-waiting" style="display: <?= $running ? 'none' : '' ?>;">
                             <?php if ($canStart): ?>
                                 <?= Html::a(
                                     Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Start'),
@@ -61,7 +61,7 @@ $sessionLink = $routePrefix . '/' . $session->name;
                                 ) ?>
                             <?php endif; ?>
                         </div>
-                        <div id="bbb-running" style="display: none;">
+                        <div class="bbb-running" style="display: <?= $running ? '' : 'none' ?>;">
                             <a href="#" class="btn btn-success btn-lg w-100 bbb-launch-window"
                                 data-url="<?= Html::encode($joinUrl) ?>">
                                 <?= Icon::get('sign-in') . ' ' . Yii::t('BbbModule.base', 'Join now') ?>

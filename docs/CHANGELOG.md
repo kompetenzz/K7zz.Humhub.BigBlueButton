@@ -3,9 +3,10 @@
 - **Global sessions list**: Admins may view all sessions of the humhub instance in the global sessions list accessible via /bbb/sessions
 
 ### Improved
-- Optimize waitingroom/join pages for members and guests
+- Optimize waitingroom/join pages for members and guests. 
 - Live reflect session status (running/paused) in session views
 - Admins see bbb-sessions-page links in the account menu or space gear dropdown if menu items are disabled by config
+- Detect logged in user on public gust join page and redirect to member page
 
 ## v0.19.2 – 2026-03-27
 
