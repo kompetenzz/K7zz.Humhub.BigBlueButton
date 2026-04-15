@@ -68,6 +68,46 @@ class SessionService
     /* ------------------------------------------------------------------ */
 
     /**
+     * Returns all sessions across all containers, grouped by type.
+     * Returns ['global' => Session[], 'spaces' => [spaceId => ['container' => Space, 'sessions' => Session[]]], 'users' => [...]]
+     */
+    public function listAllGrouped(): array
+    {
+        $all = $this->getQueryStarter(null, true)
+            ->alias('session')
+            ->joinWith('content')
+            ->where(['session.deleted_at' => null])
+            ->all();
+
+        $global = [];
+        $spaces = [];
+        $users  = [];
+
+        foreach ($all as $session) {
+            $container = $session->content->container ?? null;
+
+            if ($container === null) {
+                $global[] = $session;
+            } elseif ($container instanceof \humhub\modules\space\models\Space) {
+                $id = $container->id;
+                if (!isset($spaces[$id])) {
+                    $spaces[$id] = ['container' => $container, 'sessions' => []];
+                }
+                $spaces[$id]['sessions'][] = $session;
+            } else {
+                // User profile or other container
+                $id = $container->id;
+                if (!isset($users[$id])) {
+                    $users[$id] = ['container' => $container, 'sessions' => []];
+                }
+                $users[$id]['sessions'][] = $session;
+            }
+        }
+
+        return compact('global', 'spaces', 'users');
+    }
+
+    /**
      * Returns a list of all sessions, optionally filtered by content container and enabled status.
      * @param ContentContainerActiveRecord|null $container
      * @param bool $onlyEnabled

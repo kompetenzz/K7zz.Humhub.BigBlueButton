@@ -1,3 +1,12 @@
+## v0.19.3 – 2026-04
+### New
+- **Global sessions list**: Admins may view all sessions of the humhub instance in the global sessions list accessible via /bbb/sessions
+
+### Improved
+- Optimize waitingroom/join pages for members and guests
+- Live reflect session status (running/paused) in session views
+- 
+
 ## v0.19.2 – 2026-03-27
 
 ### New

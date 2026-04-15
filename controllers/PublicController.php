@@ -49,15 +49,13 @@ class PublicController extends Controller
             $msg = Yii::t('BbbModule.base', 'Session not public.');
         } else if (!$this->svc->isRunning($session->uuid)) {
             $msg = Yii::t('BbbModule.base', 'Session not running.');
-            $reload = true;
         }
 
         if ($msg || !$name || mb_strlen(trim($name)) < 2) {
             return $this->render('join', [
                 'session' => $session,
                 'token' => $token,
-                'msg' => $msg,
-                'reload' => $reload ?? false,
+                'msg' => $msg
             ]);
         }
 

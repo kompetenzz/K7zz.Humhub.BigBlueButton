@@ -2,6 +2,7 @@
 namespace k7zz\humhub\bbb\widgets;
 use humhub\components\Widget;
 use k7zz\humhub\bbb\models\Session;
+use yii\helpers\Url;
 
 /**
  * Widget: BBB session card.
@@ -25,10 +26,13 @@ class SessionCard extends Widget
     public function run()
     {
         return $this->render('sessionCard', [
-            'model' => $this->session,
+            'session' => $this->session,
             'running' => $this->running,
             'contentContainer' => $this->contentContainer,
             'highlightId' => $this->highlightId ?? 0,
+            'isRunningUrl' => $this->contentContainer
+                ? $this->contentContainer->createUrl('/bbb/session/is-running', ['id' => $this->session->id])
+                : Url::to(['/bbb/session/is-running', 'id' => $this->session->id]),
         ]);
     }
 }

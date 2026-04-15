@@ -6,7 +6,7 @@ use humhub\modules\topic\widgets\TopicLabel;
 use humhub\modules\ui\icon\widgets\Icon;
 
 /* @var $this \yii\web\View */
-/* @var $model \k7zz\humhub\bbb\models\Session */
+/* @var $session \k7zz\humhub\bbb\models\Session */
 /* @var $running bool */
 /* @var $imageUrl string */
 /* @var $top bool If we are in list context or as a fullpage view */
@@ -20,7 +20,7 @@ $headingTag = $top ? 'h1' : 'h4';
 <?php if (!empty($linkUrl)): ?>
     <a href="<?= Html::encode($linkUrl) ?>">
     <?php endif; ?>
-    <img class="card-img-top" alt="<?= Html::encode($model->title) ?>" src="<?= Html::encode($imageUrl) ?>" />
+    <img class="card-img-top" alt="<?= Html::encode($session->title) ?>" src="<?= Html::encode($imageUrl) ?>" />
     <?php if (!empty($linkUrl)): ?>
     </a>
 <?php endif; ?>
@@ -29,33 +29,38 @@ $headingTag = $top ? 'h1' : 'h4';
     <?= Html::beginTag($headingTag, ['class' => 'card-title']) ?>
     <?php if (!empty($linkUrl)): ?>
         <a href="<?= Html::encode($linkUrl) ?>"
-            class="text-body text-decoration-none"><?= Html::encode($model->title) ?></a>
+            class="text-body text-decoration-none"><?= Html::encode($session->title) ?></a>
     <?php else: ?>
-        <?= Html::encode($model->title) ?>
+        <?= Html::encode($session->title) ?>
     <?php endif; ?>
-    <?php if ($model->is_space_default): ?>
+    <?php if ($session->is_space_default): ?>
         <span class="badge bg-secondary ms-1" title="<?= Yii::t('BbbModule.base', 'Space default session') ?>">
             <?= Yii::t('BbbModule.base', 'Default') ?>
         </span>
     <?php endif; ?>
     <span class="float-end">
-        <?= $running
-            ? '<span class="text-success" title="' . Yii::t('BbbModule.base', 'Running') . '">' . Icon::get('play') . '</span>'
-            : '<span class="text-warning" title="' . Yii::t('BbbModule.base', 'Stopped') . '">' . Icon::get('pause') . '</span>' ?>
-        <?php if ($model->isModerator()): ?>
+        <span class="text-success bbb-running" style="display: <?= $running ? '' : 'none' ?>;"
+            title="<?= Yii::t('BbbModule.base', 'Running') ?>">
+            <?= Icon::get('play') ?>
+        </span>
+        <span class="text-warning bbb-waiting" style="display: <?= $running ? 'none' : '' ?>;"
+            title="<?= Yii::t('BbbModule.base', 'Stopped') ?>">
+            <?= Icon::get('pause') ?>
+        </span>
+        <?php if ($session->isModerator()): ?>
             <span class="text-info"
                 title="<?= Yii::t('BbbModule.base', 'You are moderator') ?>"><?= Icon::get('user-secret') ?></span>
         <?php endif; ?>
     </span>
     <?= Html::endTag($headingTag) ?>
 
-    <?php if ($model->description): ?>
+    <?php if ($session->description): ?>
         <p class="card-text">
-            <?= RichText::output($model->description) ?>
+            <?= RichText::output($session->description) ?>
         </p>
     <?php endif; ?>
 
-    <?php $topics = Topic::findByContent($model->content)->all(); ?>
+    <?php $topics = Topic::findByContent($session->content)->all(); ?>
     <?php if (!empty($topics)): ?>
         <div class="topic-label-list">
             <?php foreach ($topics as $topic): ?>

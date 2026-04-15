@@ -22,44 +22,56 @@ $routePrefix = '/bbb/session';
 if ($this->context->contentContainer) {
     $routePrefix = $this->context->contentContainer->createUrl($routePrefix);
 }
-$membersJoinLink = $routePrefix . '/join/' . $session->name;
+$sessionLink = $routePrefix . '/' . $session->name;
+
 ?>
-<div id="layout-content">
+<div id="layout-content" data-bbb-check-running="<?= Html::encode($isRunningUrl) ?>">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
                 <div class="card">
                     <?= $this->renderFile('@bbb/views/session/_sessionDetails.php', [
-                        'model' => $session,
+                        'session' => $session,
                         'running' => $running,
                         'imageUrl' => $imageUrl,
                         'top' => true,
                     ]) ?>
 
                     <div class="card-body">
-                        <?php if (!$running && $canStart): ?>
-                            <?= Html::a(
-                                Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Start'),
-                                '#',
-                                [
-                                    'class' => 'btn btn-primary btn-lg w-100 bbb-launch-window',
-                                    'data-url' => $startUrl,
-                                    'title' => Yii::t('BbbModule.base', 'Start session'),
-                                ]
-                            ) ?>
-                        <?php else: ?>
-                            <div id="bbb-join-ready">
-                                <a href="#" class="btn btn-success btn-lg w-100 bbb-open-window"
-                                    data-url="<?= Html::encode($joinUrl) ?>">
-                                    <?= Icon::get('sign-in') . ' ' . Yii::t('BbbModule.base', 'Join now') ?>
-                                </a>
-                            </div>
-                        <?php endif; ?>
+                        <div id="bbb-waiting">
+                            <?php if ($canStart): ?>
+                                <?= Html::a(
+                                    Icon::get('video-camera') . ' ' . Yii::t('BbbModule.base', 'Start'),
+                                    '#',
+                                    [
+                                        'class' => 'btn btn-primary btn-lg w-100 bbb-launch-window',
+                                        'data-url' => $startUrl,
+                                        'title' => Yii::t('BbbModule.base', 'Start session'),
+                                    ]
+                                ) ?>
+                            <?php else: ?>
+                                <?= Html::a(
+                                    Icon::get('clock') . ' ' . Yii::t('BbbModule.base', 'Enter waitingroom'),
+                                    '#',
+                                    [
+                                        'class' => 'btn btn-primary btn-lg w-100 bbb-launch-window',
+                                        'data-url' => $joinUrl,
+                                        'title' => Yii::t('BbbModule.base', 'Enter the waitingroom until the session starts'),
+                                    ]
+                                ) ?>
+                            <?php endif; ?>
+                        </div>
+                        <div id="bbb-running" style="display: none;">
+                            <a href="#" class="btn btn-success btn-lg w-100 bbb-launch-window"
+                                data-url="<?= Html::encode($joinUrl) ?>">
+                                <?= Icon::get('sign-in') . ' ' . Yii::t('BbbModule.base', 'Join now') ?>
+                            </a>
+                        </div>
                     </div>
 
                     <div class="card-footer">
                         <span id="bbb-members-url-<?= $session->id ?>"
-                            class="d-none"><?= Url::to([$membersJoinLink], true) ?></span>
+                            class="d-none"><?= Url::to([$sessionLink], true) ?></span>
                         <?= Html::a(
                             Icon::get('lock') . ' ' . Yii::t('BbbModule.base', 'Members join link'),
                             '#',
@@ -109,31 +121,3 @@ $membersJoinLink = $routePrefix . '/join/' . $session->name;
         </div>
     </div>
 </div>
-<?php if (!$running): ?>
-    <script <?= Html::nonce() ?>>
-        (function poll() {
-            setTimeout(function () {
-                fetch(<?= json_encode($isRunningUrl) ?>)
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) {
-                        if (data.running) {
-                            document.getElementById('bbb-waiting-alert').style.display = 'none';
-                            document.getElementById('bbb-join-ready').style.display = '';
-                        } else {
-                            poll();
-                        }
-                    })
-                    .catch(function () { poll(); });
-            }, 5000);
-        })();
-    </script>
-<?php endif; ?>
-<script <?= Html::nonce() ?>>
-    document.addEventListener('click', function (e) {
-        var btn = e.target.closest('.bbb-open-window');
-        if (btn) {
-            e.preventDefault();
-            window.open(btn.dataset.url, '_blank');
-        }
-    });
-</script>

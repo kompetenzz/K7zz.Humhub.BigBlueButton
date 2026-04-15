@@ -20,10 +20,50 @@ humhub.module('BBBHelpers', function (module, require, $) {
             });
         });
 
+        document.querySelectorAll('[data-bbb-check-running]').forEach(el => {
+            const id = el.id;
+            const url = el.dataset.bbbCheckRunning;
+            if (!id) {
+                console.error('Element with data-bbb-check-running is missing an id attribute:', el);
+                return;
+            }
+            if (!url) {
+                console.error('Element with id', id, 'is missing url in data-bbb-check-running attribute');
+                return;
+            }
+            reflectSessionState(
+                url,
+                '#' + id + ' .bbb-waiting',
+                '#' + id + ' .bbb-running'
+            );
+        });
+
+    }
+
+    function toggleSessionState(waitingSelector, runningSelector, running) {
+        document.querySelectorAll(waitingSelector)
+            .forEach(el => el.style.display = running ? 'none' : '');
+        document.querySelectorAll(runningSelector)
+            .forEach(el => el.style.display = running ? '' : 'none');
+    }
+
+    function reflectSessionState(url, waitingSelector, runningSelector, interval = 5000) {
+        setInterval(function () {
+            fetch(url)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    toggleSessionState(waitingSelector, runningSelector, data.running);
+                })
+                .catch(() => {
+                    console.error('Failed to fetch session state from', url);
+                });
+        }, interval);
     }
 
     module.export({
-        init: init
+        init: init,
+        toggleSessionState: toggleSessionState,
+        reflectSessionState: reflectSessionState,
     });
 
 });
