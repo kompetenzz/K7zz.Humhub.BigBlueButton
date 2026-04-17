@@ -8,6 +8,7 @@ use yii\helpers\Url;
 /* @var $session \k7zz\humhub\bbb\models\Session|null */
 /* @var $token string */
 /* @var $msg string|null */
+/* @var $running bool */
 
 $bundle = BBBAssets::register($this);
 $this->setPageTitle(($session && $session->title) ? $session->title : Yii::t('BbbModule.base', 'Join session'));
@@ -17,8 +18,8 @@ $imageUrl = ($session && $session->image_file_id)
     : $bundle->baseUrl . '/images/conference.png';
 ?>
 <div id="layout-content"
-    data-bbb-check-running="<?= Html::encode(Url::to(['/bbb/public/is-running', 'token' => $token])) ?>"
-    data-bbb-redirect-on-running>
+    data-bbb-check-state="<?= Html::encode(Url::to(['/bbb/public/is-running', 'token' => $token])) ?>"
+    data-bbb-redirect-on-change data-bbb-state="<?= $running ? 'running' : 'waiting' ?>">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
@@ -62,17 +63,19 @@ $imageUrl = ($session && $session->image_file_id)
                             </div>
                         <?php else: ?>
                             <p><?= Yii::t('BbbModule.base', 'Please enter your name below:') ?></p>
-                            <form method="get" action="<?= Html::encode($action) ?>">
+                            <form method="get" action="<?= Html::encode($action) ?>" data-bbb-launch-window>
                                 <input type="hidden" name="token" value="<?= Html::encode($token) ?>">
                                 <div class="form-group">
                                     <label for="name"><?= Yii::t('BbbModule.base', 'Your name') ?></label>
                                     <input id="name" name="name" class="form-control input-lg" required minlength="2"
                                         maxlength="60" placeholder="<?= Yii::t('BbbModule.base', 'Your name') ?>" autofocus>
                                 </div>
-                                <button class="btn btn-primary btn-lg w-100">
-                                    <i class="fa fa-sign-in"></i>
-                                    <?= Yii::t('BbbModule.base', 'Join now') ?>
-                                </button>
+                                <div class="form-group mt-3">
+                                    <button class="btn btn-primary btn-lg w-100" type="submit">
+                                        <i class="fa fa-sign-in"></i>
+                                        <?= Yii::t('BbbModule.base', 'Join now') ?>
+                                    </button>
+                                </div>
                             </form>
                         <?php endif; ?>
                     </div>

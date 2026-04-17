@@ -28,7 +28,7 @@ $sessionLink = $routePrefix . '/' . $session->name;
 
 <div id="sessioncard-<?= $session->id ?>"
     class="col-lg-3 col-md-4 col-sm-6 col-12 card-bbb-sessions <?= $highlightClass ?>"
-    data-bbb-check-running="<?= Html::encode($isRunningUrl) ?>">
+    data-bbb-check-state="<?= Html::encode($isRunningUrl) ?>">
     <div class="card">
         <?= $this->renderFile('@bbb/views/session/_sessionDetails.php', [
             'session' => $session,

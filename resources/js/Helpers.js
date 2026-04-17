@@ -20,22 +20,17 @@ humhub.module('BBBHelpers', function (module, require, $) {
             });
         });
 
-        document.querySelectorAll('[data-bbb-check-running]').forEach(el => {
-            const id = el.id;
-            const url = el.dataset.bbbCheckRunning;
-            if (!id) {
-                console.error('Element with data-bbb-check-running is missing an id attribute:', el);
-                return;
-            }
-            if (!url) {
-                console.error('Element with id', id, 'is missing url in data-bbb-check-running attribute');
-                return;
-            }
-            reflectSessionState(
-                url,
-                '#' + id + ' .bbb-waiting',
-                '#' + id + ' .bbb-running'
-            );
+        document.querySelectorAll('[data-bbb-check-state]').forEach(el => {
+            reflectSessionState(el);
+        });
+
+        document.querySelectorAll('form[data-bbb-launch-window]').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const params = new URLSearchParams(new FormData(this));
+                const url = this.action.split('?')[0] + '?' + params.toString();
+                LaunchBBBWindow(url);
+            });
         });
 
     }
@@ -47,21 +42,49 @@ humhub.module('BBBHelpers', function (module, require, $) {
             .forEach(el => el.style.display = running ? '' : 'none');
     }
 
-    function reflectSessionState(url, waitingSelector, runningSelector, interval = 5000) {
+    function reflectSessionState(el, interval = 5000) {
+        const id = el.id;
+        if (!id) {
+            console.error('Element with data-bbb-check-state is missing an id attribute:', el);
+            return;
+        }
+        const url = el.dataset.bbbCheckState;
+        if (!url) {
+            console.error('Element with id', id, 'is missing url in data-bbb-check-state attribute');
+            return;
+        }
+
+        const currentState = el.dataset.bbbState || 'waiting';
+        const redirectOnChange = el.hasAttribute('data-bbb-redirect-on-change');
+        const waitingSelector = '#' + el.id + ' .bbb-waiting';
+        const runningSelector = '#' + el.id + ' .bbb-running';
+        console.log('Initializing session state reflection for element with id', id, 'checking URL', url, 'current state is', currentState, 'redirect on change is', redirectOnChange);
+
         setInterval(function () {
             fetch(url)
                 .then(function (r) { return r.json(); })
                 .then(function (data) {
                     toggleSessionState(waitingSelector, runningSelector, data.running);
+                    const state = data.running ? 'running' : 'waiting';
+                    if (currentState && state !== currentState) {
+                        if (redirectOnChange) {
+                            console.log('Session state changed to', state, 'redirecting...');
+                            window.location.reload();
+                        } else {
+                            console.log('Session state changed to', state, 'updating display...');
+                            el.dataset.bbbState = state;
+                        }
+                    }
                 })
-                .catch(() => {
-                    console.error('Failed to fetch session state from', url);
+                .catch((e) => {
+                    console.error('Failed to fetch session state from', url, e);
                 });
         }, interval);
     }
 
     module.export({
         init: init,
+        launchWindow: LaunchBBBWindow,
         toggleSessionState: toggleSessionState,
         reflectSessionState: reflectSessionState,
     });

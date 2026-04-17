@@ -45,7 +45,7 @@ class PublicController extends Controller
         $msg = '';
         if (!$session) {
             $msg = Yii::t('BbbModule.base', 'No such session.');
-        } else if ($session->canJoin()) {
+        } else if (!Yii::$app->user->isGuest) {
             // Recognize member and redirect to internal session page (container-aware)
             $container = $session->content->container;
             $joinUrl = $container
@@ -62,7 +62,8 @@ class PublicController extends Controller
             return $this->render('join', [
                 'session' => $session,
                 'token' => $token,
-                'msg' => $msg
+                'msg' => $msg,
+                'running' => $session ? $this->svc->isRunning($session->uuid) : false,
             ]);
         }
 

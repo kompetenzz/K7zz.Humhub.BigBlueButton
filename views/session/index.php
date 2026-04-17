@@ -25,7 +25,7 @@ if ($this->context->contentContainer) {
 $sessionLink = $routePrefix . '/' . $session->name;
 
 ?>
-<div id="layout-content" data-bbb-check-running="<?= Html::encode($isRunningUrl) ?>">
+<div id="layout-content" data-bbb-check-state="<?= Html::encode($isRunningUrl) ?>">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">

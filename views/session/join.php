@@ -17,7 +17,8 @@ $imageUrl = $session->outputImage
     ? $session->outputImage->getUrl()
     : $bundle->baseUrl . '/images/conference.png';
 ?>
-<div id="layout-content" data-bbb-check-running="<?= Html::encode($isRunningUrl) ?>" data-bbb-redirect-on-running>
+<div id="layout-content" data-bbb-check-state="<?= Html::encode($isRunningUrl) ?>" data-bbb-redirect-on-change
+    data-bbb-redirect-state="<?= $running ? 'running' : 'waiting' ?>">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">

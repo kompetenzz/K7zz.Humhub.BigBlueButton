@@ -35,7 +35,7 @@ $routePrefix = $contentContainer
     ?>
 
     <div id="bbb-sidebar-session-<?= $session->id ?>" class="panel panel-default bbb-sidebar-panel"
-        data-bbb-check-running="<?= Html::encode($isRunningUrl) ?>">
+        data-bbb-check-state="<?= Html::encode($isRunningUrl) ?>">
         <div class="panel-heading" style="display:flex; align-items:center; justify-content:space-between;">
             <a href="<?= Html::encode($sessionLink) ?>">
                 <span><?= Icon::get('video-camera') ?>     <?= Html::encode($title) ?></span>
