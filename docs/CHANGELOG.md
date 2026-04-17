@@ -1,4 +1,4 @@
-## v0.19.3 – 2026-04
+## v0.19.5 – 2026-04-17
 ### New
 - **Global sessions list**: Admins may view all sessions of the humhub instance in the global sessions list accessible via /bbb/sessions
 
