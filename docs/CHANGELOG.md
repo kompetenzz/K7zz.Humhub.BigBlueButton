@@ -1,3 +1,8 @@
+## v0.19.6 – 2026-04-20
+### Improved
+- Fix eternal and aggressive session-state checks via javascript
+- Better (key) icon for moderation permissions
+
 ## v0.19.5 – 2026-04-17
 ### New
 - **Global sessions list**: Admins may view all sessions of the humhub instance in the global sessions list accessible via /bbb/sessions

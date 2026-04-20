@@ -10,7 +10,26 @@ humhub.module('BBBHelpers', function (module, require, $) {
 
     module.initOnPjaxLoad = true;
 
+    var activeIntervals = [];
+
+    /*
+     * Clears all active intervals to prevent memory leaks and unintended behavior after module unload
+     * (Called by HumHub on module unload)
+     */
+    var unload = function () {
+
+        // Clear all active intervals to prevent memory leaks and unintended behavior after module unload
+        activeIntervals.forEach(id => clearInterval(id));
+        activeIntervals = [];
+    };
+
+    /*
+     * Initializes event listeners for BBB session state reflection and window launching
+     * (Autoloaded by HumHub on module load and after PJAX loads)
+     */
     var init = function (isPjax) {
+
+        unload();
 
         document.querySelectorAll('.bbb-launch-window').forEach(el => {
             el.addEventListener('click', function (e) {
@@ -54,23 +73,22 @@ humhub.module('BBBHelpers', function (module, require, $) {
             return;
         }
 
-        const currentState = el.dataset.bbbState || 'waiting';
         const redirectOnChange = el.hasAttribute('data-bbb-redirect-on-change');
         const waitingSelector = '#' + el.id + ' .bbb-waiting';
         const runningSelector = '#' + el.id + ' .bbb-running';
-        console.log('Initializing session state reflection for element with id', id, 'checking URL', url, 'current state is', currentState, 'redirect on change is', redirectOnChange);
 
-        setInterval(function () {
+        activeIntervals.push(setInterval(function () {
             fetch(url)
                 .then(function (r) { return r.json(); })
                 .then(function (data) {
-                    toggleSessionState(waitingSelector, runningSelector, data.running);
+                    const currentState = el.dataset.bbbState || 'waiting';
                     const state = data.running ? 'running' : 'waiting';
                     if (currentState && state !== currentState) {
                         if (redirectOnChange) {
                             console.log('Session state changed to', state, 'redirecting...');
                             window.location.reload();
                         } else {
+                            toggleSessionState(waitingSelector, runningSelector, data.running);
                             console.log('Session state changed to', state, 'updating display...');
                             el.dataset.bbbState = state;
                         }
@@ -79,11 +97,12 @@ humhub.module('BBBHelpers', function (module, require, $) {
                 .catch((e) => {
                     console.error('Failed to fetch session state from', url, e);
                 });
-        }, interval);
+        }, interval));
     }
 
     module.export({
         init: init,
+        unload: unload,
         launchWindow: LaunchBBBWindow,
         toggleSessionState: toggleSessionState,
         reflectSessionState: reflectSessionState,
