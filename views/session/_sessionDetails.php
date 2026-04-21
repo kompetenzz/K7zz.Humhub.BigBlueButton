@@ -49,7 +49,7 @@ $headingTag = $top ? 'h1' : 'h4';
         </span>
         <?php if ($session->isModerator()): ?>
             <span class="text-info"
-                title="<?= Yii::t('BbbModule.base', 'You are moderator') ?>"><?= Icon::get('user-secret') ?></span>
+                title="<?= Yii::t('BbbModule.base', 'You are moderator') ?>"><?= Icon::get('key') ?></span>
         <?php endif; ?>
     </span>
     <?= Html::endTag($headingTag) ?>
