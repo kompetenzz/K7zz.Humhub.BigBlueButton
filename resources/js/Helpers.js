@@ -3,9 +3,12 @@ humhub.module('BBBHelpers', function (module, require, $) {
     const WINDOW_DIMS = [1280, 800];
 
     function LaunchBBBWindow(url) {
+        // Get id from token query param or last path segment to use as window name for better session management
+        // The url may be relative so we use the URL constructor to parse it, providing the current location as base
+        const id = new URL(url, window.location.href).searchParams.get('token') || url.split('/').filter(Boolean).pop() || 'BBBWindow';
         const left = (screen.width - WINDOW_DIMS[0]) / 2;
         const top = (screen.height - WINDOW_DIMS[1]) / 2;
-        window.open(url, '_blank', `width=${WINDOW_DIMS[0]},height=${WINDOW_DIMS[1]},left=${left},top=${top},resizable=yes,scrollbars=yes,toolbar=no,location=no,status=no,menubar=no`);
+        window.open(url, id, `width=${WINDOW_DIMS[0]},height=${WINDOW_DIMS[1]},left=${left},top=${top},resizable=yes,scrollbars=yes,toolbar=yes,location=yes,status=yes,menubar=yes`);
     }
 
     module.initOnPjaxLoad = true;
