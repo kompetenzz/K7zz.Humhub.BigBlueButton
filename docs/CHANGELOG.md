@@ -1,3 +1,7 @@
+## v0.19.7 – 2026-04-21
+### Improved
+- Optimize breakout room handling in tabbed context
+
 ## v0.19.6 – 2026-04-20
 ### Improved
 - Fix eternal and aggressive session-state checks via javascript
