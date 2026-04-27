@@ -1,3 +1,8 @@
+## v0.19.8 – 2026-
+### Improved
+- Fix displaying global sessions overview in global admin menu 
+- Fix displaying space sessions overview link in space gear menu for global admins
+
 ## v0.19.7 – 2026-04-21
 ### Improved
 - Optimize breakout room handling in tabbed context

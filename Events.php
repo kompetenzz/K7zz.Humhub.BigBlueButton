@@ -146,7 +146,10 @@ class Events
                 return;
             }
 
-            if (!$space->can(Admin::class)) {
+            if (
+                !$space->can(Admin::class)
+                && !Yii::$app->user->isAdmin()
+            ) {
                 return;
             }
 
@@ -164,23 +167,31 @@ class Events
 
     public static function onAccountTopMenuInit($event)
     {
+    }
+
+    public static function onAdminMenuInit($event)
+    {
         try {
             $addNavItem = Yii::$app->getModule('bbb')->settings->get('addNavItem', true);
             if ($addNavItem) {
                 return;
             }
 
-            if (!Yii::$app->user->isAdmin()) {
+            if (
+                !Yii::$app->user->isAdmin()
+                && !Yii::$app->user->can(Admin::class)
+            ) {
                 return;
             }
 
-            /** @var AccountTopMenu $menu */
+            /** @var AdminMenu $menu */
             $menu = $event->sender;
             $menu->addEntry(new MenuLink([
                 'label' => Html::encode(Yii::$app->getModule('bbb')->settings->get('navItemLabel', 'Live Sessions')),
                 'url' => ['/bbb/sessions'],
                 'icon' => 'video-camera',
-                'sortOrder' => 450,
+                'isActive' => ControllerHelper::isActivePath('bbb', ['sessions', 'session']),
+                'sortOrder' => 350,
             ]));
         } catch (\Throwable $e) {
             Yii::error($e, 'bbb');
