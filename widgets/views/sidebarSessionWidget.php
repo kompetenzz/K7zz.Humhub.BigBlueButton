@@ -8,6 +8,7 @@
 
 use humhub\libs\Html;
 use humhub\modules\ui\icon\widgets\Icon;
+use humhub\modules\content\widgets\richtext\RichText;
 use k7zz\humhub\bbb\assets\BBBAssets;
 use yii\helpers\Url;
 
@@ -53,7 +54,7 @@ $routePrefix = $contentContainer
 
         <div class="panel-body" style="padding-bottom: 8px;">
 
-            <?= Html::encode($session->description) ?>
+            <?= RichText::output($session->description) ?>
 
             <div class="d-grid gap-1 mt-2">
                 <div class="bbb-waiting" style="display: <?= $running ? 'none' : '' ?>;">
