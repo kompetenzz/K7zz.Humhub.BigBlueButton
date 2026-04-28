@@ -50,6 +50,8 @@ return [
     'Displays this session in the right sidebar panel of the space.' => 'Zeigt diese Videokonferenz im rechten Seitenleistenbereich des Spaces an.',
     'Duration' => 'Dauer',
     'Edit session' => 'Videokonferenz bearbeiten',
+    'Enter the waitingroom until the session starts' => 'Den Warteraum betreten, bis die Sitzung beginnt',
+    'Enter waitingroom' => 'Warteraum betreten',
     'Error loading recordings' => 'Fehler beim Laden der Aufzeichnungen',
     'Global sessions' => 'Globale Videokonferenzen',
     'Join' => 'Beitreten',
@@ -135,6 +137,7 @@ return [
     'You can now close this window.' => 'Du kannst dieses Fenster jetzt schließen.',
     'You will be redirected when the session starts.' => 'Du wirst umgeleitet, wenn die Sitzung beginnt.',
     'Your name' => 'Dein Name',
-    'Enter the waitingroom until the session starts' => 'Den Warteraum betreten, bis die Sitzung beginnt',
-    'Enter waitingroom' => 'Warteraum betreten',
+    'Copy members join link' => 'Mitglieder-Zugangslink kopieren',
+    'Displays this session in the right column of the main dashboard.' => 'Zeigt die Videokonferenz in der rechten Spalte des Haupt-Dashboards an.',
+    'This page is used for guest access. If you have an account, please log in and then join again.' => 'Diese Seite ist für den Gastzugang gedacht. Wenn du ein Konto hast, logge dich bitte ein und trete dann erneut bei.',
 ];
