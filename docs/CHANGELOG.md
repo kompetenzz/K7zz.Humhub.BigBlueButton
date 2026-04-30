@@ -1,3 +1,9 @@
+## v0.19.9 – 2026-04-30
+### Improved
+- Restructured session edit form with grouped cards (Basic Information, Visibility, In-Session, Join & Moderation)
+- New FilePreviewField widget for consistent image/file upload handling
+- Added MANUAL.md and improved README.md
+
 ## v0.19.8 – 2026-04-30
 ### Improved
 - New screenshots
