@@ -15,6 +15,6 @@ return [
     'Sidebar sort order' => 'Sortierreihenfolge in der Seitenleiste',
     'You can always access the container sessions setup screen at' => 'Der Bildschirm zur Einrichtung der Container-Sitzungen ist jederzeit erreichbar unter',
     'You can always access the global sessions setup screen at' => 'Der Bildschirm zur Einrichtung der globalen Sitzungen ist jederzeit erreichbar unter',
-    'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the account dropdown.' => '',
-    'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the space gear menu.' => '',
+    'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the administration menu.' => 'Wenn der Navigationseintrag deaktiviert ist, wird ein <strong>Sitzungen</strong>-Link im Administrationsmenü bereitgestellt.',
+    'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the space gear menu.' => 'Wenn der Navigationseintrag deaktiviert ist, wird ein <strong>Sitzungen</strong>-Link im Space-Gear-Menü bereitgestellt.',
 ];

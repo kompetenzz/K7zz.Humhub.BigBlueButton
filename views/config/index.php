@@ -41,7 +41,7 @@ $url = Url::to('/bbb/sessions');
 
             <div id="bbb-nav-admin-hint" class="alert alert-info"
                 style="display: <?= $model->addNavItem ? 'none' : '' ?>;">
-                <?= Yii::t('BbbModule.config', 'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the account dropdown.') ?>
+                <?= Yii::t('BbbModule.config', 'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the administration menu.') ?>
             </div>
 
             <?= $form->field($model, 'navItemLabel')

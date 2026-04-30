@@ -13,7 +13,7 @@ return [
     'Settings' => '',
     'Shared Secret' => '',
     'Sidebar sort order' => '',
-    'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the account dropdown.' => '',
+    'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the administration menu.' => '',
     'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the space gear menu.' => '',
     'You can always access the container sessions setup screen at' => '',
     'You can always access the global sessions setup screen at' => '',
