@@ -1,9 +1,9 @@
-## v0.19.8 – 2026-
+## v0.19.8 – 2026-04-30
 ### Improved
 - Pickup logged out members in guest join page
 - Fix rendering md/html in sidebar widget
 - Fix displaying global sessions overview in global admin menu 
-- Fix displaying space sessions overview link in space gear menu for global admins
+- Fix displaying space sessions overview link in space gear menu also for global admins
 
 ## v0.19.7 – 2026-04-21
 ### Improved
