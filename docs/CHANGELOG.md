@@ -1,5 +1,7 @@
 ## v0.19.8 – 2026-04-30
 ### Improved
+- New screenshots
+- Optimize edit page
 - Pickup logged out members in guest join page
 - Fix rendering md/html in sidebar widget
 - Fix displaying global sessions overview in global admin menu 

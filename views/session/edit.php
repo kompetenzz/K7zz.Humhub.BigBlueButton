@@ -1,7 +1,5 @@
 <?php
 /**
- * Formular zum Anlegen / Bearbeiten einer BBB-Session
- *
  * @var k7zz\humhub\bbb\models\forms\SessionForm $model
  */
 
@@ -10,16 +8,15 @@ use humhub\modules\ui\form\widgets\ContentVisibilitySelect;
 use humhub\modules\user\widgets\UserPickerField;
 use humhub\modules\content\widgets\richtext\RichTextField;
 use humhub\modules\topic\widgets\TopicPicker;
-use humhub\widgets\ContentTagDropDown;
 use k7zz\humhub\bbb\models\forms\SessionForm;
-use k7zz\humhub\bbb\models\Session;
+use k7zz\humhub\bbb\widgets\FilePreviewField;
 use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
 use k7zz\humhub\bbb\assets\BBBAssets;
 use k7zz\humhub\bbb\enums\Layouts;
 
-$bundle = BBBAssets::register($this);
+BBBAssets::register($this);
 $this->setPageTitle($model->title ?: Yii::t('BbbModule.base', 'New Session'));
 
 $spaceTitle = $this->context->contentContainer
@@ -54,292 +51,233 @@ $title = $spaceTitle . ($model->id
                 ]); ?>
 
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <?= $f->field($model, 'title')
-                                    ->textInput(['maxlength' => true])
-                                    ->hint(Yii::t(
-                                        'BbbModule.base',
-                                        'Speaking name for your audience, e.g. "Weekly Team Meeting"'
-                                    )); ?>
-                            </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <strong><?= Yii::t('BbbModule.base', 'Basic Information') ?></strong>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <?= $f->field($model, 'name')
-                                    ->textInput([
-                                        'maxlength' => true,
-                                        'style' => 'text-transform: lowercase;',
-                                        'pattern' => SessionForm::SLUG_PATTERN,
-                                        'data-slugify' => 'true',
-                                        'data-slugify-title-selector' => '#sessionform-title',
-                                        'data-slugify-autogenerate' => 'true'
-                                    ])
-                                    ->hint(Yii::t(
-                                        'BbbModule.base',
-                                        'Used as identifier and for the URL of the session, e.g. "weekly-team-meeting"'
-                                    )); ?>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <?= $f->field($model, 'description')
-                                    ->widget(RichtextField::class, ['placeholder' => Yii::t('BbbModule.base', 'Please describe...')])
-                                    ->hint(Yii::t(
-                                        'BbbModule.base',
-                                        'Optional detailed description of the session and it\'s purpose.'
-                                    )); ?>
-                            </div>
-                            <div class="form-group">
-                                <?= $f->field($model, 'topics')->widget(TopicPicker::class, [
-                                    'contentContainer' => $this->context->contentContainer
-                                ]); ?>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <?= $f->field($model, 'layout')->radioList(
-                                    Layouts::options(),
-                                    [
-                                        'item' => function ($index, $label, $name, $checked, $value) {
-                                            $desc = Layouts::descriptions()[$value] ?? '';
-                                            return "
-                                            <div class='form-check'>
-                                                <label>
-                                                    <input type='radio' name='$name' value='$value' " . ($checked ? 'checked' : '') . ">
-                                                        <strong>$label</strong><br>
-                                                        <small class='text-muted'>$desc</small>
-                                                </label>
-                                            </div>
-                                        ";
-                                        }
-                                    ]
-                                ); ?>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <?= $f->field($model, 'visibility')->widget(ContentVisibilitySelect::class, ['contentOwner' => 'record']) ?>
-                            <?= $f->field($model, 'hidden')->widget(ContentHiddenCheckbox::class)
-                                ->hint(Yii::t(
-                                    'BbbModule.base',
-                                    'Control who can see this session.'
-                                )); ?>
-                            <div class="form-group">
-                                <?= $f->field($model, 'showInSidebar')->checkbox([
-                                    'label' => Yii::t('BbbModule.base', 'Show in right column'),
-                                ])->hint($this->context->contentContainer
-                                    ? Yii::t('BbbModule.base', 'Displays this session in the right sidebar panel of the space.')
-                                    : Yii::t('BbbModule.base', 'Displays this session in the right column of the main dashboard.')
-                                ); ?>
-                                <div class="form-group">
-                                    <?= $f->field($model, 'isSpaceDefault')->checkbox([
-                                        'label' => Yii::t('BbbModule.base', $this->context->contentContainer ? 'Space default session' : 'Default session'),
-                                    ])->hint(Yii::t('BbbModule.base', 'Marks this as the default session for this space. The title will be hidden in the sidebar.')); ?>
-                                </div>
-                                <div class="form-group" id="public-join-box">
-                                    <?= $f->field($model, 'publicJoin')->checkbox([
-                                        'id' => 'public-join-toggle',
-                                        'label' => Yii::t('BbbModule.base', 'Allow public joining by a shareable link.'),
-                                    ])->hint(Yii::t(
-                                                'BbbModule.base',
-                                                'Creates a public join link which can be used by anybody to join this session (no login required).'
-                                            )); ?>
-                                </div>
-                                <div class="form-group" id="join-by-permissions-box">
-                                    <?= $f->field($model, 'joinByPermissions')->checkbox([
-                                        'id' => 'join-by-permissions-toggle',
-                                        'label' => Yii::t('BbbModule.base', 'Join by humhub permissions.'),
-                                    ])->hint(Yii::t(
-                                                'BbbModule.base',
-                                                'Allow everybody with access by humhub settings to join this session. Uncheck to select specific users below.'
-                                            )); ?>
-                                </div>
-                                <div class="form-group" id="user-picker-box" <?= $model->joinByPermissions ? 'style="display:none"' : '' ?>>
-                                    <div id="user-picker">
-                                        <?= $f->field($model, 'attendeeRefs')
-                                            ->widget(class: UserPickerField::class)
-                                            ->label(
-                                                Yii::t('BbbModule.base', 'Select specific attendees for this session.')
-                                            );
-                                        ; ?>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'title')
+                                            ->textInput(['maxlength' => true])
+                                            ->hint(Yii::t('BbbModule.base', 'Speaking name for your audience, e.g. "Weekly Team Meeting"')); ?>
+                                    </div>
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'name')
+                                            ->textInput([
+                                                'maxlength' => true,
+                                                'style' => 'text-transform: lowercase;',
+                                                'pattern' => SessionForm::SLUG_PATTERN,
+                                                'data-slugify' => 'true',
+                                                'data-slugify-title-selector' => '#sessionform-title',
+                                                'data-slugify-autogenerate' => 'true',
+                                            ])
+                                            ->hint(Yii::t('BbbModule.base', 'Used as identifier and for the URL of the session, e.g. "weekly-team-meeting"')); ?>
+                                    </div>
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'description')
+                                            ->widget(RichtextField::class, [
+                                                'placeholder' => Yii::t('BbbModule.base', 'Please describe...')
+                                            ])
+                                            ->hint(Yii::t('BbbModule.base', 'Optional detailed description of the session and it\'s purpose.')); ?>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <?= $f->field($model, 'joinCanStart')->checkbox([
-                                        'label' => Yii::t('BbbModule.base', 'Join can start'),
-                                    ])
-                                        ->hint(Yii::t(
-                                            'BbbModule.base',
-                                            'Allow everybody with join permission to start this session.'
-                                        )); ?>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'topics')->widget(TopicPicker::class, [
+                                            'contentContainer' => $this->context->contentContainer,
+                                        ]); ?>
+                                    </div>
+                                    <?= FilePreviewField::widget([
+                                        'form' => $f,
+                                        'model' => $model,
+                                        'attribute' => 'imageUpload',
+                                        'removeAttr' => 'removeImage',
+                                        'preview' => $model->previewImage,
+                                        'label' => Yii::t('BbbModule.base', 'Upload session image.'),
+                                        'changeLabel' => Yii::t('BbbModule.base', 'Change session image.'),
+                                        'hint' => Yii::t('BbbModule.base', 'Optional image for this session. Recommended size: 800x600px.'),
+                                    ]) ?>
                                 </div>
-                                <div class="form-group">
-                                    <?= $f->field($model, 'joinCanModerate')->checkbox([
-                                        'label' => Yii::t('BbbModule.base', 'Join can moderate'),
-                                    ])->hint(Yii::t(
-                                                'BbbModule.base',
-                                                'Allow everybody with join permission to moderate this session.'
-                                            )); ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <strong><?= Yii::t('BbbModule.base', 'Visibility') ?></strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <?= $f->field($model, 'visibility')->widget(ContentVisibilitySelect::class, ['contentOwner' => 'record']) ?>
+                                    <?= $f->field($model, 'hidden')->widget(ContentHiddenCheckbox::class); ?>
                                 </div>
-                                <div class="form-group" id="moderator-box">
-                                    <?= $f->field($model, 'moderateByPermissions')
-                                        ->checkbox(options: [
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'showInSidebar')->checkbox([
+                                            'label' => Yii::t('BbbModule.base', 'Show in right column'),
+                                        ])->hint(
+                                                $this->context->contentContainer
+                                                ? Yii::t('BbbModule.base', 'Displays this session in the right sidebar panel of the space.')
+                                                : Yii::t('BbbModule.base', 'Displays this session in the right column of the main dashboard.')
+                                            ); ?>
+                                    </div>
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'isSpaceDefault')->checkbox([
+                                            'label' => Yii::t('BbbModule.base', $this->context->contentContainer ? 'Space default session' : 'Default session'),
+                                        ])->hint(Yii::t('BbbModule.base', 'Marks this as the default session for this space. The title will be hidden in the sidebar.')); ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <strong>
+                                <?= Yii::t('BbbModule.base', 'Join & Moderation') ?>
+                            </strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group" id="public-join-box">
+                                        <?= $f->field($model, 'publicJoin')->checkbox([
+                                            'id' => 'public-join-toggle',
+                                            'label' => Yii::t('BbbModule.base', 'Allow public joining by a shareable link.'),
+                                        ])->hint(Yii::t('BbbModule.base', 'Creates a public join link which can be used by anybody to join this session (no login required).')); ?>
+                                    </div>
+                                    <div class="form-group" id="join-by-permissions-box">
+                                        <?= $f->field($model, 'joinByPermissions')->checkbox([
+                                            'id' => 'join-by-permissions-toggle',
+                                            'label' => Yii::t('BbbModule.base', 'Join by humhub permissions.'),
+                                        ])->hint(Yii::t('BbbModule.base', 'Allow everybody with access by humhub settings to join this session. Uncheck to select specific users below.')); ?>
+                                    </div>
+                                    <div class="form-group" id="user-picker-box" <?= $model->joinByPermissions ? 'style="display:none"' : '' ?>>
+                                        <?= $f->field($model, 'attendeeRefs')
+                                            ->widget(UserPickerField::class)
+                                            ->label(Yii::t('BbbModule.base', 'Select specific attendees for this session.')); ?>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group" id="moderator-box">
+                                        <?= $f->field($model, 'moderateByPermissions')->checkbox([
                                             'id' => 'moderate-by-permissions-toggle',
                                             'label' => Yii::t('BbbModule.base', 'Moderate by humhub permissions'),
-                                        ])->hint(Yii::t(
-                                                'BbbModule.base',
-                                                'Allow everybody with manage access by humhub settings to moderate this session. Uncheck to select specific users below.'
-                                            )); ?>
-                                </div>
-                                <div class="form-group" id="moderator-picker-box" <?= $model->moderateByPermissions ? 'style="display:none"' : '' ?>>
-                                    <div id="moderator-picker">
+                                        ])->hint(Yii::t('BbbModule.base', 'Allow everybody with manage access by humhub settings to moderate this session. Uncheck to select specific users below.')); ?>
+                                    </div>
+                                    <div class="form-group" id="moderator-picker-box" <?= $model->moderateByPermissions ? 'style="display:none"' : '' ?>>
                                         <?= $f->field($model, 'moderatorRefs')
-                                            ->widget(class: UserPickerField::class)
-                                            ->label(
-                                                Yii::t('BbbModule.base', 'Select specific moderators for this session.')
-                                            );
-                                        ?>
+                                            ->widget(UserPickerField::class)
+                                            ->label(Yii::t('BbbModule.base', 'Select specific moderators for this session.')); ?>
+                                    </div>
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'joinCanStart')->checkbox([
+                                            'label' => Yii::t('BbbModule.base', 'Join can start'),
+                                        ])->hint(Yii::t('BbbModule.base', 'Allow everybody with join permission to start this session.')); ?>
+                                    </div>
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'joinCanModerate')->checkbox([
+                                            'label' => Yii::t('BbbModule.base', 'Join can moderate'),
+                                        ])->hint(Yii::t('BbbModule.base', 'Allow everybody with join permission to moderate this session.')); ?>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <?= $f->field($model, 'hasWaitingRoom')->checkbox([
-                                        'label' => Yii::t('BbbModule.base', 'Waiting room'),
-                                    ])->hint(Yii::t(
-                                                'BbbModule.base',
-                                                'Join users via a waiting room and let a moderator accept them.'
-                                            )); ?>
-                                </div>
-                                <div class="form-group">
-                                    <?= $f->field($model, 'allowRecording')->checkbox([
-                                        'label' => Yii::t('BbbModule.base', 'Allow recording this session.'),
-                                    ])->hint(Yii::t(
-                                                'BbbModule.base',
-                                                'Recordings must be started manually.'
-                                            )); ?>
-                                </div>
-                                <div class="form-group">
-                                    <?= $f->field($model, 'muteOnEntry')->checkbox([
-                                        'label' => Yii::t('BbbModule.base', 'Mute on entry'),
-                                    ])->hint(Yii::t(
-                                                'BbbModule.base',
-                                                'All users will be muted when entering the session.'
-                                            )); ?>
-                                </div>
-                                <?php if ($model->presentationFile !== null): ?>
-                                    <div class="mb-3 p-2 border rounded">
-                                        <label><?= Yii::t('BbbModule.base', 'Current presentation') ?></label>
-                                        <?php if ($model->presentationPreviewImage !== null): ?>
-                                            <img src="<?= $model->presentationPreviewImage->getUrl() ?>"
-                                                class="img-fluid img-thumbnail"
-                                                alt="<?= Yii::t('BbbModule.base', 'PDF preview') ?>"
-                                                style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
-                                        <?php endif; ?>
-                                        <div><?= Html::encode($model->presentationFile->file_name) ?>
-                                            (<?= round($model->presentationFile->size / 1024 / 1024, 2); ?>MB)</div>
-                                        <?= $f->field($model, 'removePresentation')->checkbox([
-                                            'label' => Yii::t('BbbModule.base', 'Remove presentation'),
-                                        ])->label(false) ?>
-                                    </div>
-                                <?php endif; ?>
-                                <div class="form-group">
-                                    <?= $f->field($model, 'presentationUpload')
-                                        ->fileInput()
-                                        ->label($model->presentationFile
-                                            ? Yii::t('BbbModule.base', 'Change presentation file.')
-                                            : Yii::t('BbbModule.base', 'Upload presentation file.'))
-                                        ->hint(Yii::t(
-                                            'BbbModule.base',
-                                            'Optional presentation for this session. Use pdf in landscape mode.'
-                                        )); ?>
-                                </div>
-                                <?php if ($model->previewImage !== null): ?>
-                                    <div class="mb-3 p-2 border rounded">
-                                        <label><?= Yii::t('BbbModule.base', 'Current session image') ?></label>
-                                        <img src="<?= $model->previewImage->getUrl() ?>" class="img-fluid img-thumbnail"
-                                            alt="<?= Yii::t('BbbModule.base', 'Session image') ?>"
-                                            style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
-                                        <?= $f->field($model, 'removeImage')->checkbox([
-                                            'label' => Yii::t('BbbModule.base', 'Remove session image'),
-                                        ])->label(false) ?>
-                                    </div>
-                                <?php endif; ?>
-                                <div class="form-group">
-                                    <?= $f->field($model, 'imageUpload')
-                                        ->fileInput()
-                                        ->label($model->previewImage
-                                            ? Yii::t('BbbModule.base', 'Change session image.')
-                                            : Yii::t('BbbModule.base', 'Upload session image.'))
-                                        ->hint(Yii::t(
-                                            'BbbModule.base',
-                                            'Optional image for this session. Recommended size: 800x600px.'
-                                        )); ?>
-                                </div>
-                                <?php if ($model->cameraBgPreviewImage !== null): ?>
-                                    <div class="mb-3 p-2 border rounded">
-                                        <label><?= Yii::t('BbbModule.base', 'Camera background image') ?></label>
-                                        <img src="<?= $model->cameraBgPreviewImage->getUrl() ?>"
-                                            class="img-fluid img-thumbnail"
-                                            alt="<?= Yii::t('BbbModule.base', 'Camera background image') ?>"
-                                            style="max-height: 200px; max-width: 100%; margin-bottom: 10px;">
-                                        <?= $f->field($model, 'removeCameraBgImage')->checkbox([
-                                            'label' => Yii::t('BbbModule.base', 'Remove camera background'),
-                                        ])->label(false) ?>
-                                    </div>
-                                <?php endif; ?>
-                                <div class="form-group">
-                                    <?= $f->field($model, 'cameraBgImageUpload')
-                                        ->fileInput()
-                                        ->label($model->cameraBgPreviewImage
-                                            ? Yii::t('BbbModule.base', 'Change camera background image.')
-                                            : Yii::t('BbbModule.base', 'Upload camera background image.'))
-                                        ->hint(Yii::t(
-                                            'BbbModule.base',
-                                            'Optional background image for user cameras. Recommended size: at least 800x600px.'
-                                        )); ?>
-                                </div>
-                            </div>
                         </div>
-                        <div class="card-footer">
-                            <?= Html::submitButton(
-                                Yii::t('BbbModule.base', 'Save'),
-                                ['class' => 'btn btn-primary']
-                            ); ?>
-                            <?= Html::a(
-                                Yii::t('BbbModule.base', 'Cancel'),
-                                [$cancelUrl],
-                                ['class' => 'btn btn-secondary']
-                            ); ?>
-                        </div>
-
-                        <?php ActiveForm::end(); ?>
-
-                        <?php
-                        /* JS, um den User-Picker live ein- und auszublenden */
-                        $this->registerJs("
-                        function toggleControls() {
-                            $('#user-picker-box').toggle(!$('#join-by-permissions-toggle').is(':checked'));
-                            $('#moderator-picker-box').toggle(!$('#moderate-by-permissions-toggle').is(':checked'));
-                        }
-
-                        $(document).ready(() => {
-                            $('#join-by-permissions-toggle, #moderate-by-permissions-toggle')
-                                .on('change', () => toggleControls());
-
-                            toggleControls(); // initial call
-                        });
-                    ");
-                        ?>
-
                     </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <strong><?= Yii::t('BbbModule.base', 'In-Session Options') ?></strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'hasWaitingRoom')->checkbox([
+                                            'label' => Yii::t('BbbModule.base', 'Waiting room'),
+                                        ])->hint(Yii::t('BbbModule.base', 'Join users via a waiting room and let a moderator accept them.')); ?>
+                                    </div>
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'muteOnEntry')->checkbox([
+                                            'label' => Yii::t('BbbModule.base', 'Mute on entry'),
+                                        ])->hint(Yii::t('BbbModule.base', 'All users will be muted when entering the session.')); ?>
+                                    </div>
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'allowRecording')->checkbox([
+                                            'label' => Yii::t('BbbModule.base', 'Allow recording this session.'),
+                                        ])->hint(Yii::t('BbbModule.base', 'Recordings must be started manually.')); ?>
+                                    </div>
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'layout')->radioList(
+                                            Layouts::options(),
+                                            [
+                                                'item' => function ($index, $label, $name, $checked, $value) {
+                                                    $desc = Layouts::descriptions()[$value] ?? '';
+                                                    return "
+                                                    <div class='form-check'>
+                                                        <label>
+                                                            <input type='radio' name='$name' value='$value' " . ($checked ? 'checked' : '') . ">
+                                                            <strong>$label</strong><br>
+                                                            <div class='hint-block'>$desc</div>
+                                                        </label>
+                                                    </div>";
+                                                },
+                                            ]
+                                        ); ?>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <?= FilePreviewField::widget([
+                                        'form' => $f,
+                                        'model' => $model,
+                                        'attribute' => 'presentationUpload',
+                                        'removeAttr' => 'removePresentation',
+                                        'preview' => $model->presentationPreviewImage,
+                                        'file' => $model->presentationFile,
+                                        'label' => Yii::t('BbbModule.base', 'Upload presentation file.'),
+                                        'changeLabel' => Yii::t('BbbModule.base', 'Change presentation file.'),
+                                        'hint' => Yii::t('BbbModule.base', 'Optional presentation for this session. Use pdf in landscape mode.'),
+                                    ]) ?>
+                                    <?= FilePreviewField::widget([
+                                        'form' => $f,
+                                        'model' => $model,
+                                        'attribute' => 'cameraBgImageUpload',
+                                        'removeAttr' => 'removeCameraBgImage',
+                                        'preview' => $model->cameraBgPreviewImage,
+                                        'label' => Yii::t('BbbModule.base', 'Upload camera background image.'),
+                                        'changeLabel' => Yii::t('BbbModule.base', 'Change camera background image.'),
+                                        'hint' => Yii::t('BbbModule.base', 'Optional background image for user cameras. Recommended size: at least 800x600px.'),
+                                    ]) ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+
+                <div class="card-footer">
+                    <?= Html::submitButton(Yii::t('BbbModule.base', 'Save'), ['class' => 'btn btn-primary']); ?>
+                    <?= Html::a(Yii::t('BbbModule.base', 'Cancel'), [$cancelUrl], ['class' => 'btn btn-secondary']); ?>
+                </div>
+
+                <?php ActiveForm::end(); ?>
+
             </div>
         </div>
     </div>
+</div>
+
+<?php $this->registerJs("
+    function toggleControls() {
+        \$('#user-picker-box').toggle(!\$('#join-by-permissions-toggle').is(':checked'));
+        \$('#moderator-picker-box').toggle(!\$('#moderate-by-permissions-toggle').is(':checked'));
+    }
+    \$(document).ready(function () {
+        \$('#join-by-permissions-toggle, #moderate-by-permissions-toggle').on('change', toggleControls);
+        toggleControls();
+    });
+"); ?>
