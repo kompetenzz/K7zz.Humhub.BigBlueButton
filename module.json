@@ -9,11 +9,13 @@
     },
     "screenshots": [
         "docs/screenshots/global-config.png",
+        "docs/screenshots/permissions.png",
         "docs/screenshots/global-sessions.png",
+        "docs/screenshots/session-page.png",
+        "docs/screenshots/sidebar-default.png",
         "docs/screenshots/space-config.png",
-        "docs/screenshots/space-sessions.png",
         "docs/screenshots/session-settings.png",
-        "docs/screenshots/permissions.png"
+        "docs/screenshots/public-join.png"
     ],
     "authors": [
         {
