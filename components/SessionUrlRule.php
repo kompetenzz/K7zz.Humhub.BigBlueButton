@@ -70,6 +70,14 @@ class SessionUrlRule extends Component implements UrlRuleInterface, ContentConta
     public function parseRequest($manager, $request)
     {
         $pathInfo = $request->getPathInfo();
+
+        if (strpos($pathInfo, 'bbb/public/join/') === 0) {
+            $token = substr($pathInfo, \strlen('bbb/public/join/'));
+            if ($token !== '') {
+                return ['bbb/public/join', array_merge($request->get(), ['token' => $token])];
+            }
+        }
+
         if (strpos($pathInfo, $this->routePrefix) === 0) {
             return $this->getSessionRoute($pathInfo, $request->get());
         }

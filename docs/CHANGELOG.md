@@ -1,3 +1,8 @@
+## v0.19.10 – 2026-05-06
+### Fixed
+- Consistent path-based public join URLs (`/bbb/public/join/TOKEN`) across all views and form
+- Routing accepts both path-based and query-param format (`?token=TOKEN`) for backwards compatibility
+
 ## v0.19.9 – 2026-04-30
 ### Improved
 - Restructured session edit form with grouped cards (Basic Information, Visibility, In-Session, Join & Moderation)

@@ -90,7 +90,7 @@ $sessionLink = $routePrefix . '/' . $session->name;
 
                 <?php if ($session->canAdminister() && $session->public_join && $session->public_token): ?>
                     <span id="bbb-public-url-<?= $session->id ?>"
-                        class="d-none"><?= Url::to(['/bbb/public/join', 'token' => $session->public_token], true) ?></span>
+                        class="d-none"><?= Url::to('/bbb/public/join/' . $session->public_token, true) ?></span>
                     <?= Html::a(
                         Icon::get('link') . ' ' . Yii::t('BbbModule.base', 'Public Join link'),
                         '#',

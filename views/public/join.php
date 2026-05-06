@@ -13,7 +13,7 @@ use yii\helpers\Url;
 
 $bundle = BBBAssets::register($this);
 $this->setPageTitle(($session && $session->title) ? $session->title : Yii::t('BbbModule.base', 'Join session'));
-$action = Url::to(['/bbb/public/join', 'token' => $token]);
+$action = Url::to('/bbb/public/join/' . $token, true);
 $imageUrl = ($session && $session->image_file_id)
     ? Url::to(['/bbb/public/download', 'id' => $session->id, 'type' => 'image', 'inline' => true])
     : $bundle->baseUrl . '/images/conference.png';
@@ -81,7 +81,6 @@ $membersJoinUrlPath = $container
 
                             <p><?= Yii::t('BbbModule.base', 'Please enter your name below:') ?></p>
                             <form method="get" action="<?= Html::encode($action) ?>" data-bbb-launch-window>
-                                <input type="hidden" name="token" value="<?= Html::encode($token) ?>">
                                 <div class="form-group">
                                     <label for="name"><?= Yii::t('BbbModule.base', 'Your name') ?></label>
                                     <input id="name" name="name" class="form-control input-lg" required minlength="2"
