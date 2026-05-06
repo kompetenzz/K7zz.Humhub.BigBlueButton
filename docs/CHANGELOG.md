@@ -1,3 +1,7 @@
+## v0.19.11 – 2026-05
+### Fixed
+- Screenshots in documentation
+
 ## v0.19.10 – 2026-05-06
 ### Fixed
 - Consistent path-based public join URLs (`/bbb/public/join/TOKEN`) across all views and form
