@@ -212,6 +212,18 @@ $title = $spaceTitle . ($model->id
                                         ])->hint(Yii::t('BbbModule.base', 'Recordings must be started manually.')); ?>
                                     </div>
                                     <div class="form-group">
+                                        <?= $f->field($model, 'startParticipantsMinimized')->checkbox([
+                                            'id' => 'bbb-rightbar-toggle',
+                                            'label' => Yii::t('BbbModule.base', 'Start with left sidebar collapsed'),
+                                        ])->hint(Yii::t('BbbModule.base', 'The panel on the left with participants will be slided out when participants join the session.')); ?>
+                                    </div>
+                                    <div class="form-group" id="bbb-chat-group" style="transition: opacity .2s ease;">
+                                        <?= $f->field($model, 'startChatMinimized')->checkbox([
+                                            'id' => 'bbb-chat-toggle',
+                                            'label' => Yii::t('BbbModule.base', 'Start with chat minimized'),
+                                        ])->hint(Yii::t('BbbModule.base', 'The chat panel will be collapsed when participants join the session. Not available when right sidebar is collapsed.')); ?>
+                                    </div>
+                                    <div class="form-group">
                                         <?= $f->field($model, 'layout')->radioList(
                                             Layouts::options(),
                                             [
@@ -231,6 +243,11 @@ $title = $spaceTitle . ($model->id
                                     </div>
                                 </div>
                                 <div class="col-md-6">
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'startPresentationHidden')->checkbox([
+                                            'label' => Yii::t('BbbModule.base', 'Start with hidden presentation'),
+                                        ])->hint(Yii::t('BbbModule.base', 'The presentation will be hidden when participants join the session.')); ?>
+                                    </div>
                                     <?= FilePreviewField::widget([
                                         'form' => $f,
                                         'model' => $model,
@@ -276,8 +293,23 @@ $title = $spaceTitle . ($model->id
         \$('#user-picker-box').toggle(!\$('#join-by-permissions-toggle').is(':checked'));
         \$('#moderator-picker-box').toggle(!\$('#moderate-by-permissions-toggle').is(':checked'));
     }
+    function updateChatState() {
+        var collapsed = \$('#bbb-rightbar-toggle').is(':checked');
+        var \$group   = \$('#bbb-chat-group');
+        var \$cb      = \$('#bbb-chat-toggle');
+        if (collapsed) {
+            \$cb.prop('checked', false).prop('disabled', true);
+            \$group.hide();
+        } else {
+            \$cb.prop('disabled', false);
+            \$group.show();
+        }
+    }
     \$(document).ready(function () {
         \$('#join-by-permissions-toggle, #moderate-by-permissions-toggle').on('change', toggleControls);
         toggleControls();
+        console.log('test');
+        \$('#bbb-rightbar-toggle').on('change', updateChatState);
+        updateChatState();
     });
 "); ?>

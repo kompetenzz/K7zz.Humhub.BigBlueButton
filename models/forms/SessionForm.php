@@ -61,6 +61,9 @@ class SessionForm extends Model
     public bool $hasWaitingRoom = false;
     public bool $allowRecording = true;
     public bool $muteOnEntry = false;
+    public bool $startChatMinimized = false;
+    public bool $startParticipantsMinimized = false;
+    public bool $startPresentationHidden = false;
     public bool $enabled = true;
     public bool $showInSidebar = false;
     public bool $isSpaceDefault = false;
@@ -179,6 +182,9 @@ class SessionForm extends Model
         $model->hasWaitingRoom = $session->has_waitingroom;
         $model->allowRecording = $session->allow_recording;
         $model->muteOnEntry = $session->mute_on_entry;
+        $model->startChatMinimized = (bool) $session->start_chat_minimized;
+        $model->startParticipantsMinimized = (bool) $session->start_participants_minimized;
+        $model->startPresentationHidden = (bool) $session->start_presentation_hidden;
         $model->contentContainer = $session->content->container;
         $model->creatorId = $session->creator_user_id;
         $model->layout = $session->layout;
@@ -262,7 +268,7 @@ class SessionForm extends Model
             ['imageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
             ['presentationUpload', 'file', 'extensions' => 'pdf', 'maxSize' => 40 * 1024 * 1024], // max. 40 MB
             ['cameraBgImageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 800, 'minHeight' => 400],
-            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'enabled', 'hidden', 'showInSidebar', 'isSpaceDefault', 'removeImage', 'removePresentation', 'removeCameraBgImage'], 'boolean'],
+            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'startChatMinimized', 'startParticipantsMinimized', 'startPresentationHidden', 'enabled', 'hidden', 'showInSidebar', 'isSpaceDefault', 'removeImage', 'removePresentation', 'removeCameraBgImage'], 'boolean'],
             ['layout', 'required'],
             ['layout', 'in', 'range' => Layouts::values()],
             ['topics', 'safe'],
@@ -327,6 +333,9 @@ class SessionForm extends Model
         $session->has_waitingroom = $this->hasWaitingRoom;
         $session->allow_recording = $this->allowRecording;
         $session->mute_on_entry = $this->muteOnEntry;
+        $session->start_chat_minimized = $this->startChatMinimized;
+        $session->start_participants_minimized = $this->startParticipantsMinimized;
+        $session->start_presentation_hidden = $this->startPresentationHidden;
         $session->layout = $this->layout;
         $session->enabled = $this->enabled;
         $session->show_in_sidebar = $this->showInSidebar;

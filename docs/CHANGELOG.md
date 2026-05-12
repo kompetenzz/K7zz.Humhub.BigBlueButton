@@ -1,4 +1,9 @@
-## v0.19.11 – 2026-05
+## v0.19.11 – 2026-05-12
+### New
+- **Start with right bar collapsed**: New session option to collapse the participants panel (right bar) when participants join. Chat is automatically unavailable when the right bar is collapsed.
+- **Start with chat minimized**: New session option to start with the public chat panel collapsed (only available when the right bar is open).
+- **Start with hidden presentation**: New session option to hide the presentation when participants join the session.
+
 ### Fixed
 - Screenshots in documentation
 

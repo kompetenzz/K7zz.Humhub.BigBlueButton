@@ -247,6 +247,14 @@ class SessionService
             $jp->setWebcamBackgroundURL($cameraBgImageUrl);
         }
 
+        if ($session->start_participants_minimized) {
+            $jp->addUserData('bbb_show_participants_on_login', false);
+        } elseif ($session->start_chat_minimized) {
+            $jp->addUserData('bbb_show_public_chat_on_login', false);
+        }
+        if ($session->start_presentation_hidden) {
+            $jp->addUserData('bbb_presentation_hidden_on_login', true);
+        }
 
         return $this->bbb->getJoinMeetingURL($jp);
     }
