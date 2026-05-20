@@ -3,8 +3,11 @@
 namespace k7zz\humhub\bbb\controllers;
 
 use humhub\components\access\ControllerAccess;
+use humhub\modules\user\models\User;
 
 use k7zz\humhub\bbb\models\forms\SessionForm;
+use k7zz\humhub\bbb\models\SessionUser;
+use k7zz\humhub\bbb\notifications\SessionStarted;
 use k7zz\humhub\bbb\models\Session;
 use k7zz\humhub\bbb\models\Recording;
 use k7zz\humhub\bbb\models\JoinInfo;
@@ -124,6 +127,9 @@ class SessionController extends BaseContentController
                 $joinUrl = $this->svc->start($session, $this->contentContainer);
                 if (!$joinUrl) {
                     Yii::$app->getSession()->setFlash('access-denied', Yii::t('BbbModule.base', 'Could not start session "{title}".', ['title' => $session->title]));
+                }
+                if ($session->notify_on_start) {
+                    $this->notifySessionStarted($session);
                 }
                 return Yii::$app->response->redirect($joinUrl, 303, true);
             }
@@ -348,5 +354,33 @@ class SessionController extends BaseContentController
 
         $ok = $this->svc->publishRecordingFormat($recordId, $formatType, $publish);
         return $this->asJson(['status' => $ok ? 200 : 500]);
+    }
+
+    private function notifySessionStarted(Session $session): void
+    {
+        $notification = SessionStarted::instance()
+            ->from(Yii::$app->user->identity)
+            ->about($session);
+
+        // Explicit attendees and moderators (sendBulk auto-excludes the originator)
+        $sessionUserQuery = User::find()
+            ->innerJoin('bbb_session_user su', 'su.user_id = user.id')
+            ->where(['su.session_id' => $session->id])
+            ->andWhere(['OR', ['su.can_join' => 1], ['su.role' => 'moderator']]);
+
+        $notification->sendBulk($sessionUserQuery);
+
+        // Profile owner — only if not already covered by the SessionUser query
+        $owner = $session->content->container;
+        if (!($owner instanceof User) || $owner->id === Yii::$app->user->id) {
+            return;
+        }
+        $ownerIsSessionUser = SessionUser::find()
+            ->where(['session_id' => $session->id, 'user_id' => $owner->id])
+            ->andWhere(['OR', ['can_join' => 1], ['role' => 'moderator']])
+            ->exists();
+        if (!$ownerIsSessionUser) {
+            $notification->send($owner);
+        }
     }
 }

@@ -1,3 +1,15 @@
+## v0.19.12 – 2026-05-20
+### New
+- **Notifications on session start**: When a session is started, all explicitly assigned attendees and moderators receive a notification with a call icon. In sessions hosted on a user profile, the profile owner is additionally notified if they are not already among the invitees.
+- **Configurable start notifications**: Start notifications are now a named category in HumHub's notification settings ("BBB session started"), allowing each user to opt in or out per target (web, e-mail, mobile). The default is ON for sessions on user profiles and OFF for sessions in spaces.
+- **Per-session notification toggle**: New "Enable start notifications" checkbox in the session edit form. Administrators can disable start notifications entirely for individual sessions, regardless of each user's personal preference.
+
+### Improved
+- **User profile sessions**: Sessions created in a user profile now correctly appear in the profile right-column sidebar ("Show in right column" now works for profiles).
+- **User profile sessions**: The default session title in the sidebar shows "Meet me".
+- **User profile sessions**: The session edit form no longer shows "Join by permissions", "Moderate by permissions" and Topics for profile-hosted sessions, as these options are not meaningful in that context.
+- **Session edit form**: Labels and hints for "Default session" checkbox now correctly reflect the context (Space / Profile / Global).
+
 ## v0.19.11 – 2026-05-12
 ### New
 - **Start with right bar collapsed**: New session option to collapse the participants panel (right bar) when participants join. Chat is automatically unavailable when the right bar is collapsed.

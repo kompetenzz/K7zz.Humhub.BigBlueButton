@@ -9,6 +9,7 @@ use humhub\modules\space\widgets\Sidebar;
 use humhub\modules\ui\menu\MenuLink;
 use humhub\modules\ui\menu\widgets\LeftNavigation;
 use humhub\modules\user\widgets\AccountTopMenu;
+use humhub\modules\user\widgets\ProfileSidebar;
 use humhub\widgets\TopMenu;
 use k7zz\humhub\bbb\permissions\Admin;
 use k7zz\humhub\bbb\widgets\SidebarSessionWidget;
@@ -223,6 +224,25 @@ class Events
             $sidebar->addWidget(
                 SidebarSessionWidget::class,
                 ['contentContainer' => $sidebar->space],
+                ['sortOrder' => $settings->sidebarSortOrder]
+            );
+        } catch (\Throwable $e) {
+            Yii::error($e, 'bbb');
+        }
+    }
+
+    public static function onProfileSidebarInit($event)
+    {
+        try {
+            /** @var ProfileSidebar $sidebar */
+            $sidebar = $event->sender;
+            if (empty($sidebar->user) || !$sidebar->user->moduleManager->isEnabled('bbb')) {
+                return;
+            }
+            $settings = new ContainerSettingsForm(['contentContainer' => $sidebar->user]);
+            $sidebar->addWidget(
+                SidebarSessionWidget::class,
+                ['contentContainer' => $sidebar->user],
                 ['sortOrder' => $settings->sidebarSortOrder]
             );
         } catch (\Throwable $e) {

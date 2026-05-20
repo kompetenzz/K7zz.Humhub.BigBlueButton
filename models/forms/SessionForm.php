@@ -65,6 +65,7 @@ class SessionForm extends Model
     public bool $startParticipantsMinimized = false;
     public bool $startPresentationHidden = false;
     public bool $enabled = true;
+    public bool $notifyOnStart = true;
     public bool $showInSidebar = false;
     public bool $isSpaceDefault = false;
     public string $layout = Layouts::CUSTOM_LAYOUT;
@@ -190,6 +191,7 @@ class SessionForm extends Model
         $model->layout = $session->layout;
         $model->showInSidebar = (bool) $session->show_in_sidebar;
         $model->isSpaceDefault = (bool) $session->is_space_default;
+        $model->notifyOnStart = (bool) $session->notify_on_start;
         $model->visibility = $session->content->visibility;
         $model->hidden = $session->content->hidden;
         $model->topics = $session->content->getTags(Topic::class);
@@ -225,6 +227,13 @@ class SessionForm extends Model
             }
         }
         return $model;
+    }
+
+    public function validateNoWaitingRoomConflict(string $attribute): void
+    {
+        if ($this->hasWaitingRoom && $this->$attribute) {
+            $this->addError($attribute, Yii::t('BbbModule.base', 'Not compatible with the waiting room.'));
+        }
     }
 
     public function beforeValidate(): bool
@@ -268,7 +277,8 @@ class SessionForm extends Model
             ['imageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
             ['presentationUpload', 'file', 'extensions' => 'pdf', 'maxSize' => 40 * 1024 * 1024], // max. 40 MB
             ['cameraBgImageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 800, 'minHeight' => 400],
-            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'startChatMinimized', 'startParticipantsMinimized', 'startPresentationHidden', 'enabled', 'hidden', 'showInSidebar', 'isSpaceDefault', 'removeImage', 'removePresentation', 'removeCameraBgImage'], 'boolean'],
+            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'startChatMinimized', 'startParticipantsMinimized', 'startPresentationHidden', 'enabled', 'hidden', 'showInSidebar', 'isSpaceDefault', 'notifyOnStart', 'removeImage', 'removePresentation', 'removeCameraBgImage'], 'boolean'],
+            [['joinCanStart', 'joinCanModerate'], 'validateNoWaitingRoomConflict'],
             ['layout', 'required'],
             ['layout', 'in', 'range' => Layouts::values()],
             ['topics', 'safe'],
@@ -340,6 +350,7 @@ class SessionForm extends Model
         $session->enabled = $this->enabled;
         $session->show_in_sidebar = $this->showInSidebar;
         $session->is_space_default = $this->isSpaceDefault;
+        $session->notify_on_start = $this->notifyOnStart;
         $session->updated_at = time();
 
         $this->saveBlobRefs($session);

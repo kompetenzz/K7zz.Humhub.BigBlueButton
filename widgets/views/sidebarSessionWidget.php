@@ -31,7 +31,7 @@ $routePrefix = $contentContainer
     $isRunningUrl = $routePrefix . '/is-running?id=' . $session->id;
 
     $title = $session->is_space_default
-        ? Yii::t('BbbModule.base', 'Meet now')
+        ? Yii::t('BbbModule.base', $contentContainer instanceof \humhub\modules\user\models\User ? 'Meet me' : 'Meet now')
         : $session->title;
     ?>
 

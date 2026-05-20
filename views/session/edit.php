@@ -14,10 +14,13 @@ use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
 use k7zz\humhub\bbb\assets\BBBAssets;
+use humhub\modules\space\models\Space;
+use humhub\modules\user\models\User;
 use k7zz\humhub\bbb\enums\Layouts;
 
 BBBAssets::register($this);
-$this->setPageTitle($model->title ?: Yii::t('BbbModule.base', 'New Session'));
+
+$isUserProfile = $this->context->contentContainer instanceof User;
 
 $spaceTitle = $this->context->contentContainer
     ? $this->context->contentContainer->getDisplayName() . ": "
@@ -27,8 +30,10 @@ $cancelUrl = $this->context->contentContainer
     : Url::to('/bbb/sessions');
 
 $title = $spaceTitle . ($model->id
-    ? Yii::t('BbbModule.base', 'Edit session')
+    ? Yii::t('BbbModule.base', 'Edit session') . " " . $model->title
     : Yii::t('BbbModule.base', 'Create session'));
+
+$this->setPageTitle($title);
 ?>
 <div class="content">
     <div id="layout-content">
@@ -85,11 +90,13 @@ $title = $spaceTitle . ($model->id
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <?= $f->field($model, 'topics')->widget(TopicPicker::class, [
-                                            'contentContainer' => $this->context->contentContainer,
-                                        ]); ?>
-                                    </div>
+                                    <?php if (!$isUserProfile): ?>
+                                        <div class="form-group">
+                                            <?= $f->field($model, 'topics')->widget(TopicPicker::class, [
+                                                'contentContainer' => $this->context->contentContainer,
+                                            ]); ?>
+                                        </div>
+                                    <?php endif; ?>
                                     <?= FilePreviewField::widget([
                                         'form' => $f,
                                         'model' => $model,
@@ -107,13 +114,18 @@ $title = $spaceTitle . ($model->id
 
                     <div class="card mb-4">
                         <div class="card-header">
-                            <strong><?= Yii::t('BbbModule.base', 'Visibility') ?></strong>
+                            <strong><?= Yii::t('BbbModule.base', 'Visibility and Notifications') ?></strong>
                         </div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
                                     <?= $f->field($model, 'visibility')->widget(ContentVisibilitySelect::class, ['contentOwner' => 'record']) ?>
                                     <?= $f->field($model, 'hidden')->widget(ContentHiddenCheckbox::class); ?>
+                                    <div class="form-group">
+                                        <?= $f->field($model, 'notifyOnStart')->checkbox([
+                                            'label' => Yii::t('BbbModule.base', 'Enable start notifications'),
+                                        ])->hint(Yii::t('BbbModule.base', 'Notify invited users when this session is started. Users can manage their notification preferences individually in their HumHub account settings.')); ?>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -126,9 +138,22 @@ $title = $spaceTitle . ($model->id
                                             ); ?>
                                     </div>
                                     <div class="form-group">
+                                        <?php
+                                        $container = $this->context->contentContainer;
+                                        $defaultLabel = $container instanceof Space
+                                            ? Yii::t('BbbModule.base', 'Space default session')
+                                            : ($container !== null
+                                                ? Yii::t('BbbModule.base', 'Profile default session')
+                                                : Yii::t('BbbModule.base', 'Default session'));
+                                        $defaultHint = $container instanceof Space
+                                            ? Yii::t('BbbModule.base', 'Marks this as the default session for this space. The title will be hidden in the sidebar.')
+                                            : ($container !== null
+                                                ? Yii::t('BbbModule.base', 'Marks this as the default session for this profile. The title will be hidden in the sidebar.')
+                                                : Yii::t('BbbModule.base', 'Marks this as the default session. The title will be hidden in the sidebar.'));
+                                        ?>
                                         <?= $f->field($model, 'isSpaceDefault')->checkbox([
-                                            'label' => Yii::t('BbbModule.base', $this->context->contentContainer ? 'Space default session' : 'Default session'),
-                                        ])->hint(Yii::t('BbbModule.base', 'Marks this as the default session for this space. The title will be hidden in the sidebar.')); ?>
+                                            'label' => $defaultLabel,
+                                        ])->hint($defaultHint); ?>
                                     </div>
                                 </div>
                             </div>
@@ -150,37 +175,43 @@ $title = $spaceTitle . ($model->id
                                             'label' => Yii::t('BbbModule.base', 'Allow public joining by a shareable link.'),
                                         ])->hint(Yii::t('BbbModule.base', 'Creates a public join link which can be used by anybody to join this session (no login required).')); ?>
                                     </div>
-                                    <div class="form-group" id="join-by-permissions-box">
-                                        <?= $f->field($model, 'joinByPermissions')->checkbox([
-                                            'id' => 'join-by-permissions-toggle',
-                                            'label' => Yii::t('BbbModule.base', 'Join by humhub permissions.'),
-                                        ])->hint(Yii::t('BbbModule.base', 'Allow everybody with access by humhub settings to join this session. Uncheck to select specific users below.')); ?>
-                                    </div>
-                                    <div class="form-group" id="user-picker-box" <?= $model->joinByPermissions ? 'style="display:none"' : '' ?>>
+                                    <?php if (!$isUserProfile): ?>
+                                        <div class="form-group" id="join-by-permissions-box">
+                                            <?= $f->field($model, 'joinByPermissions')->checkbox([
+                                                'id' => 'join-by-permissions-toggle',
+                                                'label' => Yii::t('BbbModule.base', 'Join by humhub permissions.'),
+                                            ])->hint(Yii::t('BbbModule.base', 'Allow everybody with access by humhub settings to join this session. Uncheck to select specific users below.')); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <div class="form-group" id="user-picker-box">
                                         <?= $f->field($model, 'attendeeRefs')
                                             ->widget(UserPickerField::class)
                                             ->label(Yii::t('BbbModule.base', 'Select specific attendees for this session.')); ?>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-group" id="moderator-box">
-                                        <?= $f->field($model, 'moderateByPermissions')->checkbox([
-                                            'id' => 'moderate-by-permissions-toggle',
-                                            'label' => Yii::t('BbbModule.base', 'Moderate by humhub permissions'),
-                                        ])->hint(Yii::t('BbbModule.base', 'Allow everybody with manage access by humhub settings to moderate this session. Uncheck to select specific users below.')); ?>
-                                    </div>
-                                    <div class="form-group" id="moderator-picker-box" <?= $model->moderateByPermissions ? 'style="display:none"' : '' ?>>
+                                    <?php if (!$isUserProfile): ?>
+                                        <div class="form-group" id="moderator-box">
+                                            <?= $f->field($model, 'moderateByPermissions')->checkbox([
+                                                'id' => 'moderate-by-permissions-toggle',
+                                                'label' => Yii::t('BbbModule.base', 'Moderate by humhub permissions'),
+                                            ])->hint(Yii::t('BbbModule.base', 'Allow everybody with manage access by humhub settings to moderate this session. Uncheck to select specific users below.')); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <div class="form-group" id="moderator-picker-box">
                                         <?= $f->field($model, 'moderatorRefs')
                                             ->widget(UserPickerField::class)
                                             ->label(Yii::t('BbbModule.base', 'Select specific moderators for this session.')); ?>
                                     </div>
                                     <div class="form-group">
                                         <?= $f->field($model, 'joinCanStart')->checkbox([
+                                            'id' => 'bbb-joincanstart-toggle',
                                             'label' => Yii::t('BbbModule.base', 'Join can start'),
                                         ])->hint(Yii::t('BbbModule.base', 'Allow everybody with join permission to start this session.')); ?>
                                     </div>
                                     <div class="form-group">
                                         <?= $f->field($model, 'joinCanModerate')->checkbox([
+                                            'id' => 'bbb-joincanmoderate-toggle',
                                             'label' => Yii::t('BbbModule.base', 'Join can moderate'),
                                         ])->hint(Yii::t('BbbModule.base', 'Allow everybody with join permission to moderate this session.')); ?>
                                     </div>
@@ -198,6 +229,7 @@ $title = $spaceTitle . ($model->id
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <?= $f->field($model, 'hasWaitingRoom')->checkbox([
+                                            'id' => 'bbb-waitingroom-toggle',
                                             'label' => Yii::t('BbbModule.base', 'Waiting room'),
                                         ])->hint(Yii::t('BbbModule.base', 'Join users via a waiting room and let a moderator accept them.')); ?>
                                     </div>
@@ -288,28 +320,16 @@ $title = $spaceTitle . ($model->id
     </div>
 </div>
 
-<?php $this->registerJs("
-    function toggleControls() {
-        \$('#user-picker-box').toggle(!\$('#join-by-permissions-toggle').is(':checked'));
-        \$('#moderator-picker-box').toggle(!\$('#moderate-by-permissions-toggle').is(':checked'));
-    }
-    function updateChatState() {
-        var collapsed = \$('#bbb-rightbar-toggle').is(':checked');
-        var \$group   = \$('#bbb-chat-group');
-        var \$cb      = \$('#bbb-chat-toggle');
-        if (collapsed) {
-            \$cb.prop('checked', false).prop('disabled', true);
-            \$group.hide();
-        } else {
-            \$cb.prop('disabled', false);
-            \$group.show();
-        }
-    }
-    \$(document).ready(function () {
-        \$('#join-by-permissions-toggle, #moderate-by-permissions-toggle').on('change', toggleControls);
-        toggleControls();
-        console.log('test');
-        \$('#bbb-rightbar-toggle').on('change', updateChatState);
-        updateChatState();
-    });
-"); ?>
+<?php
+$msgPermission = json_encode(Yii::t('BbbModule.base', 'Not used if using permission system.'));
+$msgWaiting = json_encode(Yii::t('BbbModule.base', 'Not compatible with the waiting room feature.'));
+$msgJoin = json_encode(Yii::t('BbbModule.base', 'Not compatible with Join can start / Join can moderate.'));
+$msgRightbar = json_encode(Yii::t('BbbModule.base', 'Not available when right sidebar is collapsed.'));
+
+$this->registerJs("$(function(){
+    var h = humhub.modules.BBBHelpers;
+    h.setupDependent(['#join-by-permissions-toggle'], ['#user-picker-box'], $msgPermission, true);
+    h.setupDependent(['#moderate-by-permissions-toggle'], ['#moderator-picker-box'], $msgPermission, true);
+    h.setupDependent(['#bbb-rightbar-toggle'], ['#bbb-chat-group'], $msgRightbar);
+    h.setupDependentViceVersa(['#bbb-waitingroom-toggle'], ['#bbb-joincanstart-toggle', '#bbb-joincanmoderate-toggle'], $msgWaiting, $msgJoin);
+});");

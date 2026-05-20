@@ -103,12 +103,58 @@ humhub.module('BBBHelpers', function (module, require, $) {
         }, interval));
     }
 
+    function setTooltip($anchor, text) {
+        var el = $anchor[0];
+        try { var t = bootstrap.Tooltip.getInstance(el); if (t) t.dispose(); } catch (e) {}
+        $anchor.removeAttr('title').removeAttr('data-bs-original-title');
+        if (text) {
+            $anchor.attr('title', text);
+            try { new bootstrap.Tooltip(el, {trigger: 'hover'}); } catch (e) {}
+        }
+    }
+
+    function tooltipAnchor($el) {
+        if ($el.is(':input')) {
+            var $fc = $el.closest('.form-check');
+            return $fc.length ? $fc : $el.closest('.form-group');
+        }
+        return $el;
+    }
+
+    // When any trigger checkbox is checked: all inputs within each target are disabled+tooltipped.
+    // Checkboxes/radios are unchecked; other inputs are cleared via val('').
+    function setupDependent(triggerSels, targetSels, msg, keepValues = false) {
+        function update() {
+            var active = triggerSels.some(function (s) { return $(s).is(':checked'); });
+            targetSels.forEach(function (s) {
+                var $el = $(s);
+                var $inputs = $el.is(':input') ? $el : $el.find(':input');
+                $el.css('opacity', active ? 0.75 : '');
+                $inputs.prop('disabled', active);
+                if (active && !keepValues) {
+                    $inputs.filter(':checkbox, :radio').prop('checked', false);
+                    $inputs.not(':checkbox, :radio').val('');
+                }
+                setTooltip(tooltipAnchor($el), active ? msg : null);
+            });
+        }
+        $(triggerSels.join(', ')).on('change', update);
+        update();
+    }
+
+    function setupDependentViceVersa(selsA, selsB, msgA, msgB) {
+        setupDependent(selsA, selsB, msgA);
+        setupDependent(selsB, selsA, msgB);
+    }
+
     module.export({
         init: init,
         unload: unload,
         launchWindow: LaunchBBBWindow,
         toggleSessionState: toggleSessionState,
         reflectSessionState: reflectSessionState,
+        setupDependent: setupDependent,
+        setupDependentViceVersa: setupDependentViceVersa,
     });
 
 });
