@@ -1,3 +1,7 @@
+## v0.19.13 – 2026-05-28
+### Improved
+- **Fallback navigation for hidden nav items**: When the BBB navigation item is hidden (addNavItem = false), the admin/owner- link now is always labeled "Video-Sessions" regardless of the configured nav item title.
+
 ## v0.19.12 – 2026-05-20
 ### New
 - **Notifications on session start**: When a session is started, all explicitly assigned attendees and moderators receive a notification with a call icon. In sessions hosted on a user profile, the profile owner is additionally notified if they are not already among the invitees.
