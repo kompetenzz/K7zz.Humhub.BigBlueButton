@@ -8,6 +8,7 @@ use humhub\modules\space\widgets\HeaderControlsMenu;
 use humhub\modules\space\widgets\Sidebar;
 use humhub\modules\ui\menu\MenuLink;
 use humhub\modules\ui\menu\widgets\LeftNavigation;
+use humhub\modules\user\widgets\AccountMenu;
 use humhub\modules\user\widgets\AccountTopMenu;
 use humhub\modules\user\widgets\ProfileSidebar;
 use humhub\widgets\TopMenu;
@@ -154,10 +155,35 @@ class Events
                 return;
             }
 
-            $settings = new ContainerSettingsForm(['contentContainer' => $space]);
             $menu->addEntry(new MenuLink([
-                'label' => Html::encode($settings->navItemLabel),
+                'label' => Yii::t('BbbModule.base', 'BBB Live Sessions'),
                 'url' => $space->createUrl('/bbb/sessions'),
+                'icon' => 'video-camera',
+                'sortOrder' => 500,
+            ]));
+        } catch (\Throwable $e) {
+            Yii::error($e, 'bbb');
+        }
+    }
+
+    public static function onAccountMenuInit($event)
+    {
+        try {
+            $user = Yii::$app->user->getIdentity();
+            if (empty($user) || !$user->moduleManager->isEnabled('bbb')) {
+                return;
+            }
+
+            $addNavItem = Yii::$app->getModule('bbb')->settings->contentContainer($user)->get('addNavItem', true);
+            if ($addNavItem) {
+                return;
+            }
+
+            /** @var AccountMenu $menu */
+            $menu = $event->sender;
+            $menu->addEntry(new MenuLink([
+                'label' => Yii::t('BbbModule.base', 'BBB Live Sessions'),
+                'url' => $user->createUrl('/bbb/sessions'),
                 'icon' => 'video-camera',
                 'sortOrder' => 500,
             ]));
@@ -188,7 +214,7 @@ class Events
             /** @var AdminMenu $menu */
             $menu = $event->sender;
             $menu->addEntry(new MenuLink([
-                'label' => Html::encode(Yii::$app->getModule('bbb')->settings->get('navItemLabel', 'Live Sessions')),
+                'label' => Yii::t('BbbModule.base', 'BBB Live Sessions'),
                 'url' => ['/bbb/sessions'],
                 'icon' => 'video-camera',
                 'isActive' => ControllerHelper::isActivePath('bbb', ['sessions', 'session']),

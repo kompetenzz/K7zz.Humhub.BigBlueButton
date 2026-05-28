@@ -29,6 +29,13 @@ $canCreate = $this->context->contentContainer
     ? $this->context->contentContainer->can(Admin::class)
     : Yii::$app->user->can(Admin::class);
 
+$configUrl = null;
+if ($this->context->contentContainer && $canCreate) {
+    $configUrl = $this->context->contentContainer->createUrl('/bbb/container-config');
+} elseif (!$this->context->contentContainer && Yii::$app->user->isAdmin()) {
+    $configUrl = Url::to(['/bbb/config']);
+}
+
 // Toggle URLs — only relevant when no container (global admin view)
 $urlGlobal = Url::to(['/bbb/sessions/index', 'view' => 'global']);
 $urlAll = Url::to(['/bbb/sessions/index', 'view' => 'all']);
@@ -59,15 +66,23 @@ $renderRows = function (array $rows) use ($highlightId, $contextContainer): stri
     <div class="card mb-3 bg-white">
         <div class="card-header d-flex align-items-center flex-wrap gap-2">
 
+            <h1 class="mb-0 me-auto"><?= Yii::t('BbbModule.base', 'Conference sessions') ?></h1>
+
             <?php if ($canCreate): ?>
                 <?= Html::a(
                     Icon::get('plus') . ' ' . Yii::t('BbbModule.base', 'Create session'),
                     $createUrl,
-                    ['class' => 'btn btn-secondary ms-auto', 'style' => 'margin: 10px']
+                    ['class' => 'btn btn-secondary', 'style' => 'margin: 10px']
                 ); ?>
             <?php endif; ?>
 
-            <h1 class="mb-0 me-auto"><?= Yii::t('BbbModule.base', 'Conference sessions') ?></h1>
+            <?php if ($configUrl): ?>
+                <?= Html::a(
+                    Icon::get('cog') . ' ' . Yii::t('BbbModule.base', 'Module configuration'),
+                    $configUrl,
+                    ['class' => 'btn btn-sm btn-outline-secondary']
+                ); ?>
+            <?php endif; ?>
 
             <?php if ($isAdmin && !$this->context->contentContainer): ?>
                 <div class="btn-group ms-3" role="group" aria-label="<?= Yii::t('BbbModule.base', 'Session view') ?>">

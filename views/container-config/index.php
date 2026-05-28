@@ -6,19 +6,26 @@
  */
 
 use humhub\modules\ui\form\widgets\ActiveForm;
-use humhub\libs\Html;
 use humhub\modules\ui\icon\widgets\Icon;
+use humhub\modules\user\models\User;
 
 /* @var $this \humhub\modules\ui\view\components\View *
 /* @var $subNav string */
 /* @var $model \humhub\modules\custom_pages\models\forms\SettingsForm */
 
-$url = $this->context->contentContainer->createUrl('/bbb/sessions');
+$container = $this->context->contentContainer;
+$url = $container->createUrl('/bbb/sessions');
+$isUserProfile = $container instanceof User;
 
 ?>
 
 <div class="card">
-    <div class="card-header"><?= Yii::t('BbbModule.config', '<strong>Bigbluebutton</strong> Integration'); ?></div>
+    <div class="card-header d-flex align-items-center">
+        <span class="me-auto"><?= Yii::t('BbbModule.config', '<strong>Bigbluebutton</strong> Integration') ?></span>
+        <a href="<?= $url ?>" class="btn btn-sm btn-outline-primary">
+            <?= Icon::get('video-camera') ?> <?= Yii::t('BbbModule.config', 'Go to sessions') ?>
+        </a>
+    </div>
 
     <div class="card-body">
         <div class="clearfix">
@@ -32,16 +39,16 @@ $url = $this->context->contentContainer->createUrl('/bbb/sessions');
 
         <?php $form = ActiveForm::begin() ?>
         <div class="card-body">
-            <p><?= Yii::t('BbbModule.config', 'You can always access the container sessions setup screen at') ?>
-                <a href="<?= $url ?>"><?= $url ?></a>.
-            </p>
 
             <?= $form->field($model, 'addNavItem')
                 ->checkbox(); ?>
 
             <div id="bbb-nav-admin-hint" class="alert alert-info"
                 style="display: <?= $model->addNavItem ? 'none' : '' ?>;">
-                <?= Yii::t('BbbModule.config', 'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the space gear menu.') ?>
+                <?= $isUserProfile
+                    ? Yii::t('BbbModule.config', 'When the navigation entry is disabled, you will still find a <strong>Video-Sessions</strong> link in the account menu.')
+                    : Yii::t('BbbModule.config', 'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the space gear menu.')
+                    ?>
             </div>
 
             <?= $form->field($model, 'navItemLabel')

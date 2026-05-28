@@ -6,12 +6,18 @@
  */
 
 use humhub\modules\ui\form\widgets\ActiveForm;
+use humhub\modules\ui\icon\widgets\Icon;
 use yii\helpers\Url;
 $url = Url::to('/bbb/sessions');
 ?>
 
 <div class="card">
-    <div class="card-header"><?= Yii::t('BbbModule.config', '<strong>Bigbluebutton</strong> Integration'); ?></div>
+    <div class="card-header d-flex align-items-center">
+        <span class="me-auto"><?= Yii::t('BbbModule.config', '<strong>Bigbluebutton</strong> Integration') ?></span>
+        <a href="<?= $url ?>" class="btn btn-sm btn-outline-primary">
+            <?= Icon::get('video-camera') ?> <?= Yii::t('BbbModule.config', 'Go to sessions') ?>
+        </a>
+    </div>
 
     <div class="card-body">
         <div class="clearfix">
@@ -33,9 +39,6 @@ $url = Url::to('/bbb/sessions');
                 ->passwordInput(['autocomplete' => 'new-password']); ?>
 
             <h3><?= Yii::t('BbbModule.config', 'Navigation') ?></h3>
-            <p><?= Yii::t('BbbModule.config', 'You can always access the global sessions setup screen at') ?>
-                <a href="<?= $url ?>"><?= $url ?></a>.
-            </p>
             <?= $form->field($model, 'addNavItem')
                 ->checkbox(); ?>
 
