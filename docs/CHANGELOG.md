@@ -1,3 +1,9 @@
+## v0.19.14 – 2026-06-03
+### New
+- **Custom Pages Element Extension**: Two new element types for the HumHub Custom Pages module.
+  - **BBB Session** (single): Renders one selected session as a sidebar-style panel (image, title, live badge, description, start/join buttons). Session is chosen via a grouped dropdown (Global → Spaces → Users) in the template editor.
+  - **BBB Sessions** (list): Renders a compact, filterable session list as a grid table (thumbnail | title + live badge | topics + description | buttons). Supports filters "Active sessions only" and "Sidebar sessions only", and an additional sort option "By title (A–Z)".
+
 ## v0.19.13 – 2026-05-28
 ### Improved
 - **Fallback navigation for hidden nav items**: When the BBB navigation item is hidden (addNavItem = false), the admin/owner- link now is always labeled "Video-Sessions" regardless of the configured nav item title.

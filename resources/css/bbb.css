@@ -1,6 +1,6 @@
 .bbb-live-badge {
     display: inline-flex;
-    align-items: center;
+    align-items: start;
     gap: 5px;
     font-size: 11px;
     padding: 3px 8px;
@@ -34,4 +34,66 @@
 
 label div.hint-block {
     font-weight: normal !important;
+}
+/* Custom Pages list layout */
+.bbb-list {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.bbb-list-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 2fr auto;
+    align-items: start;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.bbb-list-row--last {
+    border-bottom: none;
+}
+
+.bbb-list-thumb img {
+    width: 100px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+}
+
+.bbb-list-title {
+    display: flex;
+    align-items: start;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.bbb-list-title a {
+    color: inherit;
+}
+
+.bbb-list-desc {
+    font-size: 0.875em;
+    color: #555;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.bbb-list-desc p {
+    margin: 0;
+}
+
+.bbb-list-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    white-space: nowrap;
 }

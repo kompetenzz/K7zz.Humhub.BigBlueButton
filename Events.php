@@ -12,6 +12,8 @@ use humhub\modules\user\widgets\AccountMenu;
 use humhub\modules\user\widgets\AccountTopMenu;
 use humhub\modules\user\widgets\ProfileSidebar;
 use humhub\widgets\TopMenu;
+use k7zz\humhub\bbb\extensions\custom_pages\elements\BBBSessionElement;
+use k7zz\humhub\bbb\extensions\custom_pages\elements\BBBSessionsElement;
 use k7zz\humhub\bbb\permissions\Admin;
 use k7zz\humhub\bbb\widgets\SidebarSessionWidget;
 use k7zz\humhub\bbb\models\forms\ContainerSettingsForm;
@@ -223,6 +225,14 @@ class Events
         } catch (\Throwable $e) {
             Yii::error($e, 'bbb');
         }
+    }
+
+    public static function onCustomPagesElementTypeServiceInit($event): void
+    {
+        /** @var \humhub\modules\custom_pages\modules\template\services\ElementTypeService $elementTypeService */
+        $elementTypeService = $event->sender;
+        $elementTypeService->addType(BBBSessionElement::class);
+        $elementTypeService->addType(BBBSessionsElement::class);
     }
 
     public static function onDashboardSidebarInit($event)
