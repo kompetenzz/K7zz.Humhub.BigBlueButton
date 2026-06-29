@@ -1,3 +1,10 @@
+## v0.19.15 – 2026-06-29
+### Fixed
+- **Start with hidden presentation**: The join-API user-data key used to hide the default presentation on login was incorrect (`bbb_presentation_hidden_on_login`, not a valid BBB parameter) and was silently ignored by BBB. Corrected to `bbb_hide_presentation_on_join`.
+
+### Improved
+- **Session state polling**: Reduced polling frequency for live session state indicators (sidebar/list "Active" badges) from 5s to 60s to lower server load.
+
 ## v0.19.14 – 2026-06-03
 ### New
 - **Custom Pages Element Extension**: Two new element types for the HumHub Custom Pages module.

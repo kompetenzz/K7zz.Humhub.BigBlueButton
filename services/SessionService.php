@@ -253,7 +253,7 @@ class SessionService
             $jp->addUserData('bbb_show_public_chat_on_login', false);
         }
         if ($session->start_presentation_hidden) {
-            $jp->addUserData('bbb_presentation_hidden_on_login', true);
+            $jp->addUserData('bbb_hide_presentation_on_join', true);
         }
 
         return $this->bbb->getJoinMeetingURL($jp);

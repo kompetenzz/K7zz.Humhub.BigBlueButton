@@ -64,7 +64,7 @@ humhub.module('BBBHelpers', function (module, require, $) {
             .forEach(el => el.style.display = running ? '' : 'none');
     }
 
-    function reflectSessionState(el, interval = 5000) {
+    function reflectSessionState(el, interval = 60000) {
         const id = el.id;
         if (!id) {
             console.error('Element with data-bbb-check-state is missing an id attribute:', el);
@@ -105,11 +105,11 @@ humhub.module('BBBHelpers', function (module, require, $) {
 
     function setTooltip($anchor, text) {
         var el = $anchor[0];
-        try { var t = bootstrap.Tooltip.getInstance(el); if (t) t.dispose(); } catch (e) {}
+        try { var t = bootstrap.Tooltip.getInstance(el); if (t) t.dispose(); } catch (e) { }
         $anchor.removeAttr('title').removeAttr('data-bs-original-title');
         if (text) {
             $anchor.attr('title', text);
-            try { new bootstrap.Tooltip(el, {trigger: 'hover'}); } catch (e) {}
+            try { new bootstrap.Tooltip(el, { trigger: 'hover' }); } catch (e) { }
         }
     }
 
