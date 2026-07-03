@@ -110,8 +110,8 @@ $this->setPageTitle($title);
                                     <?php if (Yii::$app->getModule('bbb')->settings->get('integrateBbbChat')): ?>
                                         <div class="form-group mt-3">
                                             <?= $f->field($model, 'integrateBbbChat')->checkbox([
-                                                'label' => Yii::t('BbbModule.base', 'Enable pre-meeting chat'),
-                                            ])->hint(Yii::t('BbbModule.base', 'Participants can queue messages before the meeting starts. They are injected into BBB chat when the session is created.')); ?>
+                                                'label' => Yii::t('BbbModule.base', 'Enable session chat'),
+                                            ])->hint(Yii::t('BbbModule.base', 'Adds a persistent chat to this session page. Messages can be written before, during and after meetings and are synchronised with BBB chat in real time.')); ?>
                                         </div>
                                     <?php endif; ?>
                                 </div>

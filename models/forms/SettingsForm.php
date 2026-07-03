@@ -44,7 +44,7 @@ class SettingsForm extends SettingsBase
         return array_merge([
             'bbbUrl'           => Yii::t('BbbModule.config', 'Server URL'),
             'bbbSecret'        => Yii::t('BbbModule.config', 'Shared Secret'),
-            'integrateBbbChat' => Yii::t('BbbModule.config', 'Integrate BBB Chat'),
+            'integrateBbbChat' => Yii::t('BbbModule.config', 'Enable session chat'),
         ], parent::attributeLabels());
     }
 

@@ -41,7 +41,7 @@ $url = Url::to('/bbb/sessions');
             <h3><?= Yii::t('BbbModule.config', 'Chat Integration') ?></h3>
             <?= $form->field($model, 'integrateBbbChat')
                 ->checkbox()
-                ->hint(Yii::t('BbbModule.config', 'Allows participants to queue messages before a meeting starts. Messages are injected into BBB chat when the meeting is created.')) ?>
+                ->hint(Yii::t('BbbModule.config', 'Enables a persistent session chat on session pages. Messages can be written before, during and after meetings and are synchronised with BBB chat in real time.')) ?>
 
             <h3><?= Yii::t('BbbModule.config', 'Navigation') ?></h3>
             <?= $form->field($model, 'addNavItem')
