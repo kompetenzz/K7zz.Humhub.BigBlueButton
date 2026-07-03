@@ -6,7 +6,9 @@ use humhub\components\access\ControllerAccess;
 use humhub\modules\user\models\User;
 
 use k7zz\humhub\bbb\models\forms\SessionForm;
+use k7zz\humhub\bbb\models\SessionMeetingChat;
 use k7zz\humhub\bbb\models\SessionUser;
+use k7zz\humhub\bbb\notifications\ChatQueued;
 use k7zz\humhub\bbb\notifications\SessionStarted;
 use k7zz\humhub\bbb\models\Session;
 use k7zz\humhub\bbb\models\Recording;
@@ -54,15 +56,20 @@ class SessionController extends BaseContentController
             ? $this->contentContainer->createUrl($route, $params)
             : Url::to(array_merge([$route], $params));
 
+        $preMeetingChats = $session->integrate_bbb_chat
+            ? SessionMeetingChat::findPreMeetingForSession($session->id)->all()
+            : [];
+
         return $this->render('index', [
-            'session' => $session,
-            'running' => $running,
-            'canStart' => $session->canStart(),
-            'startUrl' => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
-            'joinUrl' => Url::to($routeBase('/bbb/session/join', ['id' => $session->id]), true),
-            'isRunningUrl' => $this->contentContainer
+            'session'         => $session,
+            'running'         => $running,
+            'canStart'        => $session->canStart(),
+            'startUrl'        => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
+            'joinUrl'         => Url::to($routeBase('/bbb/session/join', ['id' => $session->id]), true),
+            'isRunningUrl'    => $this->contentContainer
                 ? $this->contentContainer->createUrl('/bbb/session/is-running', ['id' => $session->id])
                 : Url::to(['/bbb/session/is-running', 'id' => $session->id]),
+            'preMeetingChats' => $preMeetingChats,
         ]);
     }
 
@@ -354,6 +361,88 @@ class SessionController extends BaseContentController
 
         $ok = $this->svc->publishRecordingFormat($recordId, $formatType, $publish);
         return $this->asJson(['status' => $ok ? 200 : 500]);
+    }
+
+    /**
+     * POST: queue a pre-meeting chat message for a session.
+     * Saves the message and notifies all moderators.
+     */
+    public function actionQueueChat(int $id): \yii\web\Response
+    {
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException();
+
+        if (!$session->canJoin()) {
+            throw new ForbiddenHttpException();
+        }
+
+        $message = trim(Yii::$app->request->post('message', ''));
+        if ($message === '') {
+            return $this->asJson(['status' => 400, 'error' => Yii::t('BbbModule.base', 'Message cannot be empty.')]);
+        }
+
+        $user = Yii::$app->user->identity;
+        $chat = new SessionMeetingChat([
+            'session_id'      => $session->id,
+            'user_id_queued'  => $user->id,
+            'sender_name'     => $user->displayName,
+            'message'         => $message,
+            'source'          => SessionMeetingChat::SOURCE_HUMHUB,
+            'sent_at'         => null,
+        ]);
+
+        if (!$chat->save()) {
+            return $this->asJson(['status' => 500, 'error' => Yii::t('BbbModule.base', 'Could not save message.')]);
+        }
+
+        $this->notifyModeratorsChat($session, $message);
+
+        return $this->asJson(['status' => 200]);
+    }
+
+    /**
+     * GET: returns rendered pre-meeting chat messages for a session (AJAX partial).
+     */
+    public function actionPreMeetingChats(int $id): string
+    {
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException();
+
+        if (!$session->canJoin()) {
+            throw new ForbiddenHttpException();
+        }
+
+        $messages = SessionMeetingChat::findPreMeetingForSession($session->id)->all();
+
+        return $this->renderPartial('@bbb/views/session/_chatMessages', [
+            'messages' => $messages,
+        ]);
+    }
+
+    private function notifyModeratorsChat(Session $session, string $messageText): void
+    {
+        $notification = ChatQueued::instance()
+            ->from(Yii::$app->user->identity)
+            ->about($session);
+        $notification->messageText = $messageText;
+
+        // All explicit moderators
+        $moderatorQuery = User::find()
+            ->innerJoin('bbb_session_user su', 'su.user_id = user.id')
+            ->where(['su.session_id' => $session->id, 'su.role' => 'moderator']);
+
+        $notification->sendBulk($moderatorQuery);
+
+        // Container owner (Space admin / profile owner) if not already notified
+        $owner = $session->content->container;
+        if ($owner instanceof User && $owner->id !== Yii::$app->user->id) {
+            $alreadyNotified = SessionUser::find()
+                ->where(['session_id' => $session->id, 'user_id' => $owner->id, 'role' => 'moderator'])
+                ->exists();
+            if (!$alreadyNotified) {
+                $notification->send($owner);
+            }
+        }
     }
 
     private function notifySessionStarted(Session $session): void

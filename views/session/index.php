@@ -11,6 +11,7 @@ use yii\helpers\Url;
 /* @var $startUrl string */
 /* @var $joinUrl string */
 /* @var $isRunningUrl string */
+/* @var $preMeetingChats \k7zz\humhub\bbb\models\SessionMeetingChat[] */
 
 $bundle = BBBAssets::register($this);
 $this->setPageTitle($session->title);
@@ -111,6 +112,12 @@ $sessionLink = $routePrefix . '/' . $session->name;
                             </span>
                         <?php endif; ?>
                     </div>
+
+                    <?= $this->renderFile('@bbb/views/session/_chatBox.php', [
+                        'session'  => $session,
+                        'running'  => $running,
+                        'messages' => $preMeetingChats ?? [],
+                    ]) ?>
 
                     <?= $this->renderFile('@bbb/views/session/_recordingsBox.php', [
                         'model' => $session,

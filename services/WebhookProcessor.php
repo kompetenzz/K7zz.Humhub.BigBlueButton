@@ -174,21 +174,15 @@ class WebhookProcessor
 
     public function injectPendingMessages(Session $session, SessionMeeting $meeting): void
     {
-        $pending = SessionMeetingChat::find()
-            ->where([
-                'session_meeting_id' => $meeting->id,
-                'source'             => SessionMeetingChat::SOURCE_HUMHUB,
-                'sent_at'            => null,
-            ])
-            ->orderBy(['created_at' => SORT_ASC])
-            ->all();
+        $pending = SessionMeetingChat::findPendingForSession($session->id)->all();
 
         foreach ($pending as $chat) {
             $userName = $chat->sender_name ?: 'HumHub';
             $params   = new SendChatMessageParameters($session->uuid, $chat->message, $userName);
             $result   = $this->bbb->getSendChatMessage($params);
             if ($result->success()) {
-                $chat->sent_at = time();
+                $chat->session_meeting_id = $meeting->id;
+                $chat->sent_at            = time();
                 $chat->save();
             } else {
                 Yii::error("BBB inject message failed for session {$session->name}: " . $result->getMessage(), 'bbb');

@@ -31,6 +31,8 @@ return [
     ],
     'urlManagerRules' => [
         ['class' => 'k7zz\humhub\bbb\components\SessionUrlRule'],
-        'bbb/webhook/receive' => 'bbb/webhook/receive',
+        'bbb/webhook/receive'       => 'bbb/webhook/receive',
+        'bbb/session/queue-chat'    => 'bbb/session/queue-chat',
+        'bbb/session/pre-meeting-chats' => 'bbb/session/pre-meeting-chats',
     ]
 ];

@@ -97,3 +97,40 @@ label div.hint-block {
     gap: 6px;
     white-space: nowrap;
 }
+
+/* --- Pre-meeting chat box --- */
+.bbb-chat-box {
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.bbb-chat-messages {
+    max-height: 240px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bbb-chat-msg {
+    background: var(--bs-light, #f8f9fa);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.875rem;
+}
+
+.bbb-chat-msg.bbb-chat-pending {
+    border-left: 3px solid var(--bs-warning, #ffc107);
+}
+
+.bbb-chat-meta {
+    margin-bottom: 2px;
+}
+
+.bbb-chat-text {
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+.bbb-chat-form textarea {
+    resize: none;
+}
