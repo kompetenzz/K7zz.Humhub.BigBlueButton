@@ -107,6 +107,13 @@ $this->setPageTitle($title);
                                         'changeLabel' => Yii::t('BbbModule.base', 'Change session image.'),
                                         'hint' => Yii::t('BbbModule.base', 'Optional image for this session. Recommended size: 800x600px.'),
                                     ]) ?>
+                                    <?php if (Yii::$app->getModule('bbb')->settings->get('integrateBbbChat')): ?>
+                                        <div class="form-group mt-3">
+                                            <?= $f->field($model, 'integrateBbbChat')->checkbox([
+                                                'label' => Yii::t('BbbModule.base', 'Enable pre-meeting chat'),
+                                            ])->hint(Yii::t('BbbModule.base', 'Participants can queue messages before the meeting starts. They are injected into BBB chat when the session is created.')); ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
