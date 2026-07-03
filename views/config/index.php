@@ -38,6 +38,11 @@ $url = Url::to('/bbb/sessions');
             <?= $form->field($model, 'bbbSecret')
                 ->passwordInput(['autocomplete' => 'new-password']); ?>
 
+            <h3><?= Yii::t('BbbModule.config', 'Chat Integration') ?></h3>
+            <?= $form->field($model, 'integrateBbbChat')
+                ->checkbox()
+                ->hint(Yii::t('BbbModule.config', 'Allows participants to queue messages before a meeting starts. Messages are injected into BBB chat when the meeting is created.')) ?>
+
             <h3><?= Yii::t('BbbModule.config', 'Navigation') ?></h3>
             <?= $form->field($model, 'addNavItem')
                 ->checkbox(); ?>
