@@ -110,6 +110,7 @@ class SessionMeetingChat extends ActiveRecord
     {
         return static::find()
             ->where(['session_id' => $sessionId])
+            ->with(['queuedByUser', 'user'])
             ->orderBy(['created_at' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit);
     }
