@@ -236,7 +236,7 @@ class SessionService
             Yii::$app->user->identity->displayName,
             $moderator ? Role::MODERATOR : Role::VIEWER
         ))
-            ->setUserID(Yii::$app->user->identity->email);
+            ->setUserID((string) Yii::$app->user->identity->id);
         if (Yii::$app->user->identity->getProfileImage()) {
             $jp->setAvatarURL(Url::to(Yii::$app->user->identity->getProfileImage()->getUrl(), true));
         }
