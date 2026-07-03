@@ -102,4 +102,15 @@ class SessionMeetingChat extends ActiveRecord
             ->where(['session_id' => $sessionId, 'session_meeting_id' => null])
             ->orderBy(['created_at' => SORT_ASC]);
     }
+
+    /**
+     * Returns all messages for a session across all meetings (pre-meeting + in-meeting + BBB-received).
+     */
+    public static function findAllForSession(int $sessionId, int $limit = 300): ActiveQuery
+    {
+        return static::find()
+            ->where(['session_id' => $sessionId])
+            ->orderBy(['created_at' => SORT_ASC, 'id' => SORT_ASC])
+            ->limit($limit);
+    }
 }

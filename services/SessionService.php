@@ -11,6 +11,7 @@ use BigBlueButton\Parameters\{
     JoinMeetingParameters,
     GetRecordingsParameters,
     PublishRecordingsParameters,
+    SendChatMessageParameters,
     UpdateRecordingsParameters
 };
 use k7zz\humhub\bbb\models\RecordingFormat;
@@ -164,6 +165,12 @@ class SessionService
         return $this->bbb
             ->isMeetingRunning(new IsMeetingRunningParameters($uuid))
             ->isRunning();
+    }
+
+    public function sendChatToMeeting(Session $session, string $message, string $userName): bool
+    {
+        $params = new SendChatMessageParameters($session->uuid, $message, $userName);
+        return $this->bbb->getSendChatMessage($params)->success();
     }
 
     /**

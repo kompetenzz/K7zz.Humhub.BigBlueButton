@@ -161,6 +161,7 @@ class WebhookProcessor
 
         $chat = new SessionMeetingChat([
             'session_meeting_id' => $meeting->id,
+            'session_id'         => $meeting->session_id,
             'user_id'            => $join?->user_id,
             'sender_name'        => $senderName,
             'message'            => $message,

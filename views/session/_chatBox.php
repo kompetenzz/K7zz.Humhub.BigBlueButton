@@ -19,14 +19,14 @@ $routeBase = fn($route, $params = []) => $this->context->contentContainer
     : Url::to(array_merge([$route], $params));
 
 $queueUrl    = $routeBase('/bbb/session/queue-chat', ['id' => $session->id]);
-$messagesUrl = $routeBase('/bbb/session/pre-meeting-chats', ['id' => $session->id]);
+$messagesUrl = $routeBase('/bbb/session/chat-messages', ['id' => $session->id]);
 
 ?>
 <div class="card-footer bbb-chat-box" id="bbb-chat-box-<?= $session->id ?>">
-    <h6 class="mb-2">
-        <?= Icon::get('comment') ?> <?= Yii::t('BbbModule.base', 'Pre-meeting chat') ?>
+    <h6 class="mb-2 d-flex align-items-center gap-2">
+        <?= Icon::get('comment') ?> <?= Yii::t('BbbModule.base', 'Session chat') ?>
         <?php if ($running): ?>
-            <span class="badge bg-success ms-1"><?= Yii::t('BbbModule.base', 'Meeting active') ?></span>
+            <span class="badge bg-success"><?= Yii::t('BbbModule.base', 'Live') ?></span>
         <?php endif; ?>
     </h6>
 
@@ -34,38 +34,31 @@ $messagesUrl = $routeBase('/bbb/session/pre-meeting-chats', ['id' => $session->i
         <?= $this->renderFile('@bbb/views/session/_chatMessages.php', ['messages' => $messages]) ?>
     </div>
 
-    <?php if ($running): ?>
-        <p class="text-muted small mb-0">
-            <?= Icon::get('info-circle') ?>
-            <?= Yii::t('BbbModule.base', 'The meeting is running. Join BBB to chat in real time. Messages sent here will appear in the next meeting.') ?>
-        </p>
-    <?php else: ?>
-        <div class="bbb-chat-form">
-            <div class="input-group">
-                <textarea id="bbb-chat-input-<?= $session->id ?>"
-                    class="form-control form-control-sm"
-                    rows="2"
-                    placeholder="<?= Html::encode(Yii::t('BbbModule.base', 'Write a message… (e.g. "I\'ll be a bit late")')) ?>"
-                ></textarea>
-                <button class="btn btn-outline-primary btn-sm bbb-chat-send"
-                    data-session-id="<?= $session->id ?>"
-                    data-url="<?= Html::encode($queueUrl) ?>"
-                    data-messages-url="<?= Html::encode($messagesUrl) ?>"
-                    title="<?= Yii::t('BbbModule.base', 'Send message') ?>">
-                    <?= Icon::get('paper-plane') ?>
-                </button>
-            </div>
-            <div class="bbb-chat-feedback mt-1" id="bbb-chat-feedback-<?= $session->id ?>" style="display:none;"></div>
+    <div class="bbb-chat-form">
+        <div class="input-group">
+            <textarea id="bbb-chat-input-<?= $session->id ?>"
+                class="form-control form-control-sm"
+                rows="2"
+                placeholder="<?= Html::encode(Yii::t('BbbModule.base', 'Write a message…')) ?>"
+            ></textarea>
+            <button class="btn btn-outline-primary btn-sm bbb-chat-send"
+                data-session-id="<?= $session->id ?>"
+                data-url="<?= Html::encode($queueUrl) ?>"
+                data-messages-url="<?= Html::encode($messagesUrl) ?>"
+                title="<?= Yii::t('BbbModule.base', 'Send message') ?>">
+                <?= Icon::get('paper-plane') ?>
+            </button>
         </div>
-    <?php endif; ?>
+        <div class="bbb-chat-feedback mt-1" id="bbb-chat-feedback-<?= $session->id ?>" style="display:none;"></div>
+    </div>
 </div>
 
 <?php
 $id           = $session->id;
-$sendLabel    = Html::encode(Yii::t('BbbModule.base', 'Send'));
+$running      = (int) $running;
 $errEmpty     = Html::encode(Yii::t('BbbModule.base', 'Please enter a message.'));
 $errSend      = Html::encode(Yii::t('BbbModule.base', 'Could not send message. Please try again.'));
-$successLabel = Html::encode(Yii::t('BbbModule.base', 'Message queued.'));
+$successLabel = Html::encode(Yii::t('BbbModule.base', 'Message sent.'));
 
 $this->registerJs(<<<JS
 (function () {
@@ -73,6 +66,8 @@ $this->registerJs(<<<JS
     var \$input = \$('#bbb-chat-input-{$id}');
     var \$msgs  = \$('#bbb-chat-messages-{$id}');
     var \$fb    = \$('#bbb-chat-feedback-{$id}');
+    var running = {$running};
+    var pollTimer = null;
 
     function sendMessage() {
         var msg = \$input.val().trim();
@@ -80,7 +75,6 @@ $this->registerJs(<<<JS
             showFeedback('{$errEmpty}', 'text-danger');
             return;
         }
-
         \$btn.prop('disabled', true);
         \$.ajax({
             url:    \$btn.data('url'),
@@ -90,7 +84,7 @@ $this->registerJs(<<<JS
             if (res.status === 200) {
                 \$input.val('');
                 showFeedback('{$successLabel}', 'text-success');
-                refreshMessages(\$btn.data('messages-url'));
+                refreshMessages();
             } else {
                 showFeedback(res.error || '{$errSend}', 'text-danger');
             }
@@ -101,8 +95,11 @@ $this->registerJs(<<<JS
         });
     }
 
-    function refreshMessages(url) {
-        \$.get(url).done(function(html) { \$msgs.html(html); });
+    function refreshMessages() {
+        \$.get(\$btn.data('messages-url')).done(function(html) {
+            \$msgs.html(html);
+            \$msgs.scrollTop(\$msgs[0].scrollHeight);
+        });
     }
 
     function showFeedback(msg, cls) {
@@ -115,6 +112,23 @@ $this->registerJs(<<<JS
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
+        }
+    });
+
+    // Scroll to bottom on load
+    \$msgs.scrollTop(\$msgs[0].scrollHeight);
+
+    // Poll for new messages every 5 s when meeting is active
+    if (running) {
+        pollTimer = setInterval(refreshMessages, 5000);
+    }
+
+    // Stop polling when page visibility changes (tab hidden)
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            clearInterval(pollTimer);
+        } else if (running) {
+            pollTimer = setInterval(refreshMessages, 5000);
         }
     });
 })();

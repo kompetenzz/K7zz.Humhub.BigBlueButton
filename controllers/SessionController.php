@@ -6,6 +6,7 @@ use humhub\components\access\ControllerAccess;
 use humhub\modules\user\models\User;
 
 use k7zz\humhub\bbb\models\forms\SessionForm;
+use k7zz\humhub\bbb\models\SessionMeeting;
 use k7zz\humhub\bbb\models\SessionMeetingChat;
 use k7zz\humhub\bbb\models\SessionUser;
 use k7zz\humhub\bbb\notifications\ChatQueued;
@@ -56,8 +57,8 @@ class SessionController extends BaseContentController
             ? $this->contentContainer->createUrl($route, $params)
             : Url::to(array_merge([$route], $params));
 
-        $preMeetingChats = $session->integrate_bbb_chat
-            ? SessionMeetingChat::findPreMeetingForSession($session->id)->all()
+        $chatMessages = $session->integrate_bbb_chat
+            ? SessionMeetingChat::findAllForSession($session->id)->all()
             : [];
 
         return $this->render('index', [
@@ -69,7 +70,7 @@ class SessionController extends BaseContentController
             'isRunningUrl'    => $this->contentContainer
                 ? $this->contentContainer->createUrl('/bbb/session/is-running', ['id' => $session->id])
                 : Url::to(['/bbb/session/is-running', 'id' => $session->id]),
-            'preMeetingChats' => $preMeetingChats,
+            'preMeetingChats' => $chatMessages,
         ]);
     }
 
@@ -382,28 +383,46 @@ class SessionController extends BaseContentController
         }
 
         $user = Yii::$app->user->identity;
+
+        $running = $this->svc->isRunning($session->uuid);
+        $meeting = $running
+            ? SessionMeeting::find()
+                ->where(['session_id' => $session->id, 'ended_at' => null])
+                ->orderBy(['started_at' => SORT_DESC])
+                ->one()
+            : null;
+
         $chat = new SessionMeetingChat([
-            'session_id'      => $session->id,
-            'user_id_queued'  => $user->id,
-            'sender_name'     => $user->displayName,
-            'message'         => $message,
-            'source'          => SessionMeetingChat::SOURCE_HUMHUB,
-            'sent_at'         => null,
+            'session_id'         => $session->id,
+            'session_meeting_id' => $meeting?->id,
+            'user_id_queued'     => $user->id,
+            'sender_name'        => $user->displayName,
+            'message'            => $message,
+            'source'             => SessionMeetingChat::SOURCE_HUMHUB,
+            'sent_at'            => null,
         ]);
 
         if (!$chat->save()) {
             return $this->asJson(['status' => 500, 'error' => Yii::t('BbbModule.base', 'Could not save message.')]);
         }
 
-        $this->notifyModeratorsChat($session, $message);
+        if ($meeting !== null) {
+            if ($this->svc->sendChatToMeeting($session, $message, $user->displayName)) {
+                $chat->sent_at = time();
+                $chat->save();
+            }
+            // If BBB injection fails: message stays (sent_at=null) and will be visible in HumHub chat
+        } else {
+            $this->notifyModeratorsChat($session, $message);
+        }
 
         return $this->asJson(['status' => 200]);
     }
 
     /**
-     * GET: returns rendered pre-meeting chat messages for a session (AJAX partial).
+     * GET: returns rendered chat messages for a session (AJAX partial, all meetings).
      */
-    public function actionPreMeetingChats(int $id): string
+    public function actionChatMessages(int $id): string
     {
         $session = $this->svc->get($id, $this->contentContainer)
             ?? throw new NotFoundHttpException();
@@ -412,7 +431,7 @@ class SessionController extends BaseContentController
             throw new ForbiddenHttpException();
         }
 
-        $messages = SessionMeetingChat::findPreMeetingForSession($session->id)->all();
+        $messages = SessionMeetingChat::findAllForSession($session->id)->all();
 
         return $this->renderPartial('@bbb/views/session/_chatMessages', [
             'messages' => $messages,
