@@ -31,5 +31,6 @@ return [
     ],
     'urlManagerRules' => [
         ['class' => 'k7zz\humhub\bbb\components\SessionUrlRule'],
+        'bbb/webhook/receive' => 'bbb/webhook/receive',
     ]
 ];

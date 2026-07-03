@@ -240,7 +240,7 @@ class Session extends ContentActiveRecord
                 ],
                 'integer'
             ],
-            [['enabled', 'public_join', 'allow_recording', 'show_in_sidebar', 'is_space_default', 'start_chat_minimized', 'start_participants_minimized', 'start_presentation_hidden', 'notify_on_start'], 'boolean'],
+            [['enabled', 'public_join', 'allow_recording', 'show_in_sidebar', 'is_space_default', 'start_chat_minimized', 'start_participants_minimized', 'start_presentation_hidden', 'notify_on_start', 'integrate_bbb_chat'], 'boolean'],
             [['public_token'], 'string', 'max' => 64],
             ['layout', 'required'],
             ['layout', 'in', 'range' => Layouts::values()],

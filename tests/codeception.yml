@@ -1,0 +1,14 @@
+actor: Tester
+namespace: bbb
+bootstrap: _bootstrap.php
+settings:
+    colors: true
+    memory_limit: 4096M
+paths:
+    tests: codeception
+    output: codeception/_output
+    data: codeception/_data
+    support: codeception/_support
+    envs: /opt/humhub/protected/humhub/tests/config/env
+config:
+    test_entry_url: http://localhost:8080/index-test.php

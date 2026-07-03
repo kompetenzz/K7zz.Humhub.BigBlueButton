@@ -64,6 +64,7 @@ class SessionForm extends Model
     public bool $startChatMinimized = false;
     public bool $startParticipantsMinimized = false;
     public bool $startPresentationHidden = false;
+    public bool $integrateBbbChat = false;
     public bool $enabled = true;
     public bool $notifyOnStart = true;
     public bool $showInSidebar = false;
@@ -186,6 +187,7 @@ class SessionForm extends Model
         $model->startChatMinimized = (bool) $session->start_chat_minimized;
         $model->startParticipantsMinimized = (bool) $session->start_participants_minimized;
         $model->startPresentationHidden = (bool) $session->start_presentation_hidden;
+        $model->integrateBbbChat = (bool) $session->integrate_bbb_chat;
         $model->contentContainer = $session->content->container;
         $model->creatorId = $session->creator_user_id;
         $model->layout = $session->layout;
@@ -277,7 +279,7 @@ class SessionForm extends Model
             ['imageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
             ['presentationUpload', 'file', 'extensions' => 'pdf', 'maxSize' => 40 * 1024 * 1024], // max. 40 MB
             ['cameraBgImageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 800, 'minHeight' => 400],
-            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'startChatMinimized', 'startParticipantsMinimized', 'startPresentationHidden', 'enabled', 'hidden', 'showInSidebar', 'isSpaceDefault', 'notifyOnStart', 'removeImage', 'removePresentation', 'removeCameraBgImage'], 'boolean'],
+            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'startChatMinimized', 'startParticipantsMinimized', 'startPresentationHidden', 'integrateBbbChat', 'enabled', 'hidden', 'showInSidebar', 'isSpaceDefault', 'notifyOnStart', 'removeImage', 'removePresentation', 'removeCameraBgImage'], 'boolean'],
             [['joinCanStart', 'joinCanModerate'], 'validateNoWaitingRoomConflict'],
             ['layout', 'required'],
             ['layout', 'in', 'range' => Layouts::values()],
@@ -346,6 +348,7 @@ class SessionForm extends Model
         $session->start_chat_minimized = $this->startChatMinimized;
         $session->start_participants_minimized = $this->startParticipantsMinimized;
         $session->start_presentation_hidden = $this->startPresentationHidden;
+        $session->integrate_bbb_chat = $this->integrateBbbChat;
         $session->layout = $this->layout;
         $session->enabled = $this->enabled;
         $session->show_in_sidebar = $this->showInSidebar;

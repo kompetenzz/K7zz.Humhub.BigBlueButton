@@ -21,6 +21,7 @@ class SettingsForm extends SettingsBase
     public string $bbbUrl = '';
     /** @var string  Security salt / secret from BBB configuration */
     public string $bbbSecret = '';
+    public bool $integrateBbbChat = false;
 
     /**
      * @inheritdoc
@@ -31,6 +32,7 @@ class SettingsForm extends SettingsBase
             [['bbbUrl', 'bbbSecret'], 'required'],
             ['bbbUrl', 'url', 'defaultScheme' => 'https'],
             ['bbbSecret', 'string', 'max' => 255],
+            ['integrateBbbChat', 'boolean'],
         ], parent::rules());
     }
 
@@ -40,8 +42,9 @@ class SettingsForm extends SettingsBase
     public function attributeLabels(): array
     {
         return array_merge([
-            'bbbUrl' => Yii::t('BbbModule.config', 'Server URL'),
-            'bbbSecret' => Yii::t('BbbModule.config', 'Shared Secret')
+            'bbbUrl'           => Yii::t('BbbModule.config', 'Server URL'),
+            'bbbSecret'        => Yii::t('BbbModule.config', 'Shared Secret'),
+            'integrateBbbChat' => Yii::t('BbbModule.config', 'Integrate BBB Chat'),
         ], parent::attributeLabels());
     }
 
@@ -54,8 +57,9 @@ class SettingsForm extends SettingsBase
     {
         $this->settings = Yii::$app->getModule('bbb')->settings;
         parent::init();
-        $this->bbbUrl = $this->settings->get('bbbUrl') ?? '';
-        $this->bbbSecret = $this->settings->get('bbbSecret') ?? '';
+        $this->bbbUrl          = $this->settings->get('bbbUrl') ?? '';
+        $this->bbbSecret       = $this->settings->get('bbbSecret') ?? '';
+        $this->integrateBbbChat = (bool) ($this->settings->get('integrateBbbChat') ?? false);
     }
 
     /**
@@ -72,6 +76,7 @@ class SettingsForm extends SettingsBase
         }
         $this->settings->set('bbbUrl', $this->bbbUrl);
         $this->settings->set('bbbSecret', $this->bbbSecret);
+        $this->settings->set('integrateBbbChat', $this->integrateBbbChat);
         return true;
     }
 }

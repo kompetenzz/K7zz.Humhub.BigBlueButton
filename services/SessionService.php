@@ -6,6 +6,7 @@ use Yii;
 use BigBlueButton\BigBlueButton;
 use BigBlueButton\Parameters\{
     CreateMeetingParameters,
+    HooksCreateParameters,
     IsMeetingRunningParameters,
     JoinMeetingParameters,
     GetRecordingsParameters,
@@ -220,6 +221,9 @@ class SessionService
             Yii::error("BBB-CreateMeeting failed for session {$s->name} ({$s->id}): " . $r->getMessage(), 'bbb');
             return null;
         }
+
+        $this->registerWebhookIfEnabled($s);
+
         return $this->joinUrl($s, true);
     }
 
@@ -257,6 +261,24 @@ class SessionService
         }
 
         return $this->bbb->getJoinMeetingURL($jp);
+    }
+
+    private function registerWebhookIfEnabled(Session $session): void
+    {
+        $settings = Yii::$app->getModule('bbb')->settings;
+        $globalEnabled = (bool) ($settings->get('integrateBbbChat') ?? false);
+        if (!$globalEnabled || !$session->integrate_bbb_chat) {
+            return;
+        }
+
+        $callbackUrl = Yii::$app->urlManager->createAbsoluteUrl(['/bbb/webhook/receive']);
+        $hp = (new HooksCreateParameters($callbackUrl))
+            ->setMeetingID($session->uuid);
+
+        $result = $this->bbb->hooksCreate($hp);
+        if (!$result->success()) {
+            Yii::error("BBB-HooksCreate failed for session {$session->name} ({$session->id}): " . $result->getMessage(), 'bbb');
+        }
     }
 
     public function anonymousJoinUrl(Session $session, string $displayName): string
