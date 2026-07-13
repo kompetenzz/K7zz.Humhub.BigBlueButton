@@ -1,3 +1,28 @@
+## v1.0.0 – 2026-07-06
+### New
+- **BBB chat integration: SyncroChat**: Meeting chat is now bridged between HumHub and BBB in both directions, via a new BBB meeting webhook (meeting-started/ended, user-joined/left, chat messages, recording state, recording published).
+  - Messages written in the HumHub session chat box are relayed live into the BBB in-meeting chat, and vice versa.
+  - Messages written before the meeting has started are queued and automatically injected into BBB once the meeting starts.
+  - The chat history shows dividers for day changes, meeting boundaries ("Meeting Start" / "Meeting End" with time) and recording state ("Recording started/stopped").
+  - Avatars show the HumHub profile picture when the BBB participant can be matched to a HumHub account, otherwise a colored initial bubble (also for anonymous/guest participants).
+  - Toggle via a new global setting ("Enable session chat") and a per-session option; disabled by default.
+- **Emoji reactions in the session chat**: React to any chat message with 👍 ❤️ 😂 😮 🎉 via a hover picker; a click on an existing badge toggles your own reaction. The message author receives a notification. Reactions live in HumHub only — BBB has no reaction API, so they are not visible inside a running meeting.
+- **Message formatting**: URLs in chat messages are automatically linked (opening in a new tab), and WhatsApp-style inline markup is rendered: `*bold*`, `_italic_`, `~strikethrough~` and `` `code` ``. Input is HTML-encoded before formatting, so no markup can be injected.
+- **Chat & recording notifications with own categories**: Moderators are notified when someone writes in the session chat (message text included); users are notified when someone reacts to their message and when a recording of a session they can join becomes available. Each type is a separate category in the personal notification settings ("BBB chat message received", "BBB chat reaction received", "BBB recording available", defaults: web; recordings also by e-mail).
+- **Webhook health warning**: If webhook registration with the BBB server fails on session start, the module now warns on all channels instead of failing silently: a log entry, a notification to the session's moderators, a red banner on the session page (visible to users who can start the session), and a bold moderator-only message inside the BBB meeting chat. If webhook events do arrive later, the banner clears itself.
+
+### Fixed
+- **Session-state polling caused BBB server overload**: Every `is-running` poll (used for the "Active" badge and the join-waiting page) triggered a live, synchronous API call to the BBB server. During a session with many participants, this added up to a steady stream of blocking outbound requests that competed with the meeting's own media load, degrading the whole HumHub instance. `isRunning()` now answers from the local `bbb_session_meeting` table (kept current via the same BBB webhook introduced for chat, which is now always registered for every session regardless of the chat-integration setting), and only falls back to a live BBB call - throttled to at most once per 15s per session - if no local record is found (e.g. webhook not delivered).
+- **Notifications were silently dropped**: Session-start (and other) notifications were stored but never delivered for space-hosted sessions because the category default did not enable the web target; additionally, self-directed system warnings were suppressed by HumHub's originator check. Web notifications are now enabled by default for all BBB categories, and all categories are listed in the module config so they appear in the personal notification settings.
+- **Chat polling never started mid-visit**: The 5-second chat refresh only started when the meeting was already running at page load. The chat box now listens to the session-state poller and starts/stops its refresh dynamically when the meeting starts or ends.
+- **Empty right column**: When chat is disabled for a session and no recordings exist, the session page no longer shows an empty gray right column; the info card is centered instead. With recordings but no chat, the recordings box is shown without height limit.
+
+### Improved
+- **Session state polling**: The client-side poll timer now pauses while its browser tab is hidden, and backs off to a 10-minute interval once a meeting has been confirmed running (only "did it end" is left to detect, which is far less time-sensitive than "did it start"). While still waiting for a meeting to start, polling continues at the normal interval even in a hidden tab, so someone waiting in a background tab won't miss a meeting that starts and ends while they're away. After clicking Start/Join, a few quick follow-up polls pick up the new meeting state within seconds.
+- **Chat auto-refresh**: The refresh keeps your scroll position while you read older messages (it only follows new messages when you are already at the bottom) and no longer closes an open reaction picker.
+- **Recordings box**: Fixed height with its own scrollbar below the chat; the chat scrolls to the newest message only after the recordings box has finished loading, so the position no longer jumps.
+- **Module uninstall**: The uninstall migration now drops all module tables (meetings, chat, reactions, joins, recording formats), not just the two original ones.
+
 ## v0.19.15 – 2026-06-29
 ### Fixed
 - **Start with hidden presentation**: The join-API user-data key used to hide the default presentation on login was incorrect (`bbb_presentation_hidden_on_login`, not a valid BBB parameter) and was silently ignored by BBB. Corrected to `bbb_hide_presentation_on_join`.

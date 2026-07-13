@@ -4,6 +4,9 @@ return [
     '<strong>Bigbluebutton</strong> Integration' => '<strong>Bigbluebutton</strong>-Integration',
     'API Settings' => 'API-Einstellungen',
     'Add navigation item' => 'Navigationselement hinzufügen',
+    'Chat Integration' => 'Chat-Integration',
+    'Enable session chat' => 'Sitzungs-Chat aktivieren',
+    'Enables a persistent session chat on session pages. Messages can be written before, during and after meetings and are synchronised with BBB chat in real time.' => 'Ermöglicht einen persistenten Sitzungs-Chat auf den Sitzungsseiten. Nachrichten können vor, während und nach den Sitzungen geschrieben werden und werden in Echtzeit mit dem BBB-Chat synchronisiert.',
     'Go to sessions' => 'Zu den Videokonferenzen',
     'Navigation' => 'Navigation',
     'Navigation item title' => 'Titel des Navigationselements',
@@ -17,4 +20,6 @@ return [
     'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the administration menu.' => 'Wenn der Navigationseintrag deaktiviert ist, wird ein <strong>Sitzungen</strong>-Link im Administrationsmenü bereitgestellt.',
     'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the space gear menu.' => 'Wenn der Navigationseintrag deaktiviert ist, wird ein <strong>Sitzungen</strong>-Link im Space-Gear-Menü bereitgestellt.',
     'When the navigation entry is disabled, you will still find a <strong>Video-Sessions</strong> link in the account menu.' => 'Wenn der Navigationseintrag deaktiviert ist, findest du den Link <strong>Video-Sessions</strong> im Account-Menü.',
+    'To guarantee correct functionality, please use BigBlueButton >= 3.0.19 and make sure that the webhooks feature of your BigBlueButton Server is enabled.' => 'Um die korrekte Funktionalität zu gewährleisten, sollte BigBlueButton >= 3.0.19 mit aktivierter Webhooks-Funktion verwendet werden.',
+    'Will not work without functioning webhooks feature of your BigBlueButton Server.' => 'Funktioniert nicht ohne die funktionierende Webhooks-Funktion des BigBlueButton-Servers.',
 ];

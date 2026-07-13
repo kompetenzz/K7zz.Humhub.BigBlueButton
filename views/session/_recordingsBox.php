@@ -5,6 +5,8 @@ use yii\helpers\Url;
 /* @var $this \yii\web\View */
 /* @var $model \k7zz\humhub\bbb\models\Session */
 /* @var $contentContainer \humhub\modules\content\components\ContentContainerActiveRecord|null */
+/* @var $chatEnabled bool */
+$chatEnabled = $chatEnabled ?? true;
 
 if (!$model->canJoin()) {
     return;
@@ -21,25 +23,52 @@ $recordingsUrl = $contentContainer
 $errTxt = Yii::t('BbbModule.base', 'Error loading recordings');
 ?>
 
-<div id="bbb-recordingsbox-<?= $model->id ?>" class="card-footer" style="display:none;">
-    <div class="bbb-recordings-container"></div>
+<div id="bbb-recordings-box-<?= $model->id ?>" class="bbb-recordings-box" style="display:none;">
+    <div class="bbb-panel-heading">
+        <?= \humhub\modules\ui\icon\widgets\Icon::get('video-camera') ?>
+        <?= Yii::t('BbbModule.base', 'Recordings') ?>
+    </div>
+    <div class="bbb-recordings-container<?= $chatEnabled ? '' : ' bbb-recordings-container--unlimited' ?>"></div>
 </div>
 
 <?php
-$id       = $model->id;
-$countJson = Json::htmlEncode($countUrl);
-$recsJson  = Json::htmlEncode($recordingsUrl);
-$errJson   = Json::htmlEncode($errTxt);
+$id          = $model->id;
+$countJson   = Json::htmlEncode($countUrl);
+$recsJson    = Json::htmlEncode($recordingsUrl);
+$errJson     = Json::htmlEncode($errTxt);
+$showColJs = $chatEnabled ? '' : "\$('#bbb-recordings-box-{$id}').closest('.bbb-session-right').show();";
+$hideColJs = $chatEnabled ? '' : "\$('#bbb-recordings-box-{$id}').closest('.bbb-session-right').hide();";
 
 $this->registerJs(<<<JS
     $.ajax({ url: {$countJson}, timeout: 10000 })
         .done(function(count) {
-            if (count <= 0) return;
-            var box = $('#bbb-recordingsbox-{$id}');
-            box.show();
-            $.ajax({ url: {$recsJson}, timeout: 10000 })
-                .done(function(html) { box.find('.bbb-recordings-container').html(html); })
-                .fail(function() { box.find('.bbb-recordings-container').html('<div class="text-danger">' + {$errJson} + '</div>'); });
+            if (count <= 0) {
+                {$hideColJs}
+                \$(document).trigger('bbb:layout:{$id}');
+                return;
+            }
+            var box = \$('#bbb-recordings-box-{$id}');
+            \$.ajax({ url: {$recsJson}, timeout: 10000 })
+                .done(function(html) {
+                    var trimmed = html.trim();
+                    if (!trimmed) {
+                        {$hideColJs}
+                        \$(document).trigger('bbb:layout:{$id}');
+                        return;
+                    }
+                    {$showColJs}
+                    box.show();
+                    box.find('.bbb-recordings-container').html(trimmed);
+                    \$(document).trigger('bbb:layout:{$id}');
+                })
+                .fail(function() {
+                    {$hideColJs}
+                    \$(document).trigger('bbb:layout:{$id}');
+                });
+        })
+        .fail(function() {
+            {$hideColJs}
+            \$(document).trigger('bbb:layout:{$id}');
         });
 JS, \yii\web\View::POS_READY);
 ?>

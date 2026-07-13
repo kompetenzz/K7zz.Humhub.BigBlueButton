@@ -32,13 +32,19 @@ $url = Url::to('/bbb/sessions');
         <?php $form = ActiveForm::begin() ?>
         <div class="card-body">
             <h3><?= Yii::t('BbbModule.config', 'API Settings') ?></h3>
+            <div class="help-block">
+                <?= Yii::t('BbbModule.config', 'To guarantee correct functionality, please use BigBlueButton >= 3.0.19 and make sure that the webhooks feature of your BigBlueButton Server is enabled.') ?>
+            </div>
+
             <?= $form->field($model, 'bbbUrl')
                 ->textInput(options: ['placeholder' => 'https://bbb.example.org/bigbluebutton/']); ?>
 
             <?= $form->field($model, 'bbbSecret')
                 ->passwordInput(['autocomplete' => 'new-password']); ?>
 
+
             <h3><?= Yii::t('BbbModule.config', 'Chat Integration') ?></h3>
+                <?= Yii::t('BbbModule.config', 'Will not work without functioning webhooks feature of your BigBlueButton Server.') ?>
             <?= $form->field($model, 'integrateBbbChat')
                 ->checkbox()
                 ->hint(Yii::t('BbbModule.config', 'Enables a persistent session chat on session pages. Messages can be written before, during and after meetings and are synchronised with BBB chat in real time.')) ?>

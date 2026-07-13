@@ -36,6 +36,11 @@ class Session extends ContentActiveRecord
     /** @var PreviewImage|null Output image for the session (if set). */
     public $outputImage = null;
 
+    public const ROLE_NAMES = [
+        'moderator' => 'moderator',
+        'attendee' => 'attendee'
+    ];
+
     /**
      * Handles image preview after loading the model.
      */
@@ -187,7 +192,6 @@ class Session extends ContentActiveRecord
         return $pivot ? (bool) $pivot->can_join : false;
     }
 
-
     public function isModerator(?UserComponent $user = null): bool
     {
         $user ??= Yii::$app->user;
@@ -199,7 +203,7 @@ class Session extends ContentActiveRecord
         }
 
         $pivot = SessionUser::findOne(['session_id' => $this->id, 'user_id' => $user->id]);
-        return $pivot ? (bool) $pivot->role === 'moderator' || $this->join_can_moderate : false;
+        return $pivot ? (bool) $pivot->role === self::ROLE_NAMES['moderator'] || $this->join_can_moderate : false;
     }
 
     private function can(?UserComponent $user, BasePermission|string $permission): bool
@@ -259,14 +263,14 @@ class Session extends ContentActiveRecord
     {
         return $this->hasMany(User::class, ['id' => 'user_id'])
             ->via('sessionUsers', function (ActiveQuery $q) {
-                $q->andWhere(['role' => 'attendee']);
+                $q->andWhere(['role' => self::ROLE_NAMES['attendee']]);
             });
     }
     public function getModeratorUsers(): ActiveQuery
     {
         return $this->hasMany(User::class, ['id' => 'user_id'])
             ->via('sessionUsers', function (ActiveQuery $q) {
-                $q->andWhere(['role' => 'moderator']);
+                $q->andWhere(['role' => self::ROLE_NAMES['moderator']]);
             });
     }
     public function getFile(string $ref): File|null

@@ -4,10 +4,13 @@ namespace k7zz\humhub\bbb\services;
 
 use BigBlueButton\BigBlueButton;
 use BigBlueButton\Parameters\SendChatMessageParameters;
+use humhub\modules\user\models\User;
 use k7zz\humhub\bbb\models\Session;
 use k7zz\humhub\bbb\models\SessionMeeting;
 use k7zz\humhub\bbb\models\SessionMeetingChat;
 use k7zz\humhub\bbb\models\SessionMeetingJoin;
+use k7zz\humhub\bbb\notifications\ChatMsgReceived;
+use k7zz\humhub\bbb\notifications\RecordingReady;
 use Yii;
 
 /**
@@ -47,12 +50,16 @@ class WebhookProcessor
         }
 
         match ($type) {
-            'meeting-started'         => $this->onMeetingStarted($internalId, $externalId),
-            'meeting-ended'           => $this->onMeetingEnded($internalId),
-            'user-joined'             => $this->onUserJoined($internalId, $attrs['user'] ?? []),
-            'user-left'               => $this->onUserLeft($internalId, $attrs['user'] ?? []),
-            'chat-group-message-sent' => $this->onChatMessage($internalId, $attrs['chat-message'] ?? []),
-            default                   => null,
+            'meeting-created',
+            'meeting-started'              => $this->onMeetingStarted($internalId, $externalId),
+            'meeting-ended'                => $this->onMeetingEnded($internalId),
+            'user-joined'                  => $this->onUserJoined($internalId, $attrs['user'] ?? []),
+            'user-left'                    => $this->onUserLeft($internalId, $attrs['user'] ?? []),
+            'chat-group-message-sent'      => $this->onChatMessage($internalId, $attrs['chat-message'] ?? []),
+            'meeting-recording-started',
+            'meeting-recording-stopped'    => $this->onRecordingStateChanged($internalId, $type),
+            'rap-publish-ended'            => $this->onRecordingPublished($internalId, $externalId),
+            default                        => null,
         };
     }
 
@@ -68,18 +75,30 @@ class WebhookProcessor
             return null;
         }
 
+        $now     = time();
         $meeting = new SessionMeeting([
             'session_id'          => $session->id,
             'internal_meeting_id' => $internalId,
-            'started_at'          => time(),
-            'created_at'          => time(),
+            'started_at'          => $now,
+            'created_at'          => $now,
         ]);
         if (!$meeting->save()) {
             Yii::error("BBB webhook: could not save SessionMeeting for {$internalId}", 'bbb');
             return null;
         }
 
-        $this->injectPendingMessages($session, $meeting);
+        (new SessionMeetingChat([
+            'session_id'         => $session->id,
+            'session_meeting_id' => $meeting->id,
+            'source'             => SessionMeetingChat::SOURCE_SYSTEM,
+            'message'            => 'meeting-started',
+            'sender_name'        => '',
+            'created_at'         => $now,
+        ]))->save();
+
+        // Webhook did arrive — clear a possible false-positive hook-failed banner flag
+        Yii::$app->cache->delete('bbb:hook_failed:' . $session->id);
+
         return $meeting;
     }
 
@@ -89,8 +108,22 @@ class WebhookProcessor
         if ($meeting === null) {
             return false;
         }
-        $meeting->ended_at = time();
-        return $meeting->save();
+        $now             = time();
+        $meeting->ended_at = $now;
+        if (!$meeting->save()) {
+            return false;
+        }
+
+        (new SessionMeetingChat([
+            'session_id'         => $meeting->session_id,
+            'session_meeting_id' => null,
+            'source'             => SessionMeetingChat::SOURCE_SYSTEM,
+            'message'            => 'meeting-ended',
+            'sender_name'        => '',
+            'created_at'         => $now,
+        ]))->save();
+
+        return true;
     }
 
     public function onUserJoined(string $internalId, array $userAttrs): ?SessionMeetingJoin
@@ -150,19 +183,58 @@ class WebhookProcessor
 
         $senderAttrs       = $msgAttrs['sender'] ?? [];
         $bbbInternalUserId = $senderAttrs['internal-user-id'] ?? '';
-        $senderName        = $senderAttrs['name'] ?? '';
-        $message           = $msgAttrs['message'] ?? '';
+        $externalUserId    = $senderAttrs['external-user-id'] ?? null;
+        $senderName        = trim($senderAttrs['name'] ?? '');
+        $message           = trim($msgAttrs['message'] ?? '');
 
         if ($message === '') {
             return null;
         }
 
-        $join = SessionMeetingJoin::findByInternalUserId($meeting->id, $bbbInternalUserId);
+        // Primary: external-user-id from BBB event = HumHub user ID
+        $userId = ($externalUserId !== null && ctype_digit((string) $externalUserId))
+            ? (int) $externalUserId
+            : null;
+
+        // Secondary: look up via SessionMeetingJoin (populated by user-joined events)
+        if ($userId === null) {
+            $join   = SessionMeetingJoin::findByInternalUserId($meeting->id, $bbbInternalUserId);
+            $userId = $join?->user_id;
+        }
+
+        // Fallback: match by sender name within session's HumHub messages
+        if ($userId === null && $senderName !== '') {
+            $ref = SessionMeetingChat::find()
+                ->select('user_id')
+                ->where([
+                    'session_id'  => $meeting->session_id,
+                    'source'      => SessionMeetingChat::SOURCE_HUMHUB,
+                    'sender_name' => $senderName,
+                ])
+                ->andWhere(['not', ['user_id' => null]])
+                ->scalar();
+            $userId = $ref ? (int) $ref : null;
+        }
+
+        // Skip echo: BBB reflects injected HumHub messages back with the BBB_MSG_SUFFIX on the sender name.
+        $unprefixedSender = str_ends_with($senderName, SessionMeetingChat::BBB_MSG_SUFFIX)
+            ? substr($senderName, 0, -strlen(SessionMeetingChat::BBB_MSG_SUFFIX))
+            : $senderName;
+
+        $isEcho = SessionMeetingChat::find()->where([
+            'session_meeting_id' => $meeting->id,
+            'source'             => SessionMeetingChat::SOURCE_HUMHUB,
+            'sender_name'        => $unprefixedSender,
+            'message'            => $message,
+        ])->andWhere(['not', ['sent_at' => null]])->exists();
+        if ($isEcho) {
+            return null;
+        }
 
         $chat = new SessionMeetingChat([
             'session_meeting_id' => $meeting->id,
             'session_id'         => $meeting->session_id,
-            'user_id'            => $join?->user_id,
+            'user_id'            => $userId,
             'sender_name'        => $senderName,
             'message'            => $message,
             'source'             => SessionMeetingChat::SOURCE_BBB,
@@ -170,7 +242,46 @@ class WebhookProcessor
             'created_at'         => time(),
         ]);
         $chat->save();
+
+        $originator = $userId ? User::findOne($userId) : null;
+        ChatMsgReceived::notifyModerators($chat, $originator);
+
         return $chat;
+    }
+
+    public function onRecordingStateChanged(string $internalId, string $type): void
+    {
+        $meeting = SessionMeeting::findByInternalId($internalId);
+        if ($meeting === null) {
+            return;
+        }
+
+        $message = ($type === 'meeting-recording-started') ? 'recording-started' : 'recording-stopped';
+        (new SessionMeetingChat([
+            'session_id'         => $meeting->session_id,
+            'session_meeting_id' => $meeting->id,
+            'source'             => SessionMeetingChat::SOURCE_SYSTEM,
+            'message'            => $message,
+            'sender_name'        => '',
+            'created_at'         => time(),
+        ]))->save();
+    }
+
+    public function onRecordingPublished(string $internalId, ?string $externalId): void
+    {
+        $session = $externalId ? Session::findOne(['uuid' => $externalId]) : null;
+        if ($session === null) {
+            $meeting = SessionMeeting::findByInternalId($internalId);
+            if ($meeting === null) {
+                return;
+            }
+            $session = Session::findOne($meeting->session_id);
+        }
+        if ($session === null) {
+            return;
+        }
+
+        RecordingReady::notifyModerators($session);
     }
 
     public function injectPendingMessages(Session $session, SessionMeeting $meeting): void
@@ -178,7 +289,7 @@ class WebhookProcessor
         $pending = SessionMeetingChat::findPendingForSession($session->id)->all();
 
         foreach ($pending as $chat) {
-            $userName = $chat->sender_name ?: 'HumHub';
+            $userName = ($chat->sender_name . SessionMeetingChat::BBB_MSG_SUFFIX) ?: 'von extern';
             $params   = new SendChatMessageParameters($session->uuid, $chat->message, $userName);
             $result   = $this->bbb->getSendChatMessage($params);
             if ($result->success()) {

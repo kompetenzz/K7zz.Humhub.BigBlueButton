@@ -18,20 +18,29 @@ $routeBase = fn($route, $params = []) => $this->context->contentContainer
     ? $this->context->contentContainer->createUrl($route, $params)
     : Url::to(array_merge([$route], $params));
 
-$queueUrl    = $routeBase('/bbb/session/queue-chat', ['id' => $session->id]);
+$queueUrl    = $routeBase('/bbb/session/send-chat', ['id' => $session->id]);
 $messagesUrl = $routeBase('/bbb/session/chat-messages', ['id' => $session->id]);
+$reactUrl    = $routeBase('/bbb/session/chat-react', ['id' => $session->id]);
+$editUrl     = $routeBase('/bbb/session/chat-edit', ['id' => $session->id]);
+$deleteUrl   = $routeBase('/bbb/session/chat-delete', ['id' => $session->id]);
 
 ?>
-<div class="card-footer bbb-chat-box" id="bbb-chat-box-<?= $session->id ?>">
-    <h6 class="mb-2 d-flex align-items-center gap-2">
+<div class="bbb-chat-box" id="bbb-chat-box-<?= $session->id ?>">
+    <div class="bbb-panel-heading">
         <?= Icon::get('comment') ?> <?= Yii::t('BbbModule.base', 'Session chat') ?>
         <?php if ($running): ?>
-            <span class="badge bg-success"><?= Yii::t('BbbModule.base', 'Live') ?></span>
+            <span class="badge bg-success ms-1"><?= Yii::t('BbbModule.base', 'Live') ?></span>
         <?php endif; ?>
-    </h6>
+    </div>
 
-    <div class="bbb-chat-messages mb-2" id="bbb-chat-messages-<?= $session->id ?>">
-        <?= $this->renderFile('@bbb/views/session/_chatMessages.php', ['messages' => $messages]) ?>
+    <div class="bbb-chat-messages mb-2" id="bbb-chat-messages-<?= $session->id ?>"
+         data-react-url="<?= Html::encode($reactUrl) ?>"
+         data-edit-url="<?= Html::encode($editUrl) ?>"
+         data-delete-url="<?= Html::encode($deleteUrl) ?>">
+        <?= $this->renderFile('@bbb/views/session/_chatMessages.php', [
+            'messages' => $messages,
+            'session'  => $session,
+        ]) ?>
     </div>
 
     <div class="bbb-chat-form">
@@ -59,6 +68,9 @@ $running      = (int) $running;
 $errEmpty     = Html::encode(Yii::t('BbbModule.base', 'Please enter a message.'));
 $errSend      = Html::encode(Yii::t('BbbModule.base', 'Could not send message. Please try again.'));
 $successLabel = Html::encode(Yii::t('BbbModule.base', 'Message sent.'));
+$confirmDel   = Html::encode(Yii::t('BbbModule.base', 'Delete this message?'));
+$saveLabel    = Html::encode(Yii::t('BbbModule.base', 'Save'));
+$cancelLabel  = Html::encode(Yii::t('BbbModule.base', 'Cancel'));
 
 $this->registerJs(<<<JS
 (function () {
@@ -95,16 +107,112 @@ $this->registerJs(<<<JS
         });
     }
 
-    function refreshMessages() {
+    function refreshMessages(keepScroll) {
+        var pos = \$msgs.scrollTop();
         \$.get(\$btn.data('messages-url')).done(function(html) {
             \$msgs.html(html);
-            \$msgs.scrollTop(\$msgs[0].scrollHeight);
+            \$msgs.scrollTop(keepScroll ? pos : 999999999);
         });
     }
+
+    function sendReaction(chatId, emoji) {
+        \$.ajax({
+            url:    \$msgs.data('react-url'),
+            method: 'POST',
+            data:   { chatId: chatId, emoji: emoji, _csrf: yii.getCsrfToken() },
+        }).done(function () {
+            refreshMessages(true);
+        });
+    }
+
+    // Delegated: content is replaced on every refresh
+    \$msgs.on('click', '.bbb-chat-reaction', function () {
+        sendReaction(\$(this).closest('.bbb-chat-reactions').data('chat-id'), \$(this).data('emoji'));
+    });
+    \$msgs.on('click', '.bbb-chat-reaction-add', function (e) {
+        e.stopPropagation();
+        var \$picker = \$(this).siblings('.bbb-chat-reaction-picker');
+        \$msgs.find('.bbb-chat-reaction-picker').not(\$picker).hide();
+        \$picker.toggle();
+    });
+    \$msgs.on('click', '.bbb-chat-reaction-picker span', function () {
+        sendReaction(\$(this).closest('.bbb-chat-reactions').data('chat-id'), \$(this).data('emoji'));
+    });
+    \$(document).on('click', function () {
+        \$msgs.find('.bbb-chat-reaction-picker').hide();
+    });
+
+    \$msgs.on('click', '.bbb-chat-delete', function () {
+        if (!confirm('{$confirmDel}')) return;
+        var chatId = \$(this).closest('.bbb-chat-msg').data('chat-id');
+        \$.ajax({
+            url:    \$msgs.data('delete-url'),
+            method: 'POST',
+            data:   { chatId: chatId, _csrf: yii.getCsrfToken() },
+        }).done(function () {
+            refreshMessages(true);
+        });
+    });
+
+    \$msgs.on('click', '.bbb-chat-edit', function () {
+        var \$m = \$(this).closest('.bbb-chat-msg');
+        if (\$m.find('.bbb-chat-edit-form').length) return;
+
+        var \$bubble = \$m.find('.bbb-chat-bubble');
+        var \$form = \$(
+            '<div class="bbb-chat-edit-form">' +
+                '<textarea class="form-control form-control-sm" rows="2"></textarea>' +
+                '<div class="bbb-chat-edit-actions mt-1">' +
+                    '<button type="button" class="btn btn-primary btn-sm bbb-chat-edit-save">{$saveLabel}</button> ' +
+                    '<button type="button" class="btn btn-secondary btn-sm bbb-chat-edit-cancel">{$cancelLabel}</button>' +
+                '</div>' +
+            '</div>'
+        );
+        \$form.find('textarea').val(\$m.attr('data-raw'));
+        \$bubble.hide().after(\$form);
+        \$form.find('textarea').focus();
+    });
+
+    \$msgs.on('click', '.bbb-chat-edit-cancel', function () {
+        var \$m = \$(this).closest('.bbb-chat-msg');
+        \$m.find('.bbb-chat-edit-form').remove();
+        \$m.find('.bbb-chat-bubble').show();
+    });
+
+    function saveEdit(\$m) {
+        var text = \$m.find('.bbb-chat-edit-form textarea').val().trim();
+        if (!text) return;
+        \$.ajax({
+            url:    \$msgs.data('edit-url'),
+            method: 'POST',
+            data:   { chatId: \$m.data('chat-id'), message: text, _csrf: yii.getCsrfToken() },
+        }).done(function () {
+            refreshMessages(true);
+        });
+    }
+
+    \$msgs.on('click', '.bbb-chat-edit-save', function () {
+        saveEdit(\$(this).closest('.bbb-chat-msg'));
+    });
+    \$msgs.on('keydown', '.bbb-chat-edit-form textarea', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            saveEdit(\$(this).closest('.bbb-chat-msg'));
+        } else if (e.key === 'Escape') {
+            \$(this).closest('.bbb-chat-msg').find('.bbb-chat-edit-cancel').trigger('click');
+        }
+    });
 
     function showFeedback(msg, cls) {
         \$fb.removeClass('text-danger text-success').addClass(cls).text(msg).show();
         setTimeout(function() { \$fb.fadeOut(); }, 3000);
+    }
+
+    var scrolled = false;
+    function scrollToBottom() {
+        if (scrolled) return;
+        scrolled = true;
+        \$msgs.scrollTop(999999999);
     }
 
     \$btn.on('click', sendMessage);
@@ -115,20 +223,50 @@ $this->registerJs(<<<JS
         }
     });
 
-    // Scroll to bottom on load
-    \$msgs.scrollTop(\$msgs[0].scrollHeight);
+    // Scroll after recordings box settles; fallback if recordings box not rendered
+    \$(document).one('bbb:layout:{$id}', scrollToBottom);
+    setTimeout(scrollToBottom, 1500);
 
-    // Poll for new messages every 5 s when meeting is active
-    if (running) {
-        pollTimer = setInterval(refreshMessages, 5000);
+    function autoRefresh() {
+        // Don't wipe an open reaction picker or edit form
+        if (\$msgs.find('.bbb-chat-reaction-picker:visible, .bbb-chat-edit-form').length) return;
+        // Keep position while the user reads older messages; follow new ones at the bottom
+        var nearBottom = \$msgs[0].scrollHeight - \$msgs.scrollTop() - \$msgs[0].clientHeight < 40;
+        refreshMessages(!nearBottom);
     }
+
+    function startPolling() {
+        if (pollTimer === null) {
+            pollTimer = setInterval(autoRefresh, 5000);
+        }
+    }
+
+    function stopPolling() {
+        clearInterval(pollTimer);
+        pollTimer = null;
+    }
+
+    // Poll for new messages every 5 s while the meeting is active. The initial
+    // state comes from PHP; later changes arrive via the session-state poller.
+    if (running) {
+        startPolling();
+    }
+    document.addEventListener('bbb:state', function (e) {
+        running = e.detail.running ? 1 : 0;
+        if (running && !document.hidden) {
+            startPolling();
+            refreshMessages(true);
+        } else if (!running) {
+            stopPolling();
+        }
+    });
 
     // Stop polling when page visibility changes (tab hidden)
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            clearInterval(pollTimer);
+            stopPolling();
         } else if (running) {
-            pollTimer = setInterval(refreshMessages, 5000);
+            startPolling();
         }
     });
 })();

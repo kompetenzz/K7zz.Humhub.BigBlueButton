@@ -169,11 +169,11 @@ class SessionForm extends Model
         $model->moderator_pw = $session->moderator_pw;
         $model->attendee_pw = $session->attendee_pw;
         $model->attendeeRefs = self::getUserQuery($session)
-            ->andWhere(['role' => 'attendee'])
+            ->andWhere(['role' => Session::ROLE_NAMES['attendee']])
             ->select('user.guid')
             ->column();
         $model->moderatorRefs = self::getUserQuery($session)
-            ->andWhere(['role' => 'moderator'])
+            ->andWhere(['role' => Session::ROLE_NAMES['moderator']])
             ->select('user.guid')
             ->column();
         $model->joinByPermissions = count($model->attendeeRefs) === 0;
@@ -279,7 +279,7 @@ class SessionForm extends Model
             ['imageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 200, 'minHeight' => 200],
             ['presentationUpload', 'file', 'extensions' => 'pdf', 'maxSize' => 40 * 1024 * 1024], // max. 40 MB
             ['cameraBgImageUpload', 'image', 'extensions' => 'png, jpg, jpeg', 'minWidth' => 800, 'minHeight' => 400],
-            [['publicJoin', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'startChatMinimized', 'startParticipantsMinimized', 'startPresentationHidden', 'integrateBbbChat', 'enabled', 'hidden', 'showInSidebar', 'isSpaceDefault', 'notifyOnStart', 'removeImage', 'removePresentation', 'removeCameraBgImage'], 'boolean'],
+            [['publicJoin', 'joinByPermissions', 'moderateByPermissions', 'joinCanStart', 'joinCanModerate', 'hasWaitingRoom', 'allowRecording', 'muteOnEntry', 'startChatMinimized', 'startParticipantsMinimized', 'startPresentationHidden', 'integrateBbbChat', 'enabled', 'hidden', 'showInSidebar', 'isSpaceDefault', 'notifyOnStart', 'removeImage', 'removePresentation', 'removeCameraBgImage'], 'boolean'],
             [['joinCanStart', 'joinCanModerate'], 'validateNoWaitingRoomConflict'],
             ['layout', 'required'],
             ['layout', 'in', 'range' => Layouts::values()],
@@ -562,16 +562,18 @@ class SessionForm extends Model
 
     private function assignUsers(Session $session): bool
     {
+        // Assign from highest permission level to lowest, so that moderators are not overwritten by attendees
+
         // Assign moderators
         if (!$this->moderateByPermissions) {
             $moderatorDBUsers = User::find()
                 ->where(['IN', 'guid', $this->moderatorRefs])
                 ->all();
             foreach ($moderatorDBUsers as $user) {
-                $this->addUser($user, 'moderator');
+                $this->addUser($user, Session::ROLE_NAMES['moderator']);
             }
         } else if ($this->record !== null) {
-            SessionUser::deleteAll(['session_id' => $this->record->id, 'role' => 'moderator']);
+            SessionUser::deleteAll(['session_id' => $this->record->id, 'role' => Session::ROLE_NAMES['moderator']]);
         }
 
         // Assign attendees
@@ -581,10 +583,10 @@ class SessionForm extends Model
                 ->andWhere(['NOT IN', 'guid', $this->moderatorRefs]) // keine Moderatoren als Teilnehmer
                 ->all();
             foreach ($attendeeDBUsers as $user) {
-                $this->addUser($user, $this->moderateByPermissions ? 'moderator' : 'attendee');
+                $this->addUser($user, Session::ROLE_NAMES['attendee']);
             }
         } else if ($this->record !== null) {
-            SessionUser::deleteAll(['session_id' => $this->record->id, 'can_join' => true, 'role' => 'attendee']);
+            SessionUser::deleteAll(['session_id' => $this->record->id, 'can_join' => true, 'role' => Session::ROLE_NAMES['attendee']]);
         }
 
         return true;
@@ -603,7 +605,7 @@ class SessionForm extends Model
             ]);
         }
         $userRef->role = $role;
-        $userRef->can_start = $role === 'moderator';
+        $userRef->can_start = $role === Session::ROLE_NAMES['moderator'];
         $userRef->can_join = true;
 
         return $userRef->save();

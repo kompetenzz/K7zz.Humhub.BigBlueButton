@@ -29,10 +29,20 @@ return [
         ['class' => DashboardSidebar::class, 'event' => DashboardSidebar::EVENT_INIT, 'callback' => [Events::class, 'onDashboardSidebarInit']],
         ['class' => 'humhub\modules\custom_pages\modules\template\services\ElementTypeService', 'event' => 'init', 'callback' => [Events::class, 'onCustomPagesElementTypeServiceInit']],
     ],
+    'notifications' => [
+        \k7zz\humhub\bbb\notifications\SessionStarted::class,
+        \k7zz\humhub\bbb\notifications\ChatMsgReceived::class,
+        \k7zz\humhub\bbb\notifications\ChatMsgReaction::class,
+        \k7zz\humhub\bbb\notifications\RecordingReady::class,
+        \k7zz\humhub\bbb\notifications\WebhookMissing::class,
+    ],
     'urlManagerRules' => [
         ['class' => 'k7zz\humhub\bbb\components\SessionUrlRule'],
         'bbb/webhook/receive'       => 'bbb/webhook/receive',
-        'bbb/session/queue-chat'    => 'bbb/session/queue-chat',
+        'bbb/session/send-chat'    => 'bbb/session/send-chat',
         'bbb/session/chat-messages' => 'bbb/session/chat-messages',
+        'bbb/session/chat-react'    => 'bbb/session/chat-react',
+        'bbb/session/chat-edit'     => 'bbb/session/chat-edit',
+        'bbb/session/chat-delete'   => 'bbb/session/chat-delete',
     ]
 ];

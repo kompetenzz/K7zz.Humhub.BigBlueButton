@@ -7,9 +7,11 @@ use humhub\modules\user\models\User;
 
 use k7zz\humhub\bbb\models\forms\SessionForm;
 use k7zz\humhub\bbb\models\SessionMeeting;
+use k7zz\humhub\bbb\models\SessionChatReaction;
 use k7zz\humhub\bbb\models\SessionMeetingChat;
 use k7zz\humhub\bbb\models\SessionUser;
-use k7zz\humhub\bbb\notifications\ChatQueued;
+use k7zz\humhub\bbb\notifications\ChatMsgReaction;
+use k7zz\humhub\bbb\notifications\ChatMsgReceived;
 use k7zz\humhub\bbb\notifications\SessionStarted;
 use k7zz\humhub\bbb\models\Session;
 use k7zz\humhub\bbb\models\Recording;
@@ -52,25 +54,29 @@ class SessionController extends BaseContentController
             throw new ForbiddenHttpException();
         }
 
-        $running = $this->svc->isRunning($session->uuid);
+        $running     = $this->svc->isRunning($session->uuid);
+        $chatEnabled = (bool) (Yii::$app->getModule('bbb')->settings->get('integrateBbbChat') ?? false)
+            && (bool) $session->integrate_bbb_chat;
         $routeBase = fn($route, $params = []) => $this->contentContainer
             ? $this->contentContainer->createUrl($route, $params)
             : Url::to(array_merge([$route], $params));
 
-        $chatMessages = $session->integrate_bbb_chat
+        $chatMessages = $chatEnabled
             ? SessionMeetingChat::findAllForSession($session->id)->all()
             : [];
 
         return $this->render('index', [
-            'session'         => $session,
-            'running'         => $running,
-            'canStart'        => $session->canStart(),
-            'startUrl'        => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
-            'joinUrl'         => Url::to($routeBase('/bbb/session/join', ['id' => $session->id]), true),
-            'isRunningUrl'    => $this->contentContainer
+            'session'          => $session,
+            'running'          => $running,
+            'chatEnabled'      => $chatEnabled,
+            'canStart'         => $session->canStart(),
+            'startUrl'         => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
+            'joinUrl'          => Url::to($routeBase('/bbb/session/join', ['id' => $session->id]), true),
+            'isRunningUrl'     => $this->contentContainer
                 ? $this->contentContainer->createUrl('/bbb/session/is-running', ['id' => $session->id])
                 : Url::to(['/bbb/session/is-running', 'id' => $session->id]),
-            'preMeetingChats' => $chatMessages,
+            'preMeetingChats'  => $chatMessages,
+            'recordingsEnabled' => $session->canJoin(),
         ]);
     }
 
@@ -222,15 +228,20 @@ class SessionController extends BaseContentController
         );
 
         if (!$this->svc->isRunning($session->uuid)) {
+            $chatMessages = $session->integrate_bbb_chat
+                ? SessionMeetingChat::findAllForSession($session->id)->all()
+                : [];
+
             return $this->render('join', [
-                'session' => $session,
-                'canStart' => $session->canStart(),
-                'startUrl' => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
-                'joinUrl' => $joinUrl,
-                'running' => $this->svc->isRunning($session->uuid),
-                'isRunningUrl' => $this->contentContainer
+                'session'         => $session,
+                'canStart'        => $session->canStart(),
+                'startUrl'        => $this->getUrl("/bbb/session/start/{$session->name}") . '?embed=0',
+                'joinUrl'         => $joinUrl,
+                'running'         => false,
+                'isRunningUrl'    => $this->contentContainer
                     ? $this->contentContainer->createUrl('/bbb/session/is-running', ['id' => $session->id])
                     : Url::to(['/bbb/session/is-running', 'id' => $session->id]),
+                'preMeetingChats' => $chatMessages,
             ]);
         }
 
@@ -270,7 +281,11 @@ class SessionController extends BaseContentController
 
         $running = $this->svc->isRunning($session->uuid);
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        return $this->asJson(['running' => $running]);
+        $response = ['running' => $running];
+        if ($session->canStart() && Yii::$app->cache->get('bbb:hook_failed:' . $session->id) !== false) {
+            $response['hookFailed'] = true;
+        }
+        return $this->asJson($response);
     }
 
     /**
@@ -365,10 +380,10 @@ class SessionController extends BaseContentController
     }
 
     /**
-     * POST: queue a pre-meeting chat message for a session.
+     * POST: send a chat message for a session.
      * Saves the message and notifies all moderators.
      */
-    public function actionQueueChat(int $id): \yii\web\Response
+    public function actionSendChat(int $id): \yii\web\Response
     {
         $session = $this->svc->get($id, $this->contentContainer)
             ?? throw new NotFoundHttpException();
@@ -395,7 +410,7 @@ class SessionController extends BaseContentController
         $chat = new SessionMeetingChat([
             'session_id'         => $session->id,
             'session_meeting_id' => $meeting?->id,
-            'user_id_queued'     => $user->id,
+            'user_id'            => $user->id,
             'sender_name'        => $user->displayName,
             'message'            => $message,
             'source'             => SessionMeetingChat::SOURCE_HUMHUB,
@@ -412,9 +427,108 @@ class SessionController extends BaseContentController
                 $chat->save();
             }
             // If BBB injection fails: message stays (sent_at=null) and will be visible in HumHub chat
-        } else {
-            $this->notifyModeratorsChat($session, $message);
         }
+
+        ChatMsgReceived::notifyModerators($chat, $user);
+
+        return $this->asJson(['status' => 200]);
+    }
+
+    /**
+     * POST: toggle an emoji reaction on a chat message.
+     * Params: chatId, emoji. Notifies the message author on add.
+     */
+    public function actionChatReact(int $id): \yii\web\Response
+    {
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException();
+
+        if (!$session->canJoin()) {
+            throw new ForbiddenHttpException();
+        }
+
+        $chatId = (int) Yii::$app->request->post('chatId');
+        $emoji  = (string) Yii::$app->request->post('emoji');
+
+        $chat = SessionMeetingChat::findOne(['id' => $chatId, 'session_id' => $session->id]);
+        if ($chat === null || $chat->source === SessionMeetingChat::SOURCE_SYSTEM) {
+            return $this->asJson(['status' => 404]);
+        }
+        if (!in_array($emoji, SessionChatReaction::ALLOWED_EMOJIS, true)) {
+            return $this->asJson(['status' => 400]);
+        }
+
+        $reaction = SessionChatReaction::toggle($chat->id, Yii::$app->user->id, $emoji);
+        if ($reaction !== null) {
+            ChatMsgReaction::notifyAuthor($reaction);
+        }
+
+        return $this->asJson(['status' => 200]);
+    }
+
+    /**
+     * POST: edit an own chat message (HumHub-sourced only).
+     * Params: chatId, message.
+     */
+    public function actionChatEdit(int $id): \yii\web\Response
+    {
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException();
+
+        if (!$session->canJoin()) {
+            throw new ForbiddenHttpException();
+        }
+
+        $chatId  = (int) Yii::$app->request->post('chatId');
+        $message = trim(Yii::$app->request->post('message', ''));
+
+        $chat = SessionMeetingChat::findOne(['id' => $chatId, 'session_id' => $session->id]);
+        if ($chat === null) {
+            return $this->asJson(['status' => 404]);
+        }
+        if ($chat->source !== SessionMeetingChat::SOURCE_HUMHUB || $chat->user_id !== (int) Yii::$app->user->id) {
+            throw new ForbiddenHttpException();
+        }
+        if ($message === '') {
+            return $this->asJson(['status' => 400, 'error' => Yii::t('BbbModule.base', 'Message cannot be empty.')]);
+        }
+
+        if ($chat->message !== $message) {
+            $chat->message   = $message;
+            $chat->edited_at = time();
+            if (!$chat->save()) {
+                return $this->asJson(['status' => 500]);
+            }
+        }
+
+        return $this->asJson(['status' => 200]);
+    }
+
+    /**
+     * POST: delete a chat message. Allowed for the author and session moderators.
+     * Params: chatId.
+     */
+    public function actionChatDelete(int $id): \yii\web\Response
+    {
+        $session = $this->svc->get($id, $this->contentContainer)
+            ?? throw new NotFoundHttpException();
+
+        if (!$session->canJoin()) {
+            throw new ForbiddenHttpException();
+        }
+
+        $chatId = (int) Yii::$app->request->post('chatId');
+        $chat = SessionMeetingChat::findOne(['id' => $chatId, 'session_id' => $session->id]);
+        if ($chat === null || $chat->source === SessionMeetingChat::SOURCE_SYSTEM) {
+            return $this->asJson(['status' => 404]);
+        }
+
+        $isOwn = $chat->user_id !== null && $chat->user_id === (int) Yii::$app->user->id;
+        if (!$isOwn && !$session->isModerator() && !$session->canAdminister()) {
+            throw new ForbiddenHttpException();
+        }
+
+        $chat->delete(); // reactions cascade via FK
 
         return $this->asJson(['status' => 200]);
     }
@@ -435,33 +549,8 @@ class SessionController extends BaseContentController
 
         return $this->renderPartial('@bbb/views/session/_chatMessages', [
             'messages' => $messages,
+            'session'  => $session,
         ]);
-    }
-
-    private function notifyModeratorsChat(Session $session, string $messageText): void
-    {
-        $notification = ChatQueued::instance()
-            ->from(Yii::$app->user->identity)
-            ->about($session);
-        $notification->messageText = $messageText;
-
-        // All explicit moderators
-        $moderatorQuery = User::find()
-            ->innerJoin('bbb_session_user su', 'su.user_id = user.id')
-            ->where(['su.session_id' => $session->id, 'su.role' => 'moderator']);
-
-        $notification->sendBulk($moderatorQuery);
-
-        // Container owner (Space admin / profile owner) if not already notified
-        $owner = $session->content->container;
-        if ($owner instanceof User && $owner->id !== Yii::$app->user->id) {
-            $alreadyNotified = SessionUser::find()
-                ->where(['session_id' => $session->id, 'user_id' => $owner->id, 'role' => 'moderator'])
-                ->exists();
-            if (!$alreadyNotified) {
-                $notification->send($owner);
-            }
-        }
     }
 
     private function notifySessionStarted(Session $session): void

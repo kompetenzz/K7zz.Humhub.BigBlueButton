@@ -14,6 +14,8 @@ humhub.module('BBBHelpers', function (module, require, $) {
     module.initOnPjaxLoad = true;
 
     var activeIntervals = [];
+    var activeVisibilityListeners = [];
+    var activeLaunchListeners = [];
 
     /*
      * Clears all active intervals to prevent memory leaks and unintended behavior after module unload
@@ -24,6 +26,13 @@ humhub.module('BBBHelpers', function (module, require, $) {
         // Clear all active intervals to prevent memory leaks and unintended behavior after module unload
         activeIntervals.forEach(id => clearInterval(id));
         activeIntervals = [];
+
+        // Remove listeners tied to elements from the previous page, otherwise they pile up on every PJAX load
+        activeVisibilityListeners.forEach(fn => document.removeEventListener('visibilitychange', fn));
+        activeVisibilityListeners = [];
+
+        activeLaunchListeners.forEach(fn => document.removeEventListener('bbb:launched', fn));
+        activeLaunchListeners = [];
     };
 
     /*
@@ -39,6 +48,7 @@ humhub.module('BBBHelpers', function (module, require, $) {
                 console.log('Launching BBB window for URL:', this.dataset.url);
                 e.preventDefault();
                 LaunchBBBWindow(this.dataset.url);
+                document.dispatchEvent(new CustomEvent('bbb:launched'));
             });
         });
 
@@ -64,7 +74,11 @@ humhub.module('BBBHelpers', function (module, require, $) {
             .forEach(el => el.style.display = running ? '' : 'none');
     }
 
-    function reflectSessionState(el, interval = 60000) {
+    // Once a meeting is confirmed running, the only state change left to notice is
+    // "it ended" - far less time-sensitive than "it just started", so back off hard.
+    const RUNNING_IDLE_INTERVAL = 600000;
+
+    function reflectSessionState(el, interval = 10000) {
         const id = el.id;
         if (!id) {
             console.error('Element with data-bbb-check-state is missing an id attribute:', el);
@@ -80,27 +94,95 @@ humhub.module('BBBHelpers', function (module, require, $) {
         const waitingSelector = '#' + el.id + ' .bbb-waiting';
         const runningSelector = '#' + el.id + ' .bbb-running';
 
-        activeIntervals.push(setInterval(function () {
+        let timerId = null;
+        // Until the meeting has actually started, a hidden tab must keep polling:
+        // otherwise someone waiting to join in a background tab could miss the
+        // entire meeting if it starts and ends while they're away. Once we've seen
+        // it running at least once, "did it end" is low-stakes and can wait for
+        // the tab to become visible again.
+        let hasBeenRunning = false;
+        // Number of fast follow-up polls still owed after a BBB window launch
+        let launchBoost = 0;
+
+        function clearTimer() {
+            if (timerId !== null) {
+                clearTimeout(timerId);
+                const idx = activeIntervals.indexOf(timerId);
+                if (idx !== -1) activeIntervals.splice(idx, 1);
+                timerId = null;
+            }
+        }
+
+        function schedule(delay) {
+            clearTimer();
+            if (hasBeenRunning && document.hidden) {
+                return;
+            }
+            timerId = setTimeout(poll, delay);
+            activeIntervals.push(timerId);
+        }
+
+        function poll() {
             fetch(url)
                 .then(function (r) { return r.json(); })
                 .then(function (data) {
+                    if (data.running) {
+                        hasBeenRunning = true;
+                    }
+                    el.querySelectorAll('.bbb-hook-warning')
+                        .forEach(w => w.style.display = data.hookFailed ? '' : 'none');
                     const currentState = el.dataset.bbbState || 'waiting';
                     const state = data.running ? 'running' : 'waiting';
+                    // Let other widgets (e.g. the chat box) react to the meeting state
+                    document.dispatchEvent(new CustomEvent('bbb:state', { detail: { running: !!data.running } }));
                     if (currentState && state !== currentState) {
                         if (redirectOnChange) {
                             console.log('Session state changed to', state, 'redirecting...');
                             window.location.reload();
-                        } else {
-                            toggleSessionState(waitingSelector, runningSelector, data.running);
-                            console.log('Session state changed to', state, 'updating display...');
-                            el.dataset.bbbState = state;
+                            return;
                         }
+                        toggleSessionState(waitingSelector, runningSelector, data.running);
+                        console.log('Session state changed to', state, 'updating display...');
+                        el.dataset.bbbState = state;
+                    }
+                    if (launchBoost > 0) {
+                        launchBoost--;
+                        schedule(8000);
+                    } else {
+                        schedule(data.running ? RUNNING_IDLE_INTERVAL : interval);
                     }
                 })
                 .catch((e) => {
                     console.error('Failed to fetch session state from', url, e);
+                    schedule(interval);
                 });
-        }, interval));
+        }
+
+        // Pause as soon as the tab is hidden (only once running has been seen -
+        // see hasBeenRunning above), and resume immediately on return rather than
+        // waiting for the next tick.
+        function onVisibilityChange() {
+            if (document.hidden) {
+                if (hasBeenRunning) {
+                    clearTimer();
+                }
+            } else if (timerId === null) {
+                poll();
+            }
+        }
+        document.addEventListener('visibilitychange', onVisibilityChange);
+        activeVisibilityListeners.push(onVisibilityChange);
+
+        // After the user launches the BBB window, poll quickly a few times: the
+        // start request finishes within seconds and may carry the hook-failed flag.
+        function onLaunched() {
+            launchBoost = 2;
+            schedule(8000);
+        }
+        document.addEventListener('bbb:launched', onLaunched);
+        activeLaunchListeners.push(onLaunched);
+
+        schedule(interval);
     }
 
     function setTooltip($anchor, text) {
