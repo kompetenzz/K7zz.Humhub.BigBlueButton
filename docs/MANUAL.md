@@ -127,7 +127,31 @@ Members who lack the *Start Session* permission see the waiting page until someo
 
 ---
 
-## 7. Recordings
+## 7. Session Chat
+
+Sessions can have a live chat box on the session page, bridged in both directions with the actual in-meeting BBB chat — so members without a video window open (or before the meeting has even started) can still follow and take part in the conversation.
+
+**Enabling it** requires two switches:
+
+1. Global: **Administration → BigBlueButton → Enable session chat**
+2. Per session: **Integrate BBB chat** (Basic Information section of the session form)
+
+Both must be on for the chat box to appear.
+
+**Behavior:**
+
+- Messages written before the meeting starts are queued and automatically posted into BBB the moment it starts.
+- While the meeting is running, messages sync live in both directions — write in HumHub, it shows up in BBB, and vice versa.
+- System dividers mark meeting start/end, recording start/stop, and day changes, so the history reads as one continuous timeline across multiple meetings.
+- Links are auto-linked; `*bold*`, `_italic_`, `~strikethrough~` and `` `code` `` are rendered.
+- Messages can get emoji reactions (👍 ❤️ 😂 😮 🎉); the author is notified. Reactions live in HumHub only — BBB has no reaction API, so they never appear inside the meeting itself.
+- Moderators are notified of new chat messages and of BBB webhook problems; message authors are notified of reactions; anyone who can join is notified when a recording is ready. Each is its own category under **My Settings → Notifications**.
+
+> **A short rant on BBB's chat API.** BigBlueButton was not built to be chat-bridged, and it shows. `sendChatMessage` has no avatar parameter — injected messages just carry a name, so the nice profile picture you see in HumHub's chat box is a HumHub-side illusion that doesn't exist inside the actual meeting. The webhook-registration call (`hooksCreate`) routinely comes back as an HTML error page instead of the XML the SDK expects, even though the hook gets registered fine anyway — so the module has to shrug off the parse exception rather than fail session start over it. And because BBB gives no correlation ID linking "message I sent" to "message BBB echoed back at me," dedup is done by string-matching sender name and message text within the same meeting. None of this is a bug you can file against this module — it's just the shape of the surface BBB actually exposes.
+
+---
+
+## 8. Recordings
 
 If recording is enabled for a session, BBB recordings become available after the meeting ends.
 
@@ -155,7 +179,7 @@ Published formats become visible to all members who can join the session. Format
 
 ---
 
-## 8. Sidebar Widget
+## 9. Sidebar Widget
 
 When **Show in sidebar** is enabled for a session, it appears in the right-column sidebar of the space (and optionally on the global dashboard). The widget shows:
 
@@ -167,7 +191,7 @@ The widget's vertical position within the sidebar is controlled by the **Sort or
 
 ---
 
-## 9. Global Sessions List (Admins)
+## 10. Global Sessions List (Admins)
 
 Global admins can access an overview of all sessions across the entire HumHub instance at:
 
@@ -179,7 +203,7 @@ Sessions are grouped by their container (global, spaces, user profiles). This pa
 
 ---
 
-## 10. Roles Summary
+## 11. Roles Summary
 
 | Who | Can do |
 |---|---|

@@ -1,4 +1,9 @@
-## v1.0.0 – 2026-07-06
+## v1.0.1 – 2026-07-13
+### Docs
+- **Manual: Session Chat section**: Documented the SyncroChat feature added in v1.0.0 — how to enable it (global + per-session switch), message queuing/live sync behavior, formatting, reactions, and notification categories. Includes a short note on BBB chat-API limitations (no avatar support on injected messages, unreliable `hooksCreate` response format, name/text-based echo dedup).
+- **Screenshots**: Updated `session-page.png` to reflect the current chat UI; removed the now-redundant `session-page-chat.png` / `session-with-chat.png`.
+
+## v1.0.0 – 2026-07-13
 ### New
 - **BBB chat integration: SyncroChat**: Meeting chat is now bridged between HumHub and BBB in both directions, via a new BBB meeting webhook (meeting-started/ended, user-joined/left, chat messages, recording state, recording published).
   - Messages written in the HumHub session chat box are relayed live into the BBB in-meeting chat, and vice versa.
