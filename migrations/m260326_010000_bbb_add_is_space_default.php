@@ -12,11 +12,19 @@ class m260326_010000_bbb_add_is_space_default extends Migration
 {
     public function safeUp()
     {
-        $this->addColumn('bbb_session', 'is_space_default', $this->tinyInteger(1)->notNull()->defaultValue(0));
+        $table = $this->db->getTableSchema('bbb_session', true);
+
+        if ($table === null || !isset($table->columns['is_space_default'])) {
+            $this->addColumn('bbb_session', 'is_space_default', $this->tinyInteger(1)->notNull()->defaultValue(0));
+        }
     }
 
     public function safeDown()
     {
-        $this->dropColumn('bbb_session', 'is_space_default');
+        $table = $this->db->getTableSchema('bbb_session', true);
+
+        if ($table !== null && isset($table->columns['is_space_default'])) {
+            $this->dropColumn('bbb_session', 'is_space_default');
+        }
     }
 }
