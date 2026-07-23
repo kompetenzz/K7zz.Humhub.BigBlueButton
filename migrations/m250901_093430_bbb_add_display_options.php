@@ -11,30 +11,24 @@ class m250901_093430_bbb_add_display_options extends Migration
      */
     public function safeUp()
     {
-        $in = "'" . implode("','", Layouts::values()) . "'";
-        $this->addColumn(
-            'bbb_session',
-            'layout',
-            "ENUM($in) NOT NULL DEFAULT '" . Layouts::CUSTOM_LAYOUT . "'"
-        );
+        $table = $this->db->getTableSchema('bbb_session', true);
+
+        if ($table === null || !isset($table->columns['layout'])) {
+            $in = "'" . implode("','", Layouts::values()) . "'";
+            $this->addColumn(
+                'bbb_session',
+                'layout',
+                "ENUM($in) NOT NULL DEFAULT '" . Layouts::CUSTOM_LAYOUT . "'"
+            );
+        }
     }
 
     public function safeDown()
     {
-        $this->dropColumn('bbb_session', 'layout');
-    }
-    /*
-    // Use up()/down() to run migration code without a transaction.
-    public function up()
-    {
+        $table = $this->db->getTableSchema('bbb_session', true);
 
+        if ($table !== null && isset($table->columns['layout'])) {
+            $this->dropColumn('bbb_session', 'layout');
+        }
     }
-
-    public function down()
-    {
-        echo "m250901_093430_bbb_add_display_options cannot be reverted.\n";
-
-        return false;
-    }
-    */
 }
