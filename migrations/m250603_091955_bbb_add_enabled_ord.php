@@ -9,16 +9,22 @@ class m250603_091955_bbb_add_enabled_ord extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn(
-            'bbb_session',
-            'enabled',
-            $this->boolean()->notNull()->defaultValue(true)
-        );
-        $this->addColumn(
-            'bbb_session',
-            'ord',
-            $this->integer()->notNull()->defaultValue(0)
-        );
+        $table = $this->db->getTableSchema('bbb_session', true);
+
+        if ($table === null || !isset($table->columns['enabled'])) {
+            $this->addColumn(
+                'bbb_session',
+                'enabled',
+                $this->boolean()->notNull()->defaultValue(true)
+            );
+        }
+        if ($table === null || !isset($table->columns['ord'])) {
+            $this->addColumn(
+                'bbb_session',
+                'ord',
+                $this->integer()->notNull()->defaultValue(0)
+            );
+        }
     }
 
     /**
@@ -30,19 +36,4 @@ class m250603_091955_bbb_add_enabled_ord extends Migration
 
         return false;
     }
-
-    /*
-    // Use up()/down() to run migration code without a transaction.
-    public function up()
-    {
-
-    }
-
-    public function down()
-    {
-        echo "m250603_091955_bbb_add_enabled_ord cannot be reverted.\n";
-
-        return false;
-    }
-    */
 }

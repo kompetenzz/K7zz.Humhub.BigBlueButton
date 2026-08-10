@@ -1,3 +1,9 @@
+## v1.0.2 – (Unreleased)
+### Fixed
+- **Migrations could run more than once on some installations**: All schema migrations are now idempotent — `createTable`/`addColumn` are guarded by a live `getTableSchema()` check, so re-running a migration against an already-migrated schema is a no-op instead of failing with "table/column already exists". This addresses installations where the migration history and the actual schema had drifted apart (partial/aborted updates, restored dumps, or an interrupted uninstall).
+- **Uninstall aborted midway on a mismatched schema**: `uninstall.php` now drops each table only if it exists (still in FK-safe, children-first order). Previously a single missing table threw and left the remaining tables behind, while HumHub wiped the whole migration history regardless — so on reinstall the migrations re-ran against the leftover tables and failed. Combined with the idempotent migrations above, a leftover schema now self-heals on the next migrate.
+- **Broken `safeDown()` in the permission-fields migration**: `m250721_..._bbb_add_permission_fields` tried to drop a non-existent `waitingroom` column (the actual column is `has_waitingroom`) and never dropped it; the down migration is now correct and idempotent. Also removed erroneous `return false` after successful drops in the public-join and public-token down migrations, and converted the initial migration to `safeUp()`/`safeDown()` for consistency with the rest.
+
 ## v1.0.1 – 2026-07-13
 ### Docs
 - **Manual: Session Chat section**: Documented the SyncroChat feature added in v1.0.0 — how to enable it (global + per-session switch), message queuing/live sync behavior, formatting, reactions, and notification categories. Includes a short note on BBB chat-API limitations (no avatar support on injected messages, unreliable `hooksCreate` response format, name/text-based echo dedup).

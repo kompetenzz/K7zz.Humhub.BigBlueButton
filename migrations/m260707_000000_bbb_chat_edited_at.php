@@ -9,11 +9,19 @@ class m260707_000000_bbb_chat_edited_at extends Migration
 {
     public function safeUp()
     {
-        $this->addColumn('bbb_session_meeting_chat', 'edited_at', $this->integer()->null()->after('sent_at'));
+        $table = $this->db->getTableSchema('bbb_session_meeting_chat', true);
+
+        if ($table === null || !isset($table->columns['edited_at'])) {
+            $this->addColumn('bbb_session_meeting_chat', 'edited_at', $this->integer()->null()->after('sent_at'));
+        }
     }
 
     public function safeDown()
     {
-        $this->dropColumn('bbb_session_meeting_chat', 'edited_at');
+        $table = $this->db->getTableSchema('bbb_session_meeting_chat', true);
+
+        if ($table !== null && isset($table->columns['edited_at'])) {
+            $this->dropColumn('bbb_session_meeting_chat', 'edited_at');
+        }
     }
 }

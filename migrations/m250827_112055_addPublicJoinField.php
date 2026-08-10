@@ -9,11 +9,15 @@ class m250827_112055_addPublicJoinField extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn(
-            'bbb_session',
-            'public_join',
-            $this->boolean()->notNull()->defaultValue(false)
-        );
+        $table = $this->db->getTableSchema('bbb_session', true);
+
+        if ($table === null || !isset($table->columns['public_join'])) {
+            $this->addColumn(
+                'bbb_session',
+                'public_join',
+                $this->boolean()->notNull()->defaultValue(false)
+            );
+        }
     }
 
     /**
@@ -21,26 +25,12 @@ class m250827_112055_addPublicJoinField extends Migration
      */
     public function safeDown()
     {
-        $this->dropColumn(
-            'bbb_session',
-            'public_join'
-        );
+        $table = $this->db->getTableSchema('bbb_session', true);
 
-        return false;
+        if ($table !== null && isset($table->columns['public_join'])) {
+            $this->dropColumn('bbb_session', 'public_join');
+        }
+
+        return true;
     }
-
-    /*
-    // Use up()/down() to run migration code without a transaction.
-    public function up()
-    {
-
-    }
-
-    public function down()
-    {
-        echo "m250827_112055_addPublicJoinField cannot be reverted.\n";
-
-        return false;
-    }
-    */
 }
