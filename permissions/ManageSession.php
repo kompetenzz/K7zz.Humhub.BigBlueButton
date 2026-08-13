@@ -4,19 +4,15 @@ namespace k7zz\humhub\bbb\permissions;
 
 use humhub\modules\space\models\Space;
 use humhub\modules\user\models\User;
-use humhub\modules\admin\components\BaseAdminPermission;
 use Yii;
 
 /**
- * Admin permission for the BigBlueButton module.
+ * Manage permission for BigBlueButton sessions.
  *
  * Allows users to administer conference sessions, including starting, joining, and managing online meetings.
  */
-class Admin extends BaseAdminPermission
-{
-    /** @var string The module ID for this permission. */
-    protected $moduleId = 'bbb';
-    /** @inheritdoc */
+class ManageSession extends BBBPermission
+{    /** @inheritdoc */
     public $defaultAllowedGroups = [
         Space::USERGROUP_ADMIN,
         Space::USERGROUP_OWNER,
@@ -31,6 +27,7 @@ class Admin extends BaseAdminPermission
         User::USERGROUP_FRIEND,
         Space::USERGROUP_GUEST,
     ];
+
     /**
      * @inheritdoc
      */

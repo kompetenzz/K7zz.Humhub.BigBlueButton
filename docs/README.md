@@ -14,6 +14,7 @@ Integrate [BigBlueButton](https://bigbluebutton.org) video conferencing directly
 - Three permission levels: *Administer*, *Start*, *Join* — configurable globally, per space, and per session
 - Role-based access (space roles) or explicit attendee/moderator lists per session
 - Option to let participants start a session or join as moderators
+- Global admins have full access by default, but this can be revoked via HumHub's group permissions — admins are then treated like regular users
 
 **Public / Guest Access**
 - Generate a shareable public join link (token-based) for external guests

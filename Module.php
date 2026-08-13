@@ -16,7 +16,7 @@ use k7zz\humhub\bbb\models\Session;
 use Yii;
 use humhub\modules\content\components\ContentContainerModule;
 use k7zz\humhub\bbb\permissions\{
-    Admin,
+    ManageSession,
     StartSession,
     JoinSession
 };
@@ -48,7 +48,7 @@ class Module extends ContentContainerModule
      */
     public function getContainerPermissions($contentContainer = null)
     {
-        return [new Admin(), new StartSession(), new JoinSession()];
+        return [new ManageSession(), new StartSession(), new JoinSession()];
     }
 
     /**
@@ -62,7 +62,7 @@ class Module extends ContentContainerModule
 
     public function getPermissions($contentContainer = null)
     {
-        return [new Admin(), new StartSession(), new JoinSession()];
+        return [new ManageSession(), new StartSession(), new JoinSession()];
     }
 
     public function getConfigUrl()

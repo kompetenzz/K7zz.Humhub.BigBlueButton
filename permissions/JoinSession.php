@@ -2,8 +2,6 @@
 
 namespace k7zz\humhub\bbb\permissions;
 
-use humhub\modules\space\models\Space;
-use humhub\modules\user\models\User;
 use Yii;
 
 /**
@@ -11,10 +9,8 @@ use Yii;
  *
  * Allows users to join online conference sessions if they belong to allowed groups.
  */
-class JoinSession extends \humhub\libs\BasePermission
+class JoinSession extends BBBPermission
 {
-    /** @var string The module ID for this permission. */
-    protected $moduleId = 'bbb';
     /** @var string The default state for this permission. */
     protected $defaultState = self::STATE_ALLOW;
 

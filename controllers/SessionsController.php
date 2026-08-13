@@ -3,7 +3,7 @@
 namespace k7zz\humhub\bbb\controllers;
 
 use k7zz\humhub\bbb\controllers\BaseContentController;
-use k7zz\humhub\bbb\permissions\Admin;
+use k7zz\humhub\bbb\permissions\ManageSession;
 use Yii;
 
 /**
@@ -22,29 +22,40 @@ class SessionsController extends BaseContentController
      */
     public function actionIndex(?int $highlight = 0, string $view = 'global')
     {
-        $isAdmin = Yii::$app->user->can(Admin::class);
+        $isAdmin = Yii::$app->user->can(ManageSession::class);
         $showAll = ($view === 'all') && $isAdmin && !$this->contentContainer;
+
+        $canAccess = fn($s) => $s->canJoin() || $s->canStart();
 
         if ($showAll) {
             $grouped = $this->svc->listAllGrouped();
 
             $mapRow = fn($s) => ['model' => $s, 'running' => $this->svc->isRunning($s->uuid)];
+            $mapRows = fn(array $sessions) => array_map($mapRow, array_filter($sessions, $canAccess));
 
-            $globalRows = array_map($mapRow, $grouped['global']);
+            $globalRows = $mapRows($grouped['global']);
 
             $spaceGroups = [];
             foreach ($grouped['spaces'] as $id => $group) {
+                $rows = $mapRows($group['sessions']);
+                if ($rows === []) {
+                    continue;
+                }
                 $spaceGroups[$id] = [
                     'container' => $group['container'],
-                    'rows'      => array_map($mapRow, $group['sessions']),
+                    'rows'      => $rows,
                 ];
             }
 
             $userGroups = [];
             foreach ($grouped['users'] as $id => $group) {
+                $rows = $mapRows($group['sessions']);
+                if ($rows === []) {
+                    continue;
+                }
                 $userGroups[$id] = [
                     'container' => $group['container'],
-                    'rows'      => array_map($mapRow, $group['sessions']),
+                    'rows'      => $rows,
                 ];
             }
 
@@ -61,7 +72,7 @@ class SessionsController extends BaseContentController
 
         $sessions = array_filter(
             $this->svc->list($this->contentContainer),
-            fn($s) => $s->canJoin() || $s->canStart()
+            $canAccess
         );
 
         $rows = array_map(

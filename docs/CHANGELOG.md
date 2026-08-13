@@ -1,4 +1,8 @@
-## v1.0.2 – (Unreleased)
+## v1.0.3
+### Improved
+- Align with Humhub's default permission scheme: Administrators hold all global permissions by default, but each permission can be denied, in which case global admins are treated like regular users. Same for spaces but not for *user profiles* they remain editable by system admins — HumHub core grants this for moderation purposes.
+
+## v1.0.2
 ### Fixed
 - **Migrations could run more than once on some installations**: All schema migrations are now idempotent — `createTable`/`addColumn` are guarded by a live `getTableSchema()` check, so re-running a migration against an already-migrated schema is a no-op instead of failing with "table/column already exists". This addresses installations where the migration history and the actual schema had drifted apart (partial/aborted updates, restored dumps, or an interrupted uninstall).
 - **Uninstall aborted midway on a mismatched schema**: `uninstall.php` now drops each table only if it exists (still in FK-safe, children-first order). Previously a single missing table threw and left the remaining tables behind, while HumHub wiped the whole migration history regardless — so on reinstall the migrations re-ran against the leftover tables and failed. Combined with the idempotent migrations above, a leftover schema now self-heals on the next migrate.

@@ -13,7 +13,7 @@ use humhub\modules\content\widgets\richtext\RichText;
 use k7zz\humhub\bbb\widgets\WallEntry;
 use k7zz\humhub\bbb\enums\Layouts;
 use k7zz\humhub\bbb\permissions\{
-    Admin,
+    ManageSession,
     StartSession,
     JoinSession
 };
@@ -137,7 +137,7 @@ class Session extends ContentActiveRecord
             return true; //  globale bzw. Container-Permission
         }
 
-        return $this->can($user, Admin::class);
+        return $this->can($user, ManageSession::class);
     }
 
     /** darf $user diese Session starten? */
@@ -195,7 +195,7 @@ class Session extends ContentActiveRecord
     public function isModerator(?UserComponent $user = null): bool
     {
         $user ??= Yii::$app->user;
-        if ($this->can($user, Admin::class)) {
+        if ($this->can($user, ManageSession::class)) {
             return true; //  globale bzw. Container-Permission
         }
         if ($this->join_can_moderate && $this->canJoin($user)) {

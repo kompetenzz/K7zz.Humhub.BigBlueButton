@@ -95,6 +95,8 @@ Three permissions can be configured at global, space, and individual session lev
 
 Permissions are set in the standard HumHub permissions interface (**Space Settings → Permissions**).
 
+**Global administrators** hold all three permissions by default, so they can see and manage every session. Unlike in earlier versions this is not hard-wired: each permission can be denied for the administrator group under **Administration → Users → Groups → Administrator → Permissions**, in which case global admins are treated like regular users. (Exception: sessions hosted on *user profiles* remain editable by system admins — HumHub core grants this for moderation purposes.)
+
 ---
 
 ## 5. Public / Guest Access
@@ -193,13 +195,13 @@ The widget's vertical position within the sidebar is controlled by the **Sort or
 
 ## 10. Global Sessions List (Admins)
 
-Global admins can access an overview of all sessions across the entire HumHub instance at:
+Users with the global *Administer sessions* permission (by default: global admins) can access a grouped overview of sessions across the entire HumHub instance at:
 
 ```
 /bbb/sessions
 ```
 
-Sessions are grouped by their container (global, spaces, user profiles). This page is also linked in the administration area if the global navigation item is disabled.
+Sessions are grouped by their container (global, spaces, user profiles) and filtered like the regular list: only sessions the viewing user can join or start are shown. This page is also linked in the administration area if the global navigation item is disabled.
 
 ---
 
@@ -207,7 +209,7 @@ Sessions are grouped by their container (global, spaces, user profiles). This pa
 
 | Who | Can do |
 |---|---|
-| Global admin | All of the below, plus global settings and global sessions list |
+| Global admin | All of the below, plus global settings and global sessions list (default — revocable via group permissions, see section 4) |
 | Space admin | Create/edit/delete sessions, publish recordings, manage permissions |
 | Space moderator | Start sessions |
 | Space member | Join running sessions (if *Join Session* permission granted) |

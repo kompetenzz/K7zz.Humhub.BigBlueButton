@@ -15,7 +15,7 @@
 
 use humhub\libs\Html;
 use k7zz\humhub\bbb\widgets\SessionCard;
-use k7zz\humhub\bbb\permissions\Admin;
+use k7zz\humhub\bbb\permissions\ManageSession;
 use humhub\modules\ui\icon\widgets\Icon;
 use yii\helpers\Url;
 
@@ -26,8 +26,8 @@ $createUrl = $this->context->contentContainer
     : Url::to('/bbb/session/create');
 
 $canCreate = $this->context->contentContainer
-    ? $this->context->contentContainer->can(Admin::class)
-    : Yii::$app->user->can(Admin::class);
+    ? $this->context->contentContainer->can(ManageSession::class)
+    : Yii::$app->user->can(ManageSession::class);
 
 $configUrl = null;
 if ($this->context->contentContainer && $canCreate) {

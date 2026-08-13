@@ -14,7 +14,7 @@ use humhub\modules\user\widgets\ProfileSidebar;
 use humhub\widgets\TopMenu;
 use k7zz\humhub\bbb\extensions\custom_pages\elements\BBBSessionElement;
 use k7zz\humhub\bbb\extensions\custom_pages\elements\BBBSessionsElement;
-use k7zz\humhub\bbb\permissions\Admin;
+use k7zz\humhub\bbb\permissions\ManageSession;
 use k7zz\humhub\bbb\widgets\SidebarSessionWidget;
 use k7zz\humhub\bbb\models\forms\ContainerSettingsForm;
 use Yii;
@@ -150,10 +150,7 @@ class Events
                 return;
             }
 
-            if (
-                !$space->can(Admin::class)
-                && !Yii::$app->user->isAdmin()
-            ) {
+            if (!$space->can(ManageSession::class)) {
                 return;
             }
 
@@ -206,10 +203,7 @@ class Events
                 return;
             }
 
-            if (
-                !Yii::$app->user->isAdmin()
-                && !Yii::$app->user->can(Admin::class)
-            ) {
+            if (!Yii::$app->user->can(ManageSession::class)) {
                 return;
             }
 
