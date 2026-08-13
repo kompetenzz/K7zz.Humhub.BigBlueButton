@@ -195,6 +195,9 @@ return [
     'React' => 'Reagieren',
     'Edit message' => 'Nachricht bearbeiten',
     'Delete message' => 'Nachricht löschen',
+    'Delete recording' => 'Aufzeichnung löschen',
+    'Delete this recording permanently?' => 'Diese Aufzeichnung dauerhaft löschen?',
+    'This will permanently delete the recording on BBB and cannot be undone. Continue?' => 'Dadurch wird die Aufzeichnung auf BBB endgültig gelöscht und kann nicht wiederhergestellt werden. Fortfahren?',
     'Delete this message?' => 'Diese Nachricht löschen?',
     'edited' => 'bearbeitet',
     'Save' => 'Speichern',
@@ -207,4 +210,7 @@ return [
     'Receive a notification when a BBB session recording is available.' => 'Erhalte eine Benachrichtigung, wenn eine BBB-Sitzungsaufzeichnung verfügbar ist.',
     'Receive a notification when someone writes in a chat of a BBB session moderated by you.' => 'Erhalte eine Benachrichtigung, wenn jemand in einem von dir moderierten BBB-Chat schreibt.',
     'Recording available for BBB session: {title}' => 'Aufzeichnung verfügbar für BBB-Sitzung: {title}',
+    'Could not delete recording.' => 'Konnte Aufzeichnung nicht löschen.',
+    'Recording deleted.' => 'Aufzeichnung gelöscht.',
+    'Missing id or recordId' => 'Fehlende id oder recordId',
 ];

@@ -4,6 +4,7 @@
  *
  * @var \k7zz\humhub\bbb\models\Recording $rec
  * @var bool   $canAdminister
+ * @var int    $sessionId
  * @var \humhub\modules\content\components\ContentContainerActiveRecord $contentContainer
  */
 
@@ -20,32 +21,55 @@ if (!$canAdminister && !$rec->hasAnyPublishedFormat()) {
 }
 
 $itemDomId = 'bbb-recording-' . $rec->getRecord()->getRecordId();
-$publishUrlPath = Url::to(['session/publish-recording']);
 $publishUrl = $this->context->contentContainer
-    ? $this->context->contentContainer->createUrl($publishUrlPath)
-    : Url::to($publishUrlPath);
+    ? $this->context->contentContainer->createUrl('/bbb/session/publish-recording')
+    : Url::to(['/bbb/session/publish-recording']);
+$deleteUrl = $this->context->contentContainer
+    ? $this->context->contentContainer->createUrl('/bbb/session/delete-recording')
+    : Url::to(['/bbb/session/delete-recording']);
 
 $playTooltip = Yii::t('BbbModule.base', 'Play recording in new window');
 $publishLabel = Yii::t('BbbModule.base', 'Publish');
 $depublishLabel = Yii::t('BbbModule.base', 'Depublish');
+$deleteRecordingLabel = Yii::t('BbbModule.base', 'Delete recording');
+$deleteConfirmLabel = Yii::t('BbbModule.base', 'This will permanently delete the recording on BBB and cannot be undone. Continue?');
 $durationLabel = Yii::t('BbbModule.base', 'Duration');
+$noRecordingsLabel = Yii::t('BbbModule.base', 'No recordings available');
 
 $iconClock = Icon::get('clock-o');
 $iconEye = Icon::get('eye');
 $iconEyeSlash = Icon::get('eye-slash');
+$iconTrash = Icon::get('trash');
 ?>
 
-<div id="<?= Html::encode($itemDomId) ?>" class="bbb-recording-item d-flex align-items-center flex-wrap gap-2 py-2"
+<div id="<?= Html::encode($itemDomId) ?>" class="bbb-recording-item py-2"
     data-record-id="<?= Html::encode($rec->getRecord()->getRecordId()) ?>">
-
-    <span class="text-muted small">
-        <b><?= Html::encode($rec->getDate()) ?>, <?= Html::encode($rec->getTime()) ?></b>
-        <br><span title="<?= Html::encode($durationLabel) ?>">
-            <?= $iconClock ?> <?= Html::encode($rec->getDuration()) ?>
+    <div class="d-flex justify-content-between align-items-start gap-2">
+        <span class="text-muted small">
+            <b><?= Html::encode($rec->getDate()) ?>, <?= Html::encode($rec->getTime()) ?></b>
+            <br><span title="<?= Html::encode($durationLabel) ?>">
+                <?= $iconClock ?> <?= Html::encode($rec->getDuration()) ?>
+            </span>
         </span>
-    </span>
 
-    <span class="d-inline-flex gap-1 flex-wrap align-items-center">
+        <?php if ($canAdminister): ?>
+            <?= Html::beginForm($deleteUrl, 'post', [
+                'class' => 'd-inline bbb-delete-recording-form',
+                'data-async' => '1',
+                'data-confirm-delete' => $deleteConfirmLabel,
+            ]) ?>
+            <?= Html::hiddenInput('id', $sessionId) ?>
+            <?= Html::hiddenInput('recordId', $rec->getRecord()->getRecordId()) ?>
+            <?= Html::submitButton($iconTrash, [
+                'class' => 'btn btn-danger btn-sm bbb-delete-recording-btn',
+                'title' => $deleteRecordingLabel,
+                'encode' => false,
+            ]) ?>
+            <?= Html::endForm() ?>
+        <?php endif; ?>
+    </div>
+
+    <span class="d-inline-flex gap-1 flex-wrap align-items-center mt-2">
         <?php foreach ($formats as $format):
             $isPublished = $rec->isFormatPublished($format);
             if (!$canAdminister && !$isPublished)
@@ -69,6 +93,7 @@ $iconEyeSlash = Icon::get('eye-slash');
                         'data-dom' => $formatDomId,
                     ]) ?>
                     <?= Html::hiddenInput('recordId', $rec->getRecord()->getRecordId()) ?>
+                    <?= Html::hiddenInput('id', $sessionId) ?>
                     <?= Html::hiddenInput('formatType', $formatType) ?>
                     <?= Html::hiddenInput('publish', $isPublished ? 'false' : 'true') ?>
                     <?= Html::submitButton($isPublished ? $iconEyeSlash : $iconEye, [
@@ -90,6 +115,23 @@ $iconEyeSlash = Icon::get('eye-slash');
 <?php
 $iconEyeJs = addslashes($iconEye);
 $iconEyeSlashJs = addslashes($iconEyeSlash);
+$noRecordingsLabelJs = addslashes($noRecordingsLabel);
+
+$css = <<<CSS
+.bbb-recording-item .bbb-delete-recording-btn {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease;
+}
+
+.bbb-recording-item:hover .bbb-delete-recording-btn,
+.bbb-recording-item:focus-within .bbb-delete-recording-btn {
+    opacity: 1;
+    visibility: visible;
+}
+CSS;
+
+$this->registerCss($css);
 
 $js = <<<JS
 ;(function(){
@@ -137,6 +179,42 @@ $js = <<<JS
         humhub.modules.ui.notification && humhub.modules.ui.notification.show('Request failed', {type:'danger'});
       });
   });
+
+    root.find('form.bbb-delete-recording-form[data-async="1"]').off('submit').on('submit', function(e){
+        e.preventDefault();
+        var form = $(this);
+        var confirmText = form.data('confirm-delete') || 'Delete?';
+        if (!window.confirm(confirmText)) {
+            return;
+        }
+
+        var btn = form.find('button[type="submit"], input[type="submit"]');
+        btn.prop('disabled', true);
+
+        client.post(form.attr('action'), { data: form.serialize() })
+            .then(function(resp){
+                btn.prop('disabled', false);
+                if (!resp || resp.status != 200) {
+                    var msg = (resp && resp.message) || 'Error';
+                    humhub.modules.ui.notification && humhub.modules.ui.notification.show(msg, {type:'danger'});
+                    return;
+                }
+
+                root.remove();
+
+                var list = $('.bbb-recordings-container').first();
+                if (list.length && list.find('.bbb-recording-item').length === 0) {
+                    list.html('<p class="text-muted">{$noRecordingsLabelJs}</p>');
+                }
+
+                humhub.modules.ui.notification && humhub.modules.ui.notification.show(resp.message || 'OK', {type:'success'});
+            })
+            .catch(function(err){
+                btn.prop('disabled', false);
+                console.error('Delete failed:', err);
+                humhub.modules.ui.notification && humhub.modules.ui.notification.show('Request failed', {type:'danger'});
+            });
+    });
 })();
 JS;
 

@@ -8,6 +8,7 @@ use Yii;
 use BigBlueButton\BigBlueButton;
 use BigBlueButton\Parameters\{
     CreateMeetingParameters,
+    DeleteRecordingsParameters,
     HooksCreateParameters,
     IsMeetingRunningParameters,
     JoinMeetingParameters,
@@ -435,6 +436,53 @@ class SessionService
     public function publishRecordingFormat(string $recordId, string $formatType, bool $publish): bool
     {
         return RecordingFormat::setPublished($recordId, $formatType, $publish);
+    }
+
+    /**
+     * Permanently deletes a BBB recording for the given session.
+     * Also removes local per-format visibility rows for the deleted recording.
+     * @param Session $session
+     * @param string $recordId
+     * @return bool
+     */
+    public function deleteRecording(Session $session, string $recordId): bool
+    {
+        try {
+            $recordingsParams = new GetRecordingsParameters();
+            $recordingsParams->setMeetingID($session->uuid);
+            $recordingsResponse = $this->bbb->getRecordings($recordingsParams);
+
+            if (!$recordingsResponse || !$recordingsResponse->success()) {
+                Yii::warning("BBB-DeleteRecordings pre-check failed for session {$session->name}: cannot load recordings list", 'bbb');
+                return false;
+            }
+
+            $belongsToSession = false;
+            foreach ($recordingsResponse->getRecords() as $record) {
+                if ($record->getRecordId() === $recordId) {
+                    $belongsToSession = true;
+                    break;
+                }
+            }
+
+            if (!$belongsToSession) {
+                Yii::warning("BBB-DeleteRecordings denied: record {$recordId} does not belong to session {$session->name} ({$session->id})", 'bbb');
+                return false;
+            }
+
+            $params = new DeleteRecordingsParameters($recordId);
+            $response = $this->bbb->deleteRecordings($params);
+            $deleted = $response && $response->success() && $response->isDeleted();
+
+            if ($deleted) {
+                RecordingFormat::deleteAll(['record_id' => $recordId]);
+            }
+
+            return $deleted;
+        } catch (\Throwable $e) {
+            Yii::error("BBB-DeleteRecordings failed for record {$recordId}: " . $e->getMessage(), 'bbb');
+            return false;
+        }
     }
 
 }

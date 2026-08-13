@@ -333,6 +333,7 @@ class SessionController extends BaseContentController
         return $this->renderAjax('_recordings', [
             'recordings' => $result,
             'canAdminister' => $session->canAdminister(),
+            'sessionId' => $session->id,
         ]);
     }
 
@@ -366,17 +367,64 @@ class SessionController extends BaseContentController
     public function actionPublishRecording()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $id = (int) Yii::$app->request->post('id');
         $recordId = Yii::$app->request->post('recordId');
         $formatType = Yii::$app->request->post('formatType');
         $publish = Yii::$app->request->post('publish') === 'true';
 
-        if (!$recordId || !$formatType) {
+        if (!$id || !$recordId || !$formatType) {
             Yii::$app->response->statusCode = 400;
-            return $this->asJson(['error' => 'Missing recordId or formatType']);
+            return $this->asJson(['error' => 'Missing id, recordId or formatType']);
+        }
+
+        $session = $this->svc->get($id, $this->contentContainer);
+        if (!$session) {
+            Yii::$app->response->statusCode = 404;
+            return $this->asJson(['error' => Yii::t('BbbModule.base', 'Session not found.')]);
+        }
+
+        if (!$session->canAdminister()) {
+            throw new ForbiddenHttpException();
         }
 
         $ok = $this->svc->publishRecordingFormat($recordId, $formatType, $publish);
         return $this->asJson(['status' => $ok ? 200 : 500]);
+    }
+
+    /**
+     * Permanently deletes a recording from BBB.
+     * POST params: id (session id), recordId
+     * @return \yii\web\Response
+     */
+    public function actionDeleteRecording()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $id = (int) Yii::$app->request->post('id');
+        $recordId = (string) Yii::$app->request->post('recordId');
+
+        if (!$id || $recordId === '') {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson(['status' => 400, 'message' => Yii::t('BbbModule.base', 'Missing id or recordId')]);
+        }
+
+        $session = $this->svc->get($id, $this->contentContainer);
+        if (!$session) {
+            Yii::$app->response->statusCode = 404;
+            return $this->asJson(['status' => 404, 'message' => Yii::t('BbbModule.base', 'Session not found.')]);
+        }
+
+        if (!$session->canAdminister()) {
+            throw new ForbiddenHttpException();
+        }
+
+        $ok = $this->svc->deleteRecording($session, $recordId);
+        if (!$ok) {
+            Yii::$app->response->statusCode = 500;
+            return $this->asJson(['status' => 500, 'message' => Yii::t('BbbModule.base', 'Could not delete recording.')]);
+        }
+
+        return $this->asJson(['status' => 200, 'message' => Yii::t('BbbModule.base', 'Recording deleted.')]);
     }
 
     /**

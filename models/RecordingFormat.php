@@ -16,6 +16,9 @@ use yii\db\ActiveRecord;
  */
 class RecordingFormat extends ActiveRecord
 {
+    public const STATE_UNPUBLISHED = 0;
+    public const STATE_PUBLISHED = 1;
+
     public static function tableName(): string
     {
         return 'bbb_recording_format';
@@ -24,7 +27,7 @@ class RecordingFormat extends ActiveRecord
     public static function isPublished(string $recordId, string $formatType): bool
     {
         return (bool) static::find()
-            ->where(['record_id' => $recordId, 'format_type' => $formatType, 'published' => 1])
+            ->where(['record_id' => $recordId, 'format_type' => $formatType, 'published' => self::STATE_PUBLISHED])
             ->exists();
     }
 
@@ -36,7 +39,7 @@ class RecordingFormat extends ActiveRecord
             $model->record_id   = $recordId;
             $model->format_type = $formatType;
         }
-        $model->published = $publish ? 1 : 0;
+        $model->published = $publish ? self::STATE_PUBLISHED : self::STATE_UNPUBLISHED;
         return $model->save();
     }
 }

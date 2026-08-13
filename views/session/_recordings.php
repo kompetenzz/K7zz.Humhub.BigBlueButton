@@ -3,7 +3,8 @@
  * Widget view: List of BBB session recordings.
  *
  * @var array $recordings 
- * @var bool $canAdminister */
+ * @var bool $canAdminister
+ * @var int $sessionId */
 
 use yii\helpers\Html;
 
@@ -19,5 +20,6 @@ foreach ($recordings as $rec) {
     echo $this->render('_recordingItem', [
         'rec' => $rec,
         'canAdminister' => $canAdminister,
+        'sessionId' => $sessionId,
     ]);
 } ?>
