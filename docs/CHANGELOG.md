@@ -1,5 +1,9 @@
 ## v1.0.3
+### New
+- Allow deleting recordings
+
 ### Improved
+- Tiedied up sessions list view: remove controls and recordings and just link to session page
 - Align with Humhub's default permission scheme: Administrators hold all global permissions by default, but each permission can be denied, in which case global admins are treated like regular users. Same for spaces but not for *user profiles* they remain editable by system admins — HumHub core grants this for moderation purposes.
 
 ## v1.0.2

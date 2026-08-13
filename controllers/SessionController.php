@@ -113,7 +113,7 @@ class SessionController extends BaseContentController
 
         if ($form->load(Yii::$app->request->post()) && $form->save()) {
             $this->view->success(Yii::t('BbbModule.base', 'Session saved.'));
-            return $this->redirect([$this->getUrl('sessions/'), 'highlight' => $form->id]);
+            return $this->redirect($this->getUrl('/bbb/session/' . $form->name));
         }
         return $this->render('edit', ['model' => $form]);
     }
