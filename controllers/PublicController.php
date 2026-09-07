@@ -54,8 +54,10 @@ class PublicController extends Controller
             return $this->redirect($joinUrl);
         } else if (!$session->public_join) {
             $msg = Yii::t('BbbModule.base', 'Session not public.');
-        } else if (!$this->svc->isRunning($session->uuid)) {
+        } else if (!($running = $this->svc->refreshRunningStatus($session))) {
             $msg = Yii::t('BbbModule.base', 'Session not running.');
+        } else {
+            $running = true;
         }
 
         if ($msg || !$name || mb_strlen(trim($name)) < 2) {
@@ -63,7 +65,7 @@ class PublicController extends Controller
                 'session' => $session,
                 'token' => $token,
                 'msg' => $msg,
-                'running' => $session ? $this->svc->isRunning($session->uuid) : false,
+                'running' => $running ?? false,
             ]);
         }
 

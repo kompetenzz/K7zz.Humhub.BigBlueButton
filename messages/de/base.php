@@ -159,6 +159,7 @@ return [
     'Stopped' => 'Pausiert',
     'The chat panel will be collapsed when participants join the session. Not available when right sidebar is collapsed.' => 'Das Chat-Panel wird beim Beitreten der Teilnehmer*innen zur Sitzung ausgeblendet. Nicht verfügbar, wenn die rechte Seitenleiste ausgeblendet ist.',
     'The meeting has ended.' => 'Die Konferenz ist beendet.',
+    'The meeting is no longer running. Please start the session again or wait until it is restarted.' => 'Die Konferenz läuft nicht mehr. Bitte starte die Sitzung erneut oder warte, bis sie neu gestartet wurde.',
     'The panel on the left with participants will be slided out when participants join the session.' => 'Das Panel auf der linken Seite mit den Teilnehmer*innen wird standardmäßig ausgeblendet.',
     'The presentation will be hidden when participants join the session.' => 'Die Präsentation wird beim Beitreten zur Sitzung ausgeblendet.',
     'The session has not started yet.' => 'Die Videokonferenz hat noch nicht begonnen.',

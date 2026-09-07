@@ -1,4 +1,11 @@
-## v1.0.3
+## v1.1.2
+### Fixed
+- Reconcile stale local meeting state with BBB every 5 minutes and on join/start, so forcibly ended meetings no longer keep showing as running or redirect users to a broken join URL.
+
+### Improved
+- Send chat notifications only to moderators if meeting is not running.
+
+## v1.1.1
 ### New
 - Allow deleting recordings
 

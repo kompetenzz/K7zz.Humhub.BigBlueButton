@@ -36,6 +36,18 @@ use yii\web\{ForbiddenHttpException, NotFoundHttpException, ServerErrorHttpExcep
 class SessionController extends BaseContentController
 {
 
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs'] = [
+            'class' => VerbFilter::class,
+            'actions' => [
+                'repair-status' => ['POST'],
+            ],
+        ];
+        return $behaviors;
+    }
+
     /**
      * Session landing page — shows session details and join button without auto-redirecting.
      * @param int|null $id
@@ -134,7 +146,7 @@ class SessionController extends BaseContentController
         }
         $session = $this->svc->get($id, $this->contentContainer)
             ?? throw new NotFoundHttpException(Yii::t('BbbModule.base', 'Session with Id {id} not found.', ['id' => $id]));
-        if (!$this->svc->isRunning($session->uuid)) {
+        if (!$this->svc->refreshRunningStatus($session)) {
             if (!$session->canStart()) {
                 Yii::$app->getSession()->setFlash('access-denied', Yii::t('BbbModule.base', 'You are not allowed to start session "{title}".', ['title' => $session->title]));
             } else {
@@ -227,7 +239,12 @@ class SessionController extends BaseContentController
             $session->isModerator() || $session->join_can_moderate,
         );
 
-        if (!$this->svc->isRunning($session->uuid)) {
+        if (!$this->svc->refreshRunningStatus($session)) {
+            Yii::$app->getSession()->setFlash(
+                'warning',
+                Yii::t('BbbModule.base', 'The meeting is no longer running. Please start the session again or wait until it is restarted.')
+            );
+
             $chatMessages = $session->integrate_bbb_chat
                 ? SessionMeetingChat::findAllForSession($session->id)->all()
                 : [];
@@ -475,9 +492,11 @@ class SessionController extends BaseContentController
                 $chat->save();
             }
             // If BBB injection fails: message stays (sent_at=null) and will be visible in HumHub chat
+        } else {
+            // Only notify moderators while no meeting is running â during a live
+            // meeting, moderators are assumed to be present in the BBB session itself.
+            ChatMsgReceived::notifyModerators($chat, $user);
         }
-
-        ChatMsgReceived::notifyModerators($chat, $user);
 
         return $this->asJson(['status' => 200]);
     }

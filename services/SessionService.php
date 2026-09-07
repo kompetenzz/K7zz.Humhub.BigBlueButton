@@ -3,6 +3,7 @@ namespace k7zz\humhub\bbb\services;
 
 use k7zz\humhub\bbb\models\Session;
 use k7zz\humhub\bbb\models\SessionMeeting;
+use k7zz\humhub\bbb\models\SessionMeetingChat;
 use k7zz\humhub\bbb\notifications\WebhookMissing;
 use Yii;
 use BigBlueButton\BigBlueButton;
@@ -36,6 +37,9 @@ use humhub\libs\UUID;
  */
 class SessionService
 {
+    private const LIVE_RUNNING_CACHE_SECONDS = 15;
+    private const LOCAL_RUNNING_VERIFY_SECONDS = 300;
+
     /**
      * @var BigBlueButton BBB API client instance
      */
@@ -179,17 +183,100 @@ class SessionService
                 ->where(['session_id' => $session->id, 'ended_at' => null])
                 ->exists();
             if ($hasOpenMeeting) {
-                return true;
+                $verifyKey = 'bbb_is_running_verified_' . $uuid;
+                if (Yii::$app->cache->get($verifyKey) === true) {
+                    return true;
+                }
+
+                $running = $this->requestRunningStatus($uuid, $session);
+                if ($running === null) {
+                    return true;
+                }
+
+                if ($running) {
+                    Yii::$app->cache->set($verifyKey, true, self::LOCAL_RUNNING_VERIFY_SECONDS);
+                    Yii::$app->cache->set('bbb_is_running_live_' . $uuid, ['running' => true], self::LIVE_RUNNING_CACHE_SECONDS);
+                    return true;
+                }
+
+                $this->markNotRunning($session);
+                return false;
             }
         }
 
-        return (bool) Yii::$app->cache->getOrSet(
-            'bbb_is_running_live_' . $uuid,
-            fn() => $this->bbb
+        $cacheKey = 'bbb_is_running_live_' . $uuid;
+        $cached = Yii::$app->cache->get($cacheKey);
+        if (is_array($cached) && array_key_exists('running', $cached)) {
+            return (bool) $cached['running'];
+        }
+
+        $running = $this->requestRunningStatus($uuid, $session);
+        if ($running === null) {
+            return false;
+        }
+
+        Yii::$app->cache->set($cacheKey, ['running' => $running], self::LIVE_RUNNING_CACHE_SECONDS);
+        return $running;
+    }
+
+    public function refreshRunningStatus(Session $session): bool
+    {
+        if (empty($session->uuid)) {
+            return false;
+        }
+
+        $running = $this->requestRunningStatus($session->uuid, $session);
+        if ($running === null) {
+            return $this->isRunning($session->uuid);
+        }
+
+        Yii::$app->cache->set('bbb_is_running_live_' . $session->uuid, ['running' => $running], self::LIVE_RUNNING_CACHE_SECONDS);
+        if ($running) {
+            Yii::$app->cache->set('bbb_is_running_verified_' . $session->uuid, true, self::LOCAL_RUNNING_VERIFY_SECONDS);
+        }
+        if (!$running) {
+            $this->markNotRunning($session);
+        }
+
+        return $running;
+    }
+
+    private function requestRunningStatus(string $uuid, ?Session $session = null): ?bool
+    {
+        try {
+            return $this->bbb
                 ->isMeetingRunning(new IsMeetingRunningParameters($uuid))
-                ->isRunning(),
-            15
+                ->isRunning();
+        } catch (\Throwable $e) {
+            $label = $session ? "{$session->name} ({$session->id})" : $uuid;
+            Yii::warning("BBB-IsMeetingRunning failed for session {$label}: " . $e->getMessage(), 'bbb');
+            return null;
+        }
+    }
+
+    public function markNotRunning(Session $session, ?int $endedAt = null): int
+    {
+        $endedAt ??= time();
+        $count = SessionMeeting::updateAll(
+            ['ended_at' => $endedAt],
+            ['session_id' => $session->id, 'ended_at' => null]
         );
+
+        Yii::$app->cache->set('bbb_is_running_live_' . $session->uuid, ['running' => false], self::LIVE_RUNNING_CACHE_SECONDS);
+        Yii::$app->cache->delete('bbb_is_running_verified_' . $session->uuid);
+
+        if ($count > 0) {
+            (new SessionMeetingChat([
+                'session_id'         => $session->id,
+                'session_meeting_id' => null,
+                'source'             => SessionMeetingChat::SOURCE_SYSTEM,
+                'message'            => 'meeting-ended',
+                'sender_name'        => '',
+                'created_at'         => $endedAt,
+            ]))->save();
+        }
+
+        return $count;
     }
 
     public function sendChatToMeeting(Session $session, string $message, string $userName): bool
