@@ -1,3 +1,8 @@
+## v1.2.0 (Unreleased)
+### Fixed
+- **Module data survived disabling/uninstalling the module**: The module implemented neither `disable()` nor `disableContentContainer()`. Disabling or uninstalling it dropped the `bbb_*` tables but left every session's `content` record behind — together with its comments, likes, follows, mentions, files (including the uploaded blobs under `uploads/`), activities, notifications and search index entries. Disabling the module on a single space or profile drops no table at all and was a complete no-op: those sessions kept showing up in the container's stream, on the dashboard and in the search index, only the navigation entry disappeared. Both methods now hard-delete the affected sessions — global sessions included — so HumHub's own cleanup cascade removes everything attached to them.
+- **Leftovers from earlier versions are cleaned up on update**: A new migration removes records that point at sessions which no longer exist. This is not just cosmetic: dropping `bbb_session` resets its AUTO_INCREMENT, so after a reinstall those leftovers start resolving to unrelated new sessions — an old presentation or an old comment could surface on a stranger's session. Any generic residue beyond the module's own data is reported and fixed by HumHub's `php yii integrity`.
+
 ## v1.1.2
 ### Fixed
 - Reconcile stale local meeting state with BBB every 5 minutes and on join/start, so forcibly ended meetings no longer keep showing as running or redirect users to a broken join URL.
