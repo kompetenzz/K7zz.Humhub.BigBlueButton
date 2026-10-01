@@ -747,7 +747,20 @@ class SessionService
     }
 
     /**
-     * Soft-deletes a session by setting its deleted_at timestamp.
+     * Soft-deletes a session: the module's own deleted_at marker plus HumHub's
+     * content state.
+     *
+     * Setting deleted_at alone used to leave the content record published, so a
+     * deleted session vanished from the module's own lists while its wall entry
+     * stayed on the dashboard, in the container's stream and in the search index -
+     * comments, likes and files included.
+     *
+     * Note that HumHub hard-deletes soft-deleted content on the next daily run of
+     * its PurgeDeletedContents job, which then also removes the session row itself
+     * along with its meetings, chat history and recording visibility flags. A
+     * deleted session is therefore really gone within a day instead of lingering
+     * indefinitely.
+     *
      * @param int|null $id
      * @param ContentContainerActiveRecord|null $container
      * @return bool|null
@@ -764,11 +777,22 @@ class SessionService
             ->where(['session.id' => $id, 'session.deleted_at' => null]);
 
         $session = $query->one();
-        if ($session) {
-            $session->deleted_at = time();
-            return $session->save();
+        if (!$session) {
+            return false;
         }
-        return false;
+
+        $session->deleted_at = time();
+        if (!$session->save()) {
+            return false;
+        }
+
+        // Sessions that were inserted without going through the ActiveRecord have
+        // no content record to take out of the stream.
+        if ($session->content->isNewRecord) {
+            return true;
+        }
+
+        return $session->softDelete();
     }
 
     /**
