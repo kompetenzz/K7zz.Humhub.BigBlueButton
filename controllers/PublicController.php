@@ -127,9 +127,9 @@ class PublicController extends Controller
             }
             $path = $this->pathBase . "/" . $file->store->get();
             if (!file_exists($path)) {
-                throw new NotFoundHttpException("File $path doesn't not exist!");
+                throw new NotFoundHttpException("File $path doesn't exist!");
             }
-            Yii::error($path);
+
             return Yii::$app->response->sendFile(
                 $path,
                 $file->file_name,
