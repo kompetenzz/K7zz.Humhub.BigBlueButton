@@ -3,6 +3,7 @@ humhub.module('BBBHelpers', function (module, require, $) {
     const WINDOW_DIMS = [1280, 800];
 
     const status = require('ui.status');
+    const client = require('client');
 
     function LaunchBBBWindow(url, target = url) {
         // Get id from token query param or last path segment to use as window name for better session management
@@ -338,6 +339,21 @@ humhub.module('BBBHelpers', function (module, require, $) {
         setupDependent(selsB, selsA, msgB);
     }
 
+    /*
+     * Toggles a bookmark of the content-bookmarks module outside of a stream entry
+     * (its own "bookmark" action only works within StreamEntry). The page is reloaded
+     * afterwards, so the button state and the flash status message get rendered.
+     */
+    function toggleBookmark(evt) {
+        evt.$trigger.addClass('disabled');
+        client.post(evt).then(function () {
+            client.reload();
+        }).catch(function (err) {
+            module.log.error(err, true);
+            evt.$trigger.removeClass('disabled');
+        });
+    }
+
     module.export({
         init: init,
         unload: unload,
@@ -346,6 +362,7 @@ humhub.module('BBBHelpers', function (module, require, $) {
         reflectSessionState: reflectSessionState,
         setupDependent: setupDependent,
         setupDependentViceVersa: setupDependentViceVersa,
+        toggleBookmark: toggleBookmark,
     });
 
 });

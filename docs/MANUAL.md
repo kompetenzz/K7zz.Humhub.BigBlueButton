@@ -127,6 +127,24 @@ The public token is regenerated each time the session is saved with public join 
 
 Members who lack the *Start Session* permission see the waiting page until someone with that permission starts the meeting.
 
+Right before joining a meeting shown as running, the module asks BBB again whether it still exists. If it has ended in the meantime (or got lost on the BBB server), a message is shown and the page returns to the waiting state.
+
+### Live Statistics
+
+While a meeting is running, the session page, the sidebar widget, the public guest page and the Custom Pages elements show:
+
+- the start time of the meeting,
+- the number of participants, moderators and webcams,
+- a red **REC** badge while a recording is running.
+
+The values update automatically. They are cached for about 20 seconds, so they can lag slightly behind the meeting.
+
+### Bookmarking a Session
+
+If the [Content Bookmarks](https://github.com/humhub/content-bookmarks) module is enabled, logged-in users find a bookmark button (<i class="fa fa-bookmark-o"></i>) in the footer of the session page. A click adds the session to the user's bookmarks, a second click removes it again. Bookmarked sessions are listed under **Bookmarks** in the user's own profile.
+
+> **Note:** Bookmarks are only available for sessions in a space or user profile. Global sessions have no bookmark button, because the Content Bookmarks module only supports content within a container.
+
 ---
 
 ## 7. Session Chat
@@ -187,6 +205,7 @@ When **Show in sidebar** is enabled for a session, it appears in the right-colum
 
 - Session title and thumbnail
 - A live indicator badge when the session is running
+- Live statistics while the session is running (see [Live Statistics](#live-statistics))
 - A quick-access join/start button
 
 The widget's vertical position within the sidebar is controlled by the **Sort order** value in the space BBB settings (lower numbers appear higher).

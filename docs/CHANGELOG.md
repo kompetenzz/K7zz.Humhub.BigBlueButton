@@ -1,3 +1,20 @@
+## v1.19.0
+HumHub 1.19 compatibility release. 
+
+### New
+- **Live statistics for running meetings**: Session page, sidebar widget, public guest join page and the Custom Pages elements now show the meeting's start time, the number of participants, moderators and webcams, plus a *REC* badge while a recording is running. 
+- **Bookmark sessions**: If the [Content Bookmarks](https://github.com/humhub/content-bookmarks) module is enabled, the session page shows a bookmark button in its footer. Bookmarked sessions are listed under *Bookmarks* in the user's profile. Not available for global sessions (without space or profile), since the Content Bookmarks module only supports content within a container. Feature request is posted.
+
+### Fixed
+- **Broken/orphaned meetings**: bbb-web may keep reporting a meeting as running although akka-apps has lost it (e.g. after an akka-apps restart), so joining failed inside the BBB client ("Ooops…"). The module now detects this with a hidden probe user that performs the client's own session check, treats such meetings as ended, asks BBB to end them and allows starting the session again. Probes are throttled per session and locked against concurrent pollers. On BBB < 3.0 (no such endpoint) the check is inconclusive and the previous behavior applies.
+- **Pre-join check**: Right before joining a meeting shown as running, the browser asks the server for a fresh state (`is-running?fresh=1`, bypassing all caches). If the meeting is gone, the opened window is closed again, a message is shown and the page falls back to the waiting state instead of sending users to a dead join URL.
+- **Public file download**: Files of public sessions (e.g. the session image) are now resolved against the uploads directory.
+
+### Changed
+- **HumHub 1.19 deprecations**: Replaced `yii\helpers\Html` / `humhub\libs\Html` with `humhub\helpers\Html` and `humhub\modules\ui\form\widgets\*` (`ActiveForm`, `ContentHiddenCheckbox`, `ContentVisibilitySelect`) with their `humhub\widgets\form\*` counterparts.
+- **Public guest join page**: Removed the hint for registered users including the "Copy members join link" button; Login is treated correctly now.
+- Code style: unified indentation and alignment in views, notifications and models.
+
 ## v1.1.2
 ### Fixed
 - Reconcile stale local meeting state with BBB every 5 minutes and on join/start, so forcibly ended meetings no longer keep showing as running or redirect users to a broken join URL.

@@ -1,5 +1,6 @@
 <?php
 use humhub\helpers\Html;
+use humhub\modules\contentBookmarks\helpers\Url as BookmarkUrl;
 use humhub\modules\ui\icon\widgets\Icon;
 use k7zz\humhub\bbb\assets\BBBAssets;
 use yii\helpers\Url;
@@ -24,6 +25,13 @@ if ($this->context->contentContainer) {
     $routePrefix = $this->context->contentContainer->createUrl($routePrefix);
 }
 $sessionLink = $routePrefix . '/' . $session->name;
+
+// Optional integration of the content-bookmarks module (only if enabled)
+/** @var \humhub\modules\contentBookmarks\Module|null $bookmarksModule */
+$bookmarksModule = !Yii::$app->user->isGuest && Yii::$app->hasModule('content-bookmarks')
+    && $session->content->getContainer() !== null
+    ? Yii::$app->getModule('content-bookmarks')
+    : null;
 ?>
 <div id="layout-content" data-bbb-check-state="<?= Html::encode($isRunningUrl) ?>">
     <div class="container-fluid">
@@ -110,8 +118,23 @@ $sessionLink = $routePrefix . '/' . $session->name;
                                             ]
                                         ) ?>
                                     <?php endif; ?>
-                                    <?php if ($session->canAdminister()): ?>
-                                        <span class="float-end">
+                                    <span class="float-end">
+                                        <?php if ($bookmarksModule): ?>
+                                            <?php $bookmarked = $bookmarksModule->isBookmarkedRecord($session); ?>
+                                            <?= Html::a(
+                                                Icon::get($bookmarked ? 'bookmark' : 'bookmark-o'),
+                                                '#',
+                                                [
+                                                    'class' => 'btn btn-light btn-sm',
+                                                    'title' => $bookmarked
+                                                        ? Yii::t('ContentBookmarksModule.base', 'Remove from bookmarks')
+                                                        : Yii::t('ContentBookmarksModule.base', 'Save as bookmark'),
+                                                    'data-action-click' => 'BBBHelpers.toggleBookmark',
+                                                    'data-action-url' => BookmarkUrl::toBookmarkContent($session->content),
+                                                ]
+                                            ) ?>
+                                        <?php endif; ?>
+                                        <?php if ($session->canAdminister()): ?>
                                             <?= Html::a(
                                                 Icon::get('pencil'),
                                                 $routePrefix . '/edit/' . $session->name,
@@ -120,8 +143,8 @@ $sessionLink = $routePrefix . '/' . $session->name;
                                                     'title' => Yii::t('BbbModule.base', 'Edit session'),
                                                 ]
                                             ) ?>
-                                        </span>
-                                    <?php endif; ?>
+                                        <?php endif; ?>
+                                    </span>
                                 </div>
 
                                 <?php if (!$chatEnabled && $recordingsEnabled): ?>
