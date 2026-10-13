@@ -1,3 +1,7 @@
+## v1.19.1
+### Fixed
+- **Presentation upload on meeting start**: Read presentation files directly from HumHub's file storage and embed their contents in the BBB create-meeting request instead of fetching the public download URL, which could fail with HTTP 404. Supports HumHub 1.19's new storage API while retaining compatibility with HumHub 1.18. Missing presentation files now produce an explicit error.
+
 ## v1.19.0
 HumHub 1.19 compatibility release. 
 
