@@ -7,6 +7,7 @@ use k7zz\humhub\bbb\models\SessionMeetingChat;
 use k7zz\humhub\bbb\notifications\WebhookMissing;
 use Yii;
 use BigBlueButton\BigBlueButton;
+use BigBlueButton\Exceptions\NetworkException;
 use BigBlueButton\Parameters\{
     CreateMeetingParameters,
     DeleteRecordingsParameters,
@@ -618,7 +619,12 @@ class SessionService
             );
         }
 
-        $r = $this->bbb->createMeeting($p);
+        try {
+            $r = $this->bbb->createMeeting($p);
+        } catch (NetworkException $e) {
+            Yii::error("BBB-CreateMeeting network failure for session {$s->name} ({$s->id}), code {$e->getCode()}: " . $e->getMessage(), 'bbb');
+            return null;
+        }
         if (!$r->success()) {
             Yii::error("BBB-CreateMeeting failed for session {$s->name} ({$s->id}): " . $r->getMessage(), 'bbb');
             return null;
