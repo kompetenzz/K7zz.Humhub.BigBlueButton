@@ -37,7 +37,7 @@ $inputId = Html::getInputId($model, $attribute);
                     </div>
                 <?php endif; ?>
                 <?= $f->field($model, $attribute, ['template' => '{input}{error}'])->fileInput() ?>
-                <?php if ($preview !== null && $removeAttr !== null): ?>
+                <?php if ($file !== null && $removeAttr !== null): ?>
                     <?= $f->field($model, $removeAttr)
                         ->checkbox(['label' => Yii::t('BbbModule.base', 'Remove')])
                         ->label(false) ?>

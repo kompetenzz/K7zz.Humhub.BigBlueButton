@@ -21,17 +21,17 @@ class FilePreviewField extends Widget
     public function run(): string
     {
         return $this->render('filePreviewField', [
-            'f'          => $this->form,
-            'model'      => $this->model,
-            'attribute'  => $this->attribute,
+            'f' => $this->form,
+            'model' => $this->model,
+            'attribute' => $this->attribute,
             'removeAttr' => $this->removeAttr,
-            'preview'    => $this->preview,
-            'file'       => $this->file,
-            'inputLabel' => ($this->preview !== null && $this->changeLabel !== '')
+            'preview' => $this->preview,
+            'file' => $this->file,
+            'inputLabel' => ($this->file !== null && $this->changeLabel !== '')
                 ? $this->changeLabel
                 : $this->label,
-            'hint'       => $this->hint,
-            'maxHeight'  => $this->maxHeight,
+            'hint' => $this->hint,
+            'maxHeight' => $this->maxHeight,
         ]);
     }
 }
