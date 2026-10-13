@@ -579,9 +579,16 @@ class SessionService
             ->setMeetingLayout($s->layout);
 
         if ($s->presentation_file_id > 0) {
-            $presentationUrl = Url::to('/bbb/public/download', true) . "?id=" . $s->id . "&type=presentation";
+            $presentationFile = $s->getPresentationFile();
+            if ($presentationFile === null || !$presentationFile->store->has()) {
+                throw new \RuntimeException("BBB presentation file for session {$s->id} is missing.");
+            }
 
-            $p->addPresentation($presentationUrl, file_get_contents($presentationUrl), $s->name . "_presentation.pdf");
+            $store = $presentationFile->store;
+            $presentationContent = method_exists($store, 'getContent')
+                ? $store->getContent()
+                : file_get_contents($store->get());
+            $p->addPresentation($s->name . "_presentation.pdf", $presentationContent);
         }
 
         // createMeeting on a meeting that bbb-web still keeps (although lost in akka-apps)
