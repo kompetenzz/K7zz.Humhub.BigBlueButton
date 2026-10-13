@@ -1,3 +1,8 @@
+## v1.19.2
+### Fixed
+- **File controls without a preview**: Show the Remove checkbox and Change label whenever a stored session image, camera background or presentation file exists, even if no preview is available.
+- **Meeting-start network errors**: Catch BBB network exceptions when creating a meeting, log the error code and use the existing user-facing failure message instead of displaying an unhandled exception. For rejected HTTP responses, the logged code identifies the HTTP status.
+
 ## v1.19.1
 ### Fixed
 - **Presentation upload on meeting start**: Read presentation files directly from HumHub's file storage and embed their contents in the BBB create-meeting request instead of fetching the public download URL, which could fail with HTTP 404. Supports HumHub 1.19's new storage API while retaining compatibility with HumHub 1.18. Missing presentation files now produce an explicit error.
