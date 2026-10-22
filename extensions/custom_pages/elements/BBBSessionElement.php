@@ -93,26 +93,24 @@ class BBBSessionElement extends BaseContentRecordElement implements \Stringable
 
     public static function renderSession(Session $session): string
     {
-        [$running, $bundle] = self::prepareRender($session);
+        $running = self::prepareRender($session);
         return Yii::$app->view->renderFile(__DIR__ . '/views/_session.php', [
             'session' => $session,
             'running' => $running,
-            'bundle'  => $bundle,
         ]);
     }
 
     public static function renderSessionRow(Session $session, bool $isLast = false): string
     {
-        [$running, $bundle] = self::prepareRender($session);
+        $running = self::prepareRender($session);
         return Yii::$app->view->renderFile(__DIR__ . '/views/_session_row.php', [
             'session' => $session,
             'running' => $running,
-            'bundle'  => $bundle,
             'isLast'  => $isLast,
         ]);
     }
 
-    private static function prepareRender(Session $session): array
+    private static function prepareRender(Session $session): bool
     {
         try {
             $running = (new SessionService())->isRunning($session->uuid);
@@ -120,7 +118,8 @@ class BBBSessionElement extends BaseContentRecordElement implements \Stringable
             Yii::error($e, 'bbb');
             $running = false;
         }
-        return [$running, BBBAssets::register(view: Yii::$app->view)];
+        BBBAssets::register(view: Yii::$app->view);
+        return $running;
     }
 
     public function getTemplateVariable(): BaseElementVariable

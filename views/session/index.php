@@ -14,11 +14,9 @@ use yii\helpers\Url;
 /* @var $isRunningUrl string */
 /* @var $preMeetingChats \k7zz\humhub\bbb\models\SessionMeetingChat[] */
 
-$bundle = BBBAssets::register($this);
+BBBAssets::register($this);
 $this->setPageTitle($session->title);
-$imageUrl = $session->outputImage
-    ? $session->outputImage->getUrl()
-    : $bundle->baseUrl . '/images/conference.png';
+$imageUrl = $session->getImageUrl();
 
 $routePrefix = '/bbb/session';
 if ($this->context->contentContainer) {

@@ -12,16 +12,9 @@ use k7zz\humhub\bbb\widgets\LiveStats;
 /* @var $msg string|null */
 /* @var $running bool */
 
-$bundle = BBBAssets::register($this);
+BBBAssets::register($this);
 $this->setPageTitle(($session && $session->title) ? $session->title : Yii::t('BbbModule.base', 'Join session'));
 $action = Url::to('/bbb/public/join/' . $token, true);
-$imageUrl = ($session && $session->image_file_id)
-    ? Url::to(['/bbb/public/download', 'id' => $session->id, 'type' => 'image', 'inline' => true])
-    : $bundle->baseUrl . '/images/conference.png';
-$container = $session->content->container;
-$membersJoinUrlPath = $container
-    ? $container->createUrl('/bbb/session/' . $session->name)
-    : "/bbb/session/{$session->name}";
 ?>
 <div id="layout-content"
     data-bbb-check-state="<?= Html::encode(Url::to(['/bbb/public/is-running', 'token' => $token])) ?>"
@@ -32,7 +25,7 @@ $membersJoinUrlPath = $container
                 <div class="card">
                     <?php if ($session): ?>
                         <div class="card-header" style="padding: 0; overflow: hidden;">
-                            <img src="<?= Html::encode($imageUrl) ?>" alt="<?= Html::encode($session->title) ?>"
+                            <img src="<?= Html::encode($session->getPublicImageUrl()) ?>" alt="<?= Html::encode($session->title) ?>"
                                 style="width: 100%; height: auto; object-fit: cover; display: block;">
                         </div>
                     <?php endif; ?>
@@ -54,6 +47,7 @@ $membersJoinUrlPath = $container
                             <div class="alert alert-danger"><?= Html::encode($msg) ?></div>
                         <?php endif; ?>
 
+                        <?php if ($session): ?>
                         <div class="bbb-waiting alert alert-info" style="display: <?= $running ? 'none' : '' ?>;">
                             <i class="fa fa-spinner fa-spin"></i>
                             <?= Yii::t('BbbModule.base', 'You will be redirected when the session starts.') ?>
@@ -82,6 +76,7 @@ $membersJoinUrlPath = $container
                                 </div>
                             </form>
                         </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

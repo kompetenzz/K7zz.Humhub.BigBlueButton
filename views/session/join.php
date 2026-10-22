@@ -12,11 +12,9 @@ use k7zz\humhub\bbb\assets\BBBAssets;
 /* @var $running bool */
 /* @var $preMeetingChats \k7zz\humhub\bbb\models\SessionMeetingChat[] */
 
-$bundle = BBBAssets::register($this);
+BBBAssets::register($this);
 $this->setPageTitle($session->title);
-$imageUrl = $session->outputImage
-    ? $session->outputImage->getUrl()
-    : $bundle->baseUrl . '/images/conference.png';
+$imageUrl = $session->getImageUrl();
 ?>
 <div id="layout-content" data-bbb-check-state="<?= Html::encode($isRunningUrl) ?>" data-bbb-redirect-on-change
     data-bbb-state="<?= $running ? 'running' : 'waiting' ?>">

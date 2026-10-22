@@ -5,11 +5,13 @@ use humhub\modules\content\components\ContentActiveRecord;
 use humhub\modules\content\components\ContentContainerActiveRecord;
 use humhub\libs\BasePermission;
 use yii\db\ActiveQuery;
+use yii\helpers\Url;
 use humhub\modules\file\converter\PreviewImage;
 use humhub\modules\file\models\File;
 use humhub\modules\user\components\User as UserComponent;
 use humhub\modules\user\models\User;
 use humhub\modules\content\widgets\richtext\RichText;
+use k7zz\humhub\bbb\assets\BBBAssets;
 use k7zz\humhub\bbb\widgets\WallEntry;
 use k7zz\humhub\bbb\enums\Layouts;
 use k7zz\humhub\bbb\permissions\{
@@ -79,6 +81,38 @@ class Session extends ContentActiveRecord
     {
         $relUrl = '/bbb/sessions?highlight=' . $this->id;
         return $this->content->container ? $this->content->container->createUrl($relUrl) : \yii\helpers\Url::to($relUrl);
+    }
+
+    /**
+     * Returns the URL of the session image, or of the default image if none is set.
+     * @return string
+     */
+    public function getImageUrl(): string
+    {
+        return $this->outputImage ? $this->outputImage->getUrl() : static::getDefaultImageUrl();
+    }
+
+    /**
+     * Returns the URL of the session image for guests (public join page), or of the default image if none is set.
+     * Guests cannot access the regular file download, so the public download action is used.
+     * @return string
+     */
+    public function getPublicImageUrl(): string
+    {
+        return $this->image_file_id
+            ? Url::to(['/bbb/public/download', 'id' => $this->id, 'type' => 'image', 'inline' => true])
+            : static::getDefaultImageUrl();
+    }
+
+    /**
+     * Returns the URL of the default session image.
+     * @return string
+     */
+    public static function getDefaultImageUrl(): string
+    {
+        /** @var BBBAssets $bundle */
+        $bundle = Yii::$app->assetManager->getBundle(BBBAssets::class);
+        return $bundle->getAssetUrl('images/conference.png');
     }
 
     /**

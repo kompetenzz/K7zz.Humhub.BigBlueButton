@@ -2,7 +2,6 @@
 use humhub\modules\content\widgets\richtext\RichText;
 use humhub\modules\custom_pages\modules\template\models\RichtextContent;
 use humhub\modules\ui\icon\widgets\Icon;
-use k7zz\humhub\bbb\assets\BBBAssets;
 use k7zz\humhub\bbb\widgets\RecordingsList;
 use yii\helpers\Url;
 use humhub\helpers\Html;
@@ -11,9 +10,7 @@ use humhub\helpers\Html;
  * @var k7zz\humhub\bbb\models\Session $model           The session model
  */
 
-$bundle = BBBAssets::register(view: $this);
-
-$imageUrl = $model->outputImage ? $model->outputImage->getUrl() : $bundle->baseUrl . '/images/conference.png';
+$imageUrl = $model->getImageUrl();
 $viewUrl = $model->content && $model->content->container
     ? $model->content->container->createUrl('/bbb/sessions')
     : Url::to('/bbb/sessions');

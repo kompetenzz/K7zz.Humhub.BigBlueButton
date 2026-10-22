@@ -1,3 +1,11 @@
+## v1.19.3
+### Fixed
+- **Default session image**: The fallback image (`conference.png`) was not displayed on HumHub 1.19, because the asset manager's base URL is now an unresolved alias (`@web/assets`). Asset URLs are now resolved via the new `BBBAssets::getAssetUrl()` helper.
+- **Public join page with invalid token**: Opening a public join link with an unknown token crashed with a `TypeError` instead of showing "No such session.". Removed a leftover of the members join link and only show the waiting/join area if the session exists.
+
+### Changed
+- **Session image URL**: New `Session::getImageUrl()` (session image or default image), `Session::getPublicImageUrl()` (same for guests via the public download) and `Session::getDefaultImageUrl()` replace the duplicated image fallback logic in all views and Custom Pages elements.
+
 ## v1.19.2
 ### Fixed
 - **File controls without a preview**: Show the Remove checkbox and Change label whenever a stored session image, camera background or presentation file exists, even if no preview is available.

@@ -12,13 +12,13 @@ use humhub\helpers\Html;
 use humhub\modules\ui\icon\widgets\Icon;
 use k7zz\humhub\bbb\assets\BBBAssets;
 
-$bundle = BBBAssets::register(view: $this);
+BBBAssets::register(view: $this);
 $routePrefix = '/bbb/session';
 if ($this->context->contentContainer) {
     $routePrefix = $this->context->contentContainer->createUrl($routePrefix);
 }
 $highlightClass = $session->id === $highlightId ? 'highlight' : '';
-$imageUrl = $session->outputImage ? $session->outputImage->getUrl() : $bundle->baseUrl . '/images/conference.png';
+$imageUrl = $session->getImageUrl();
 $detailsLink = $routePrefix . '/' . $session->name;
 $chatEnabled = (bool) (Yii::$app->getModule('bbb')->settings->get('integrateBbbChat') ?? false)
     && (bool) $session->integrate_bbb_chat;

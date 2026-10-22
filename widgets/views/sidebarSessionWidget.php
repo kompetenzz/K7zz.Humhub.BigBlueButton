@@ -13,7 +13,7 @@ use k7zz\humhub\bbb\assets\BBBAssets;
 use yii\helpers\Url;
 use k7zz\humhub\bbb\widgets\LiveStats;
 
-$bundle = BBBAssets::register(view: $this);
+BBBAssets::register(view: $this);
 $routeBase = '/bbb/session';
 $routePrefix = $contentContainer
     ? $contentContainer->createUrl($routeBase)
@@ -24,9 +24,7 @@ $routePrefix = $contentContainer
     /** @var k7zz\humhub\bbb\models\Session $session */
     $session = $row['model'];
     $running = $row['running'];
-    $imageUrl = $session->outputImage
-        ? $session->outputImage->getUrl()
-        : $bundle->baseUrl . '/images/conference.png';
+    $imageUrl = $session->getImageUrl();
     $membersJoinLink = $routePrefix . '/join/' . $session->name;
     $sessionLink = $routePrefix . '/' . $session->name;
     $isRunningUrl = $routePrefix . '/is-running?id=' . $session->id;

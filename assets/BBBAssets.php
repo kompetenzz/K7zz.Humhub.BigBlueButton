@@ -2,6 +2,7 @@
 namespace k7zz\humhub\bbb\assets;
 
 use Yii;
+use yii\helpers\Url;
 use yii\web\AssetBundle;
 
 /**
@@ -46,4 +47,18 @@ class BBBAssets extends AssetBundle
     public $jsOptions = [
         'type' => 'module', // wichtig für ES6 import/export
     ];
+
+    /**
+     * Returns the public URL of a published file of this bundle.
+     *
+     * Since HumHub 1.19 the asset manager's base URL may be an unresolved alias
+     * (e.g. `@web/assets`), so `$baseUrl` must not be used directly in HTML.
+     *
+     * @param string $path path relative to the resources directory, e.g. `images/conference.png`
+     * @return string
+     */
+    public function getAssetUrl(string $path): string
+    {
+        return Url::to($this->baseUrl . '/' . ltrim($path, '/'));
+    }
 }

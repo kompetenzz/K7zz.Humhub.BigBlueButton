@@ -4,7 +4,6 @@
  *
  * @var \k7zz\humhub\bbb\models\Session $session
  * @var bool $running
- * @var \k7zz\humhub\bbb\assets\BBBAssets $bundle
  * @var bool $isFirst
  * @var bool $isLast
  */
@@ -21,9 +20,7 @@ $container = $session->content->container;
 $routeBase = '/bbb/session';
 $routePrefix = $container ? $container->createUrl($routeBase) : $routeBase;
 
-$imageUrl = $session->outputImage
-    ? $session->outputImage->getUrl()
-    : $bundle->baseUrl . '/images/conference.png';
+$imageUrl = $session->getImageUrl();
 
 $membersJoinLink = $routePrefix . '/join/' . $session->name;
 $sessionLink = $routePrefix . '/' . $session->name;
