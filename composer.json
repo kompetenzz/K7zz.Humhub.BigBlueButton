@@ -3,7 +3,7 @@
     "description": "kompetenzZ BigBlueButton Module for HumHub",
     "version": "1.19.3",
     "extra": {
-        "humhub-min-version": "1.18.0"
+        "humhub-min-version": "1.19.0"
     },
     "type": "library",
     "repositories": [

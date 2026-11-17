@@ -125,7 +125,7 @@ foreach ($messages as $msg):
 
     $initial = mb_strtoupper(mb_substr($name, 0, 1)) ?: '?';
     $color = $avatarColors[abs(crc32($name)) % count($avatarColors)];
-    $avatarUrl = $user ? $user->getProfileImage()->getUrl() : null;
+    $avatarUrl = $user ? $user->getImage()->getUrl() : null;
 
     $canEditMsg = $currentUserId !== null
         && $msg->user_id === $currentUserId

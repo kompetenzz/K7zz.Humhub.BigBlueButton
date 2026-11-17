@@ -585,11 +585,7 @@ class SessionService
                 throw new \RuntimeException("BBB presentation file for session {$s->id} is missing.");
             }
 
-            $store = $presentationFile->store;
-            $presentationContent = method_exists($store, 'getContent')
-                ? $store->getContent()
-                : file_get_contents($store->get());
-            $p->addPresentation($s->name . "_presentation.pdf", $presentationContent);
+            $p->addPresentation($s->name . "_presentation.pdf", $presentationFile->store->getContent());
         }
 
         // createMeeting on a meeting that bbb-web still keeps (although lost in akka-apps)
@@ -654,9 +650,7 @@ class SessionService
             $moderator ? Role::MODERATOR : Role::VIEWER
         ))
             ->setUserID((string) Yii::$app->user->identity->id);
-        if (Yii::$app->user->identity->getProfileImage()) {
-            $jp->setAvatarURL(Url::to(Yii::$app->user->identity->getProfileImage()->getUrl(), true));
-        }
+        $jp->setAvatarURL(Url::to(Yii::$app->user->identity->getImage()->getUrl(), true));
         if ($session->camera_bg_image_file_id > 0) {
             $cameraBgImageUrl = Url::to('/bbb/public/download', true)
                 . "?id=" . $session->id

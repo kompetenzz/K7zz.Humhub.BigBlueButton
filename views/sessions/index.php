@@ -130,9 +130,9 @@ $renderRows = function (array $rows) use ($highlightId, $contextContainer): stri
             <?php foreach ($spaceGroups as $group): ?>
                 <div class="card mb-4 bbb-section">
                     <div class="card-header bg-light text-dark">
-                        <?php $img = $group['container']->getProfileImage(); ?>
+                        <?php $img = $group['container']->getImage(); ?>
                         <h2 class="mb-0">
-                            <?php if ($img->hasImage()): ?>
+                            <?php if ($img->exists()): ?>
                                 <img src="<?= Html::encode($img->getUrl()) ?>" class="bbb-avatar" alt="">
                             <?php else: ?>
                                 <?= Icon::get('users') ?>
@@ -152,9 +152,9 @@ $renderRows = function (array $rows) use ($highlightId, $contextContainer): stri
             <div class="card mb-4 bbb-section">
                 <?php foreach ($userGroups as $group): ?>
                     <div class="card-header bg-light text-dark">
-                        <?php $img = $group['container']->getProfileImage(); ?>
+                        <?php $img = $group['container']->getImage(); ?>
                         <h2 class="mb-0">
-                            <?php if ($img->hasImage()): ?>
+                            <?php if ($img->exists()): ?>
                                 <img src="<?= Html::encode($img->getUrl()) ?>" class="bbb-avatar" alt="">
                             <?php else: ?>
                                 <?= Icon::get('user') ?>

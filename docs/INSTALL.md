@@ -10,6 +10,6 @@
 
 ## Requirements
 
-- HumHub ≥ 1.18.0
+- HumHub ≥ 1.19.0
 - A running BigBlueButton server (≥ 3 recommended)
 - PHP `spatie/pdf-to-image` dependencies (Imagick or GD) for PDF thumbnail generation
