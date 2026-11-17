@@ -54,6 +54,10 @@ $isUserProfile = $container instanceof User;
             <?= $form->field($model, 'navItemLabel')
                 ->textInput() ?>
 
+            <?= $form->field($model, 'navItemSortOrder')
+                ->textInput(['type' => 'number', 'min' => 1, 'max' => 99999])
+                ->hint(Yii::t('BbbModule.config', 'Position of the navigation item in the menu. Lower = further up/left. Default = 1000.')) ?>
+
             <?= $form->field($model, 'sidebarSortOrder')
                 ->textInput(['type' => 'number', 'min' => 1, 'max' => 9000])
                 ->hint(Yii::t('BbbModule.config', 'Position of the BBB widget in the right sidebar. Lower = higher up. Reference: Activities = 10, Members = 30. Default = 1 (top), unsorted widgets = 9000.')) ?>

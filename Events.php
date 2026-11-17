@@ -17,6 +17,7 @@ use k7zz\humhub\bbb\extensions\custom_pages\elements\BBBSessionsElement;
 use k7zz\humhub\bbb\permissions\ManageSession;
 use k7zz\humhub\bbb\widgets\SidebarSessionWidget;
 use k7zz\humhub\bbb\models\forms\ContainerSettingsForm;
+use k7zz\humhub\bbb\models\forms\SettingsBase;
 use Yii;
 use humhub\helpers\Html;
 
@@ -45,7 +46,7 @@ class Events
         $menu,
         $label,
         ?ContentContainerActiveRecord $container = null,
-        int $order = 0
+        int $order = SettingsBase::DEFAULT_NAV_ITEM_SORT_ORDER
     ): void {
         $url = $container ? $container->createUrl('/bbb/sessions') :
             '/bbb/sessions';
@@ -62,7 +63,7 @@ class Events
             'url' => $url,
             'icon' => 'video-camera',
             'isActive' => $is_active,
-            'sortOrder' => $order ?: 1000,
+            'sortOrder' => $order,
 
         ]));
     }
@@ -74,6 +75,8 @@ class Events
             self::addNavItem(
                 $menu,
                 Yii::$app->getModule('bbb')->settings->get('navItemLabel', 'Live Sessions'),
+                null,
+                (int) Yii::$app->getModule('bbb')->settings->get('navItemSortOrder', SettingsBase::DEFAULT_NAV_ITEM_SORT_ORDER),
             );
         }
     }
@@ -98,7 +101,8 @@ class Events
             self::addNavItem(
                 $menu,
                 $settings->navItemLabel,
-                $container
+                $container,
+                (int) $settings->navItemSortOrder
             );
         }
     }

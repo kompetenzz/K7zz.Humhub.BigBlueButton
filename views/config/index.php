@@ -60,19 +60,24 @@ $url = Url::to('/bbb/sessions');
 
             <?= $form->field($model, 'navItemLabel')
                 ->textInput() ?>
-        </div>
 
-        <button class="btn btn-primary" data-ui-loader><?= Yii::t('base', 'Save') ?></button>
+            <?= $form->field($model, 'navItemSortOrder')
+                ->textInput(['type' => 'number', 'min' => 1, 'max' => 99999])
+                ->hint(Yii::t('BbbModule.config', 'Position of the navigation item in the menu. Lower = further up/left. Default = 1000.')) ?>
+                
+            </div>
 
-        <?php ActiveForm::end() ?>
+            <button class="btn btn-primary" data-ui-loader><?= Yii::t('base', 'Save') ?></button>
 
-        <script>
-            document.getElementById('settingsform-addnavitem').addEventListener('change', function () {
-                document.getElementById('bbb-nav-admin-hint').style.display = this.checked ? 'none' : '';
-            });
+            <?php ActiveForm::end() ?>
+  
+            <script>  
+                document.getElementById('settingsform-addnavitem').addEventListener('change', function () {
+                    document.getElementById('bbb-nav-admin-hint').style.display = this.checked ? 'none' : '';
+                });
         </script>
     </div>
 
-
+    
 
 </div>

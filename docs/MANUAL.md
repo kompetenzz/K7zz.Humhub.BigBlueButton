@@ -14,7 +14,7 @@ The BigBlueButton (BBB) module integrates video conferencing directly into HumHu
    - **Shared Secret** — the API secret from your BBB server (`bbb-conf --secret`)
 3. Save. The module is now operational for all spaces.
 
-Optionally configure the **global navigation label** ("Live Sessions" by default) and whether a top-navigation link should appear.
+Optionally configure the **global navigation label** ("Live Sessions" by default), its **sort order** (lower = further left, default 1000) and whether a top-navigation link should appear.
 
 ---
 
@@ -28,6 +28,7 @@ Per-space options (under **Space Settings → BigBlueButton**):
 |---|---|
 | Show navigation link | Adds a "Live Sessions" entry to the space left sidebar |
 | Navigation label | Custom label for the menu item |
+| Navigation item sort order | Position of the menu item (lower = further up, default 1000) |
 | Sidebar widget sort order | Vertical position of the session widget (1 = top, default) |
 
 **Quick start:** Use the "Create Default Session" button to automatically create a ready-to-use default session for the space with sidebar display enabled.

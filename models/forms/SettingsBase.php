@@ -11,14 +11,24 @@ use Yii;
  *
  * @property string $navItemLabel  The label for the navigation item
  * @property bool   $addNavItem    Whether to add a navigation item
+ * @property int    $navItemSortOrder  Sort order of the navigation item
  */
 abstract class SettingsBase extends Model
 {
+    public const DEFAULT_NAV_ITEM_SORT_ORDER = 1000;
+
     /** @var mixed Settings storage (HumHub settings component) */
     protected $settings;
 
     public string $navItemLabel;
     public bool $addNavItem;
+    /**
+     * Sort order of the navigation item. Lower values appear further up/left.
+     * Not typed as int, since an empty or non-numeric form value must reach the validators.
+     *
+     * @var int|string
+     */
+    public $navItemSortOrder = self::DEFAULT_NAV_ITEM_SORT_ORDER;
 
     /**
      * @inheritdoc
@@ -28,6 +38,8 @@ abstract class SettingsBase extends Model
         return [
             [['navItemLabel'], 'string'],
             [['addNavItem'], 'boolean'],
+            ['navItemSortOrder', 'default', 'value' => self::DEFAULT_NAV_ITEM_SORT_ORDER],
+            ['navItemSortOrder', 'integer', 'min' => 1, 'max' => 99999],
         ];
     }
 
@@ -39,6 +51,7 @@ abstract class SettingsBase extends Model
         return [
             'addNavItem' => Yii::t('BbbModule.config', 'Add navigation item'),
             'navItemLabel' => Yii::t('BbbModule.config', 'Navigation item title'),
+            'navItemSortOrder' => Yii::t('BbbModule.config', 'Navigation item sort order'),
         ];
     }
 
@@ -53,6 +66,7 @@ abstract class SettingsBase extends Model
         // First call children init() to ensure settings are initialized
         $this->addNavItem = $this->settings->get('addNavItem') ?? true;
         $this->navItemLabel = $this->settings->get('navItemLabel') ?? 'Live Sessions';
+        $this->navItemSortOrder = (int) ($this->settings->get('navItemSortOrder') ?? self::DEFAULT_NAV_ITEM_SORT_ORDER);
     }
 
     /**
@@ -66,6 +80,7 @@ abstract class SettingsBase extends Model
         }
         $this->settings->set('addNavItem', $this->addNavItem);
         $this->settings->set('navItemLabel', $this->navItemLabel);
+        $this->settings->set('navItemSortOrder', (int) $this->navItemSortOrder);
         return true;
     }
 }

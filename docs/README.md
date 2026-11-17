@@ -24,7 +24,7 @@ Integrate [BigBlueButton](https://bigbluebutton.org) video conferencing directly
 
 **Sidebar & Navigation**
 - Sidebar widget displays active sessions with a live indicator badge in spaces and on the dashboard
-- Configurable navigation label and sidebar sort order per space
+- Configurable navigation label, navigation sort order and Sidebar widget sort order per space
 - Global "Live Sessions" link in the top navigation (optional)
 - Quick-access link in space header for admins
 
