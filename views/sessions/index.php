@@ -149,8 +149,8 @@ $renderRows = function (array $rows) use ($highlightId, $contextContainer): stri
 
         <!-- 3. User-Sessions -->
         <?php if (!empty($userGroups)): ?>
-            <div class="card mb-4 bbb-section">
-                <?php foreach ($userGroups as $group): ?>
+            <?php foreach ($userGroups as $group): ?>
+                <div class="card mb-4 bbb-section">
                     <div class="card-header bg-light text-dark">
                         <?php $img = $group['container']->getImage(); ?>
                         <h2 class="mb-0">
