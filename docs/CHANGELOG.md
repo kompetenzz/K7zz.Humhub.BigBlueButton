@@ -1,9 +1,17 @@
 ## v1.19.3
+**BREAKING: HumHub 1.18 is no longer supported. This release requires HumHub 1.19 or later.**
+
+### New
+- **Navigation item sort order**: The position of the navigation item can now be configured in the global settings and per space/profile (default: 1000).
+
 ### Fixed
 - **Default session image**: The fallback image (`conference.png`) was not displayed on HumHub 1.19, because the asset manager's base URL is now an unresolved alias (`@web/assets`). Asset URLs are now resolved via the new `BBBAssets::getAssetUrl()` helper.
 - **Public join page with invalid token**: Opening a public join link with an unknown token crashed with a `TypeError` instead of showing "No such session.". Removed a leftover of the members join link and only show the waiting/join area if the session exists.
+- **Sessions overview on HumHub 1.19**: The "all" view crashed with `Call to undefined method ProfileImage::hasImage()`. Space and user avatars now use the new `getImage()` API.
+- **Sessions overview layout**: Each user's sessions now get their own card. With more than one user, surplus closing tags broke the page layout.
 
 ### Changed
+- **HumHub 1.18 compatibility removed**: The module now uses the container image API and file store API of HumHub 1.19 without any fallbacks.
 - **Session image URL**: New `Session::getImageUrl()` (session image or default image), `Session::getPublicImageUrl()` (same for guests via the public download) and `Session::getDefaultImageUrl()` replace the duplicated image fallback logic in all views and Custom Pages elements.
 
 ## v1.19.2
