@@ -18,7 +18,7 @@ return [
     'Server URL' => 'Server-Adresss',
     'Settings' => 'Einstellungen',
     'Shared Secret' => 'Geteiltes Geheimnis',
-    'Sidebar sort order' => 'Sortierreihenfolge in der Seitenleiste',
+    'Sidebar widget sort order' => 'Sortierreihenfolge in der Seitenleiste',
     'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the administration menu.' => 'Wenn der Navigationseintrag deaktiviert ist, wird ein <strong>Sitzungen</strong>-Link im Administrationsmenü bereitgestellt.',
     'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the space gear menu.' => 'Wenn der Navigationseintrag deaktiviert ist, wird ein <strong>Sitzungen</strong>-Link im Space-Gear-Menü bereitgestellt.',
     'When the navigation entry is disabled, you will still find a <strong>Video-Sessions</strong> link in the account menu.' => 'Wenn der Navigationseintrag deaktiviert ist, findest du den Link <strong>Video-Sessions</strong> im Account-Menü.',

@@ -18,7 +18,7 @@ return [
     'Server URL' => '',
     'Settings' => '',
     'Shared Secret' => '',
-    'Sidebar sort order' => '',
+    'Sidebar widget sort order' => '',
     'To guarantee correct functionality, please use BigBlueButton >= 3.0.19 and make sure that the webhooks feature of your BigBlueButton Server is enabled.' => '',
     'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the administration menu.' => '',
     'When the navigation entry is disabled, administrators will still find a <strong>Sessions</strong> link in the space gear menu.' => '',

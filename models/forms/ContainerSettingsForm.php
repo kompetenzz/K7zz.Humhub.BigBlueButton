@@ -35,7 +35,7 @@ class ContainerSettingsForm extends SettingsBase
     {
         $this->settings = Yii::$app->getModule('bbb')->settings->contentContainer($this->contentContainer);
         parent::init();
-        $this->sidebarSortOrder = (int)($this->settings->get('sidebarSortOrder') ?? 1);
+        $this->sidebarSortOrder = (int) ($this->settings->get('sidebarSortOrder') ?? 1);
     }
 
     /**
@@ -54,7 +54,7 @@ class ContainerSettingsForm extends SettingsBase
     public function attributeLabels(): array
     {
         return array_merge(parent::attributeLabels(), [
-            'sidebarSortOrder' => Yii::t('BbbModule.config', 'Sidebar sort order'),
+            'sidebarSortOrder' => Yii::t('BbbModule.config', 'Sidebar widget sort order'),
         ]);
     }
 
